@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* House of Shakti - Luxury Wellness Palette */
+  /* Emphasis: #8D0000 (burgundy), #F2EBDA (warm cream), #000000 (black) */
+  /* Base: #FFFDF7 (warm white), #340000 (dark burgundy) */
+  --background: #FFFDF7;
+  --foreground: #340000;
+  --card: #FFFDF7;
+  --card-foreground: #340000;
+  --popover: #FFFDF7;
+  --popover-foreground: #340000;
+  --primary: #340000;
+  --primary-foreground: #F2EBDA;
+  --secondary: #8D0000;
+  --secondary-foreground: #F2EBDA;
+  --muted: #F2EBDA;
+  --muted-foreground: #5C4040;
+  --accent: #8D0000;
+  --accent-foreground: #F2EBDA;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: #E0D5C5;
+  --input: #F2EBDA;
+  --ring: #8D0000;
+  --chart-1: #340000;
+  --chart-2: #8D0000;
+  --chart-3: #5C4040;
+  --chart-4: #A63030;
+  --chart-5: #6B1010;
+  --radius: 0.5rem;
+  
+  /* Custom colors */
+  --cream: #F2EBDA;
+  --burgundy: #8D0000;
+  --burgundy-light: #A63030;
+  --burgundy-dark: #6B1010;
+  --dark: #340000;
+  --dark-light: #4A1515;
+  --black: #000000;
+  --warm-white: #FFFDF7;
+}
+
+@theme inline {
+  --font-sans: var(--font-sans), 'Inter', system-ui, sans-serif;
+  --font-serif: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'Geist Mono', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Custom theme colors - House of Shakti */
+  --color-cream: #F2EBDA;
+  --color-burgundy: #8D0000;
+  --color-burgundy-light: #A63030;
+  --color-burgundy-dark: #6B1010;
+  --color-dark: #340000;
+  --color-dark-light: #4A1515;
+  --color-black: #000000;
+  --color-warm-white: #FFFDF7;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
