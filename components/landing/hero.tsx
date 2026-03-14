@@ -53,13 +53,11 @@ export function Hero() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link
-            href="#book"
-            className="group flex items-center gap-3 bg-dark text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-dark-light transition-colors duration-300"
-          >
-            Book a Stay
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="hidden md:block cloudbeds-btn-container">
+              <cb-book-now-button 
+                property-code='zE6Wy8' 
+              ></cb-book-now-button>
+          </div>
           <Link
             href="#pillars"
             className="group flex items-center gap-3 border border-dark/30 text-dark px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-dark/5 transition-colors duration-300"

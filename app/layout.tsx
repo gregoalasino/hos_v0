@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import Script from 'next/script';
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"],
@@ -47,6 +48,10 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {children}
         <Analytics />
+        <Script 
+          src="https://static1.cloudbeds.com/booking-engine/latest/static/js/immersive-experience/cb-immersive-experience.js" 
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

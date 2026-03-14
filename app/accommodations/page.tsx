@@ -179,12 +179,11 @@ export default function AccommodationsPage() {
           <p className="text-cream/70 mb-8">
             Each space has been thoughtfully designed for your comfort and renewal.
           </p>
-          <Link
-            href="/#book"
-            className="inline-block bg-burgundy text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-burgundy-light transition-colors"
-          >
-            Check Availability
-          </Link>
+          <div className="hidden md:block cloudbeds-btn-container">
+              <cb-book-now-button 
+                property-code='zE6Wy8' 
+              ></cb-book-now-button>
+          </div>
         </div>
       </section>
     </motion.main>
