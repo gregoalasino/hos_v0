@@ -179,7 +179,7 @@ export default function AccommodationsPage() {
           <p className="text-cream/70 mb-8">
             Each space has been thoughtfully designed for your comfort and renewal.
           </p>
-          <div className="hidden md:block cloudbeds-btn-container">
+          <div className="hidden md:flex justify-center items-center cloudbeds-btn-container">
               <cb-book-now-button 
                 property-code='zE6Wy8' 
               ></cb-book-now-button>

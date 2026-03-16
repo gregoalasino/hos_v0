@@ -277,14 +277,13 @@ export default function YogaPage() {
             Ready to begin your practice?
           </h3>
           <p className="text-cream/70 mb-8">
-            Join us on the mat and discover the transformative power of mindful movement.
+            By booking a night you can add some yoga classes with discount.
           </p>
-          <Link
-            href="/#book"
-            className="inline-block bg-burgundy text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-burgundy-light transition-colors"
-          >
-            Book Your Stay
-          </Link>
+          <div className="hidden md:flex justify-center items-center cloudbeds-btn-container">
+              <cb-book-now-button 
+                property-code='zE6Wy8' 
+              ></cb-book-now-button>
+          </div>
         </div>
       </section>
     </motion.main>

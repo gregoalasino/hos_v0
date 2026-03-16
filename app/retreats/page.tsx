@@ -138,13 +138,13 @@ export default function RetreatsPage() {
 
       <section className="py-20 bg-dark text-cream text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <h3 className="font-serif text-3xl md:text-4xl mb-6">Ready to transform?</h3>
-          <p className="text-cream/70 mb-8">Begin your journey of self-discovery and renewal with us.</p>
+          <h3 className="font-serif text-3xl md:text-4xl mb-6">Want to make your own Retreat?</h3>
+          <p className="text-cream/70 mb-8">Begin to organice your own retreat with us.</p>
           <Link
-            href="/#book"
+            href="/#hostyourretreat"
             className="inline-block bg-burgundy text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-burgundy-light transition-colors"
           >
-            Reserve Your Spot
+            Host your retreat
           </Link>
         </div>
       </section>

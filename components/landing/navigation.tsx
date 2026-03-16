@@ -9,7 +9,7 @@ const navItems = [
   { label: "Yoga", href: "/yoga" },
   { label: "Stay", href: "/accommodations" },
   { label: "Retreats", href: "/retreats" },
-  { label: "Gallery", href: "/#gallery" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/#contact" },
 ];
 
