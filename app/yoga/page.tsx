@@ -1,57 +1,456 @@
-"use client";
+'use client';
 
-import React, { useRef } from "react";
-import { motion, Variants } from "framer-motion";
-import { useInView } from "framer-motion";
-import Link from "next/link";
-import { ArrowLeft, Clock, Users } from "lucide-react";
+import { useState, useMemo, useRef, Fragment } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence, type Variants, useInView } from 'framer-motion';
+import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { MOCK_CLASSES } from '@/lib/mock-data';
+import type { YogaClass } from '@/types';
+import { useLanguage } from '@/contexts/language-context';
+import { tr } from '@/lib/i18n';
 
-const schedule = [
-  { day: "Monday", time: "6:30 AM", class: "Sunrise Vinyasa", instructor: "Maya", spots: 8 },
-  { day: "Monday", time: "9:00 AM", class: "Gentle Flow", instructor: "Sara", spots: 12 },
-  { day: "Tuesday", time: "6:30 AM", class: "Ashtanga Primary", instructor: "Ravi", spots: 6 },
-  { day: "Tuesday", time: "9:00 AM", class: "Yin Yoga", instructor: "Maya", spots: 10 },
-  { day: "Wednesday", time: "6:30 AM", class: "Sunrise Vinyasa", instructor: "Sara", spots: 8 },
-  { day: "Wednesday", time: "9:00 AM", class: "Hatha Foundations", instructor: "Ravi", spots: 12 },
-  { day: "Thursday", time: "6:30 AM", class: "Power Flow", instructor: "Maya", spots: 8 },
-  { day: "Thursday", time: "9:00 AM", class: "Restorative", instructor: "Sara", spots: 10 },
-  { day: "Friday", time: "6:30 AM", class: "Sunrise Vinyasa", instructor: "Ravi", spots: 8 },
-  { day: "Friday", time: "9:00 AM", class: "Breath & Movement", instructor: "Maya", spots: 12 },
-];
-
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const times = ["6:30 AM", "9:00 AM"]; // Extraemos los horarios para armar las filas
-
+// ─── Gallery images (kept from original) ─────────────────────────────────────
 const galleryImages = [
-  { src: "/images/yoga-studio-1.jpeg", alt: "Peaceful yoga studio with natural light" },
-  { src: "/images/yoga-studio-2.jpeg", alt: "Morning meditation practice" },
-  { src: "/images/yoga-studio-3.JPG", alt: "Group yoga session at sunset" },
+  { src: '/images/yoga-studio-1.jpeg', alt: 'Peaceful yoga studio with natural light' },
+  { src: '/images/yoga-studio-2.jpeg', alt: 'Morning meditation practice' },
+  { src: '/images/yoga-studio-3.JPG',  alt: 'Group yoga session at sunset' },
 ];
 
+// ─── Animation variants (kept from original) ─────────────────────────────────
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
-
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: "easeOut" },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+};
+
+// ─── Category color system ────────────────────────────────────────────────────
+type CategoryStyle = {
+  bg: string;
+  text: string;
+  accent: string;
+  label: string;
+  border: string;
+};
+
+const CATEGORY_STYLES: Record<string, CategoryStyle> = {
+  'flow-vinyasa': {
+    bg: '#e8f4ec', text: '#1a4a2a', accent: '#4a7c59',
+    label: 'Flow / Vinyasa', border: '#c2dbc8',
+  },
+  'yin-restorative': {
+    bg: '#ede8f5', text: '#3a2060', accent: '#8b6bb8',
+    label: 'Yin / Restorative', border: '#cfc5e8',
+  },
+  'hatha-gentle': {
+    bg: '#dceef8', text: '#0a2a4a', accent: '#6baed6',
+    label: 'Hatha / Gentle', border: '#b5d6ec',
+  },
+  'ashtanga-intense': {
+    bg: '#fde8d8', text: '#5a2010', accent: '#c4622d',
+    label: 'Ashtanga / Intense', border: '#f0c4a8',
+  },
+  'meditation': {
+    bg: '#fdf5e8', text: '#4a3010', accent: '#c4a030',
+    label: 'Meditation', border: '#ecdaaa',
   },
 };
 
+function getCategoryKey(name: string): string {
+  if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement'].includes(name)) return 'flow-vinyasa';
+  if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga'].includes(name)) return 'yin-restorative';
+  if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'hatha-gentle';
+  if (['Ashtanga Primary'].includes(name)) return 'ashtanga-intense';
+  if (['Pranayama & Meditación', 'Meditation'].includes(name)) return 'meditation';
+  return 'flow-vinyasa';
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function getWeekDays(weekOffset: number): Date[] {
+  const today = new Date();
+  const reference = today.getDay() === 0 ? addDays(today, 1) : today;
+  const monday = addDays(startOfWeek(reference, { weekStartsOn: 1 }), weekOffset * 7);
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+}
+
+function formatTimeLabel(hhmm: string): string {
+  const [hStr, mStr] = hhmm.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  const ampm = h < 12 ? 'am' : 'pm';
+  const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m === 0 ? `${hour} ${ampm}` : `${hour}:${mStr} ${ampm}`;
+}
+
+// ─── ClassCard — the colored card inside each calendar cell ──────────────────
+function ClassCard({ clase }: { clase: YogaClass }) {
+  const router = useRouter();
+  const { lang } = useLanguage();
+  const [hovered, setHovered] = useState(false);
+  const catKey = getCategoryKey(clase.name);
+  const cat = CATEGORY_STYLES[catKey];
+  const sold = clase.spotsRemaining === 0;
+  const booked = clase.capacity - clase.spotsRemaining;
+  const fillPct = clase.capacity > 0 ? Math.min(100, (booked / clase.capacity) * 100) : 0;
+  const isFree = clase.priceUsd === 0;
+
+  const h = clase.startsAt.getHours();
+  const m = clase.startsAt.getMinutes();
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  const mStr = m === 0 ? '' : `:${String(m).padStart(2, '0')}`;
+  const timeStr = `${hour12}${mStr} ${ampm}`;
+
+  return (
+    <div
+      onClick={sold ? undefined : () => router.push(`/booking/${clase.id}`)}
+      onMouseEnter={() => !sold && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 8,
+        border: `1px solid ${hovered ? cat.accent + 'aa' : cat.border}`,
+        background: cat.bg,
+        padding: '8px 9px',
+        cursor: sold ? 'default' : 'pointer',
+        opacity: sold ? 0.45 : 1,
+        transition: 'border-color 0.15s ease',
+      }}
+    >
+      {/* Time + duration */}
+      <p style={{ fontSize: 9, color: 'rgba(0,0,0,.45)', marginBottom: 3, fontFamily: 'var(--font-sans)' }}>
+        {timeStr} · {clase.durationMinutes} min
+      </p>
+      {/* Class name */}
+      <p style={{
+        fontFamily: 'var(--font-serif)',
+        fontSize: 13,
+        fontWeight: 600,
+        lineHeight: 1.25,
+        color: cat.text,
+        textDecoration: sold ? 'line-through' : 'none',
+        marginBottom: 2,
+      }}>
+        {clase.name}
+      </p>
+      {/* Instructor + location */}
+      <p style={{
+        fontSize: 10,
+        color: cat.text,
+        opacity: 0.6,
+        marginBottom: 8,
+        fontFamily: 'var(--font-sans)',
+      }}>
+        with {clase.instructor} · {clase.location}
+      </p>
+      {/* Footer row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+        {/* Spot bar + count */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+          <div style={{
+            width: 28, height: 3,
+            background: 'rgba(0,0,0,.12)',
+            borderRadius: 2, overflow: 'hidden', flexShrink: 0,
+          }}>
+            <div style={{ width: `${fillPct}%`, height: '100%', background: cat.accent, borderRadius: 2 }} />
+          </div>
+          <span style={{ fontSize: 9, color: 'rgba(0,0,0,.4)', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)' }}>
+            {booked}/{clase.capacity}
+          </span>
+        </div>
+        {/* Price */}
+        <span style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: isFree ? '#4a7c59' : cat.text,
+          flexShrink: 0,
+          fontFamily: 'var(--font-sans)',
+        }}>
+          {isFree ? 'Free' : `$${clase.priceUsd}`}
+        </span>
+        {/* Book / Full badge */}
+        <span style={{
+          fontSize: 9,
+          padding: sold ? '2px 7px' : '3px 8px',
+          borderRadius: sold ? 6 : 10,
+          background: sold ? '#d4c8e8' : cat.text,
+          color: sold ? '#9a8ab0' : cat.bg,
+          display: 'inline-block',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+          fontFamily: 'var(--font-sans)',
+        }}>
+          {sold ? tr(lang, 'Completa', 'Full') : tr(lang, 'Reservar', 'Book')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── ColorLegend — category swatches below the grid ──────────────────────────
+function ColorLegend() {
+  const { lang } = useLanguage();
+  const CAT_LABELS: Record<string, { es: string; en: string }> = {
+    'Flow / Vinyasa':      { es: 'Flow / Vinyasa',       en: 'Flow / Vinyasa' },
+    'Yin / Restorative':   { es: 'Yin / Restaurativo',   en: 'Yin / Restorative' },
+    'Hatha / Gentle':      { es: 'Hatha / Suave',        en: 'Hatha / Gentle' },
+    'Ashtanga / Intense':  { es: 'Ashtanga / Intenso',   en: 'Ashtanga / Intense' },
+    'Meditation':          { es: 'Meditación',            en: 'Meditation' },
+  };
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+      {Object.values(CATEGORY_STYLES).map((cat) => {
+        const labels = CAT_LABELS[cat.label];
+        return (
+          <div key={cat.label} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: cat.accent }} />
+            <span className="text-[11px] font-sans text-dark/50">
+              {labels ? labels[lang] : cat.label}
+            </span>
+          </div>
+        );
+      })}
+      <div className="flex items-center gap-1.5">
+        <span
+          className="w-2.5 h-2.5 rounded-sm border border-dashed flex-shrink-0"
+          style={{ borderColor: '#9a8ab0' }}
+        />
+        <span className="text-[11px] font-sans text-dark/50">
+          {tr(lang, 'Agotada', 'Sold out')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── WeeklyCalendar — full 7-day grid ────────────────────────────────────────
+function WeeklyCalendar() {
+  const { lang, toggleLang } = useLanguage();
+  const [weekOffset, setWeekOffset] = useState(0);
+  const today = new Date();
+  const DAY_NAMES_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const DAY_NAMES_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const DAY_NAMES = lang === 'es' ? DAY_NAMES_ES : DAY_NAMES_EN;
+
+  const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
+
+  const weekLabel = useMemo(() => {
+    const start = weekDays[0];
+    const end = weekDays[6];
+    if (!start || !end) return '';
+    if (start.getMonth() === end.getMonth()) {
+      return `${format(start, 'MMM d')}–${format(end, 'd, yyyy')}`;
+    }
+    return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
+  }, [weekDays]);
+
+  // Active classes for this week
+  const weekClasses = useMemo(
+    () => MOCK_CLASSES.filter(c => c.isActive && weekDays.some(d => isSameDay(c.startsAt, d))),
+    [weekDays]
+  );
+
+  // Dynamic time slots derived from data
+  const timeSlots = useMemo(() => {
+    const times = new Set(weekClasses.map(c => format(c.startsAt, 'HH:mm')));
+    return Array.from(times).sort();
+  }, [weekClasses]);
+
+  return (
+    <div>
+      {/* Section header */}
+      <div className="text-center mb-10">
+        <span
+          className="block font-sans text-[11px] uppercase tracking-[0.15em] mb-3"
+          style={{ color: '#8D0000' }}
+        >
+          {tr(lang, 'Horario Semanal', 'Weekly Schedule')}
+        </span>
+        <h2 className="font-serif text-[38px] lg:text-[48px] font-light text-dark leading-none">
+          {tr(lang, 'Clases Matutinas', 'Morning Classes')}
+        </h2>
+      </div>
+
+      {/* Week navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setWeekOffset(o => o - 1)}
+            className="w-7 h-7 rounded-full border flex items-center justify-center text-dark/50 hover:bg-[#F2EBDA] transition-colors"
+            style={{ borderColor: '#d4c8b4' }}
+            aria-label="Previous week"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setWeekOffset(o => o + 1)}
+            className="w-7 h-7 rounded-full border flex items-center justify-center text-dark/50 hover:bg-[#F2EBDA] transition-colors"
+            style={{ borderColor: '#d4c8b4' }}
+            aria-label="Next week"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+          <div>
+            <p className="text-sm font-medium font-sans text-dark">{weekLabel}</p>
+            {weekOffset !== 0 && (
+              <button
+                onClick={() => setWeekOffset(0)}
+                className="text-[11px] font-sans hover:underline underline-offset-2"
+                style={{ color: '#8D0000' }}
+              >
+                {tr(lang, 'volver a esta semana', 'back to this week')}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-[11px] italic font-sans hidden md:block" style={{ color: 'rgba(52,0,0,.35)' }}>
+            {tr(lang, 'clic para reservar', 'click to book')}
+          </p>
+          {/* Language toggle */}
+          <button
+            onClick={toggleLang}
+            className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border border-dark/15 hover:border-dark/30 transition-colors"
+            style={{ color: 'rgba(52,0,0,.5)' }}
+          >
+            <span style={{ opacity: lang === 'es' ? 1 : 0.4 }}>ES</span>
+            <span style={{ opacity: 0.3 }}>·</span>
+            <span style={{ opacity: lang === 'en' ? 1 : 0.4 }}>EN</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile swipe hint */}
+      <p className="lg:hidden text-center text-[11px] font-sans text-dark/30 animate-pulse mb-3">
+        {tr(lang, '← Desliza para ver la semana →', '← Swipe to see full week →')}
+      </p>
+
+      {/* Calendar grid */}
+      <div className="overflow-x-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={weekOffset}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div
+              className="min-w-[680px]"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '52px repeat(7, minmax(0, 1fr))',
+                gap: 1,
+                backgroundColor: '#e0d4c0',
+                borderRadius: 12,
+                overflow: 'hidden',
+              }}
+            >
+              {/* ── Header row ── */}
+              {/* Empty time-column corner */}
+              <div style={{ backgroundColor: '#F2EBDA', padding: '10px 8px' }} />
+              {/* Day headers */}
+              {weekDays.map((day, i) => {
+                const isToday = isSameDay(day, today);
+                return (
+                  <div
+                    key={i}
+                    style={{ backgroundColor: '#F2EBDA', padding: '10px 6px', textAlign: 'center' }}
+                  >
+                    <p style={{
+                      fontSize: 10,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: isToday ? '#8d0000' : 'rgba(52,0,0,0.4)',
+                      fontFamily: 'var(--font-sans)',
+                    }}>
+                      {DAY_NAMES[i]}
+                    </p>
+                    <p style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 22,
+                      color: isToday ? '#8d0000' : '#340000',
+                      lineHeight: 1.1,
+                      marginTop: 2,
+                    }}>
+                      {format(day, 'd')}
+                    </p>
+                  </div>
+                );
+              })}
+
+              {/* ── Time slot rows ── */}
+              {timeSlots.length === 0 ? (
+                // No classes this week — show one empty row
+                <>
+                  <div style={{ backgroundColor: '#F2EBDA', paddingTop: 10, paddingRight: 8, textAlign: 'right' }}>
+                    <span style={{ fontSize: 10, color: '#9a7a5a', fontFamily: 'var(--font-sans)' }}>—</span>
+                  </div>
+                  {weekDays.map((_, i) => (
+                    <div key={i} style={{ backgroundColor: '#fffdf7', minHeight: 100, padding: 6 }} />
+                  ))}
+                </>
+              ) : (
+                timeSlots.map((time) => (
+                  <Fragment key={time}>
+                    {/* Time label cell */}
+                    <div style={{
+                      backgroundColor: '#F2EBDA',
+                      paddingTop: 10,
+                      paddingRight: 8,
+                      paddingLeft: 4,
+                      paddingBottom: 6,
+                      textAlign: 'right',
+                    }}>
+                      <span style={{
+                        fontSize: 10,
+                        color: '#9a7a5a',
+                        fontFamily: 'var(--font-sans)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {formatTimeLabel(time)}
+                      </span>
+                    </div>
+                    {/* One cell per day */}
+                    {weekDays.map((day, dayIdx) => {
+                      const cellClasses = weekClasses.filter(c =>
+                        isSameDay(c.startsAt, day) && format(c.startsAt, 'HH:mm') === time
+                      );
+                      return (
+                        <div
+                          key={dayIdx}
+                          style={{ backgroundColor: '#fffdf7', minHeight: 100, padding: 6 }}
+                        >
+                          {cellClasses.map(c => (
+                            <ClassCard key={c.id} clase={c} />
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </Fragment>
+                ))
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Color legend */}
+      <ColorLegend />
+    </div>
+  );
+}
+
+// ─── Main page export ─────────────────────────────────────────────────────────
 export default function YogaPage() {
+  const { lang } = useLanguage();
   const heroRef = useRef(null);
   const contentRef = useRef(null);
-  const scheduleRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
-  const contentInView = useInView(contentRef, { once: true, margin: "-100px" });
-  const scheduleInView = useInView(scheduleRef, { once: true, margin: "-100px" });
+  const contentInView = useInView(contentRef, { once: true, margin: '-100px' });
 
   return (
     <motion.main
@@ -61,18 +460,19 @@ export default function YogaPage() {
       transition={{ duration: 0.5 }}
       className="bg-warm-white"
     >
-      {/* Back Navigation */}
+      {/* ── Back Navigation ─────────────────────────────────────────────────── */}
       <div className="fixed top-6 left-6 z-50">
         <Link
           href="/"
-          className="flex items-center gap-2 text-sm text-dark/70 hover:text-dark transition-colors bg-cream/90 backdrop-blur-sm px-4 py-2 rounded-full"
+          className="flex items-center gap-2 text-sm text-dark/70 hover:text-dark transition-colors
+                     bg-cream/90 backdrop-blur-sm px-4 py-2 rounded-full"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Home
+          {tr(lang, 'Volver al inicio', 'Back to home')}
         </Link>
       </div>
 
-      {/* Hero Section */}
+      {/* ── HERO (kept exactly) ─────────────────────────────────────────────── */}
       <section ref={heroRef} className="relative h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -82,11 +482,10 @@ export default function YogaPage() {
           />
           <div className="absolute inset-0 bg-dark/40" />
         </div>
-
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           className="relative z-10 text-center px-6"
         >
           <span className="text-sm tracking-[0.3em] uppercase text-cream/80 mb-4 block">
@@ -98,73 +497,67 @@ export default function YogaPage() {
         </motion.div>
       </section>
 
-      {/* Content Section - Split Layout */}
+      {/* ── WEEKLY CALENDAR — first section below hero (per client spec) ────── */}
+      <section className="py-20 lg:py-28 bg-[#fffdf7]">
+        <div className="max-w-6xl mx-auto px-6">
+          <WeeklyCalendar />
+        </div>
+      </section>
+
+      {/* ── EDITORIAL CONTENT (kept exactly) ───────────────────────────────── */}
       <section ref={contentRef} className="py-24 lg:py-32 bg-cream">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Text Content */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-6 block">
-                Serenity & Practice
+                Serenity &amp; Practice
               </span>
               <h2 className="font-serif text-4xl md:text-5xl font-light text-dark mb-8 leading-tight">
-                Where breath becomes movement, and movement becomes meditation
+                Donde el aliento se convierte en movimiento, y el movimiento en meditación
               </h2>
               <div className="space-y-6 text-dark/70 leading-relaxed">
                 <p>
-                  At House of Shakti, yoga is not merely exercise—it is a sacred dialogue 
-                  between body, mind, and spirit. Our intimate classes, held in our 
-                  open-air shala overlooking the jungle canopy, create a space where 
-                  transformation unfolds naturally.
+                  En House of Shakti, el yoga no es solo ejercicio —es un diálogo sagrado
+                  entre cuerpo, mente y espíritu. Nuestras clases íntimas, realizadas en
+                  nuestra shala al aire libre con vista al dosel de la selva, crean un espacio
+                  donde la transformación se despliega naturalmente.
                 </p>
                 <p>
-                  Each session is thoughtfully crafted by our resident teachers, who 
-                  bring decades of study and devotion to their practice. From the 
-                  energizing flow of sunrise vinyasa to the deep stillness of evening 
-                  yin, every class invites you to return to yourself.
+                  Cada sesión es cuidadosamente elaborada por nuestros maestros residentes,
+                  quienes traen décadas de estudio y devoción a su práctica.
                 </p>
                 <p className="font-serif text-lg text-dark/60 italic">
-                  "The body is your temple. Keep it pure and clean for the soul to reside in."
+                  &ldquo;El cuerpo es tu templo. Mantenlo puro y limpio para que el alma pueda residir en él.&rdquo;
                 </p>
               </div>
             </motion.div>
 
-            {/* Gallery Grid */}
             <motion.div
               variants={containerVariants}
               initial="hidden"
-              animate={contentInView ? "visible" : "hidden"}
+              animate={contentInView ? 'visible' : 'hidden'}
               className="grid grid-cols-2 gap-4"
             >
               <motion.div variants={itemVariants} className="col-span-2">
                 <div className="aspect-[16/9] overflow-hidden rounded-md">
-                  <img
-                    src={galleryImages[0].src}
-                    alt={galleryImages[0].alt}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
+                  <img src={galleryImages[0].src} alt={galleryImages[0].alt}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 </div>
               </motion.div>
               <motion.div variants={itemVariants}>
                 <div className="aspect-square overflow-hidden rounded-md">
-                  <img
-                    src={galleryImages[1].src}
-                    alt={galleryImages[1].alt}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
+                  <img src={galleryImages[1].src} alt={galleryImages[1].alt}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 </div>
               </motion.div>
               <motion.div variants={itemVariants}>
                 <div className="aspect-square overflow-hidden rounded-md">
-                  <img
-                    src={galleryImages[2].src}
-                    alt={galleryImages[2].alt}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
+                  <img src={galleryImages[2].src} alt={galleryImages[2].alt}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 </div>
               </motion.div>
             </motion.div>
@@ -172,117 +565,19 @@ export default function YogaPage() {
         </div>
       </section>
 
-      {/* Schedule Section - NUEVO CALENDARIO SEMANAL */}
-      <section ref={scheduleRef} className="py-24 lg:py-32 bg-warm-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={scheduleInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center mb-16"
-          >
-            <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
-              Weekly Schedule
-            </span>
-            <h2 className="font-serif text-4xl md:text-5xl font-light text-dark mb-4">
-              Morning Classes
-            </h2>
-            <p className="text-dark/60">
-              All classes are <span className="text-burgundy font-medium">$25 USD</span> per session
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={scheduleInView ? "visible" : "hidden"}
-            className="w-full"
-          >
-            {/* Aviso de scroll para móviles */}
-            <div className="lg:hidden text-center text-xs tracking-wider uppercase text-dark/40 mb-6 animate-pulse">
-              ← Swipe to see full week →
-            </div>
-
-            {/* Contenedor con Scroll Horizontal */}
-            <div className="overflow-x-auto pb-8 hide-scrollbar">
-              <div className="min-w-[1000px] max-w-6xl mx-auto w-full grid grid-cols-[120px_repeat(5,1fr)] gap-4 lg:gap-6">
-                
-                {/* Cabecera: Días de la semana */}
-                <div className="col-span-1"></div> {/* Espacio vacío arriba de los horarios */}
-                {days.map((day) => (
-                  <div key={day} className="text-center font-serif text-2xl text-dark border-b border-dark/10 pb-4">
-                    {day}
-                  </div>
-                ))}
-
-                {/* Filas: Horarios y Clases */}
-                {times.map((time) => (
-                  <React.Fragment key={time}>
-                    
-                    {/* Columna de Horario */}
-                    <div className="col-span-1 flex items-center justify-end pr-6 border-r border-dark/10 mt-4">
-                      <span className="font-medium text-dark/60 flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        {time}
-                      </span>
-                    </div>
-
-                    {/* Columnas de Clases */}
-                    {days.map((day) => {
-                      const classItem = schedule.find(s => s.day === day && s.time === time);
-                      
-                      return (
-                        <div key={`${day}-${time}`} className="mt-4">
-                          {classItem ? (
-                            <motion.div 
-                              variants={itemVariants}
-                              className="bg-cream rounded-2xl p-5 border border-dark/5 hover:border-dark/10 hover:shadow-lg transition-all duration-300 flex flex-col h-full group"
-                            >
-                              <h4 className="font-serif text-lg text-dark mb-1 group-hover:text-burgundy transition-colors">
-                                {classItem.class}
-                              </h4>
-                              <p className="text-sm text-dark/60 mb-6">
-                                with {classItem.instructor}
-                              </p>
-                              
-                              <div className="mt-auto flex items-center justify-between border-t border-dark/5 pt-4">
-                                <span className="text-xs font-medium text-dark/50 flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5" /> {classItem.spots}
-                                </span>
-                                <button className="bg-dark text-cream px-4 py-2 rounded-full text-xs tracking-wide hover:bg-burgundy transition-colors shadow-md">
-                                  Book
-                                </button>
-                              </div>
-                            </motion.div>
-                          ) : (
-                            <div className="h-full rounded-2xl border border-dashed border-dark/10 flex items-center justify-center">
-                              <span className="text-xs text-dark/30 italic">No class</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer CTA */}
+      {/* ── FOOTER CTA (translated to English) ─────────────────────────────── */}
       <section className="py-20 bg-dark text-cream text-center">
         <div className="max-w-2xl mx-auto px-6">
           <h3 className="font-serif text-3xl md:text-4xl mb-6">
-            Ready to begin your practice?
+            {tr(lang, '¿Listo para comenzar tu práctica?', 'Ready to start your practice?')}
           </h3>
           <p className="text-cream/70 mb-8">
-            By booking a night you can add some yoga classes with discount.
+            {tr(lang,
+              'Al reservar una noche puedes agregar clases de yoga con descuento.',
+              'Book your stay and add yoga classes at a discounted rate.')}
           </p>
           <div className="hidden md:flex justify-center items-center cloudbeds-btn-container">
-              <cb-book-now-button 
-                property-code='zE6Wy8' 
-              ></cb-book-now-button>
+            <cb-book-now-button property-code="zE6Wy8" />
           </div>
         </div>
       </section>
