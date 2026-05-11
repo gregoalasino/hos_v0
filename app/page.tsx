@@ -5,7 +5,6 @@ import { Pillars } from "@/components/landing/pillars";
 import { Gallery } from "@/components/landing/gallery";
 import { Testimonials } from "@/components/landing/testimonials";
 import { Footer } from "@/components/landing/footer";
-import { HostYourRetreat } from "@/components/landing/HostYourRetreat";
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
       <Hero />
       <Introduction />
       <Pillars />
-      <HostYourRetreat />
       <Gallery />
       <Testimonials />
       <Footer />

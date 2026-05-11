@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, CalendarDays, BookOpen, Users, Tag, Menu, LogOut, Calendar,
+  LayoutDashboard, CalendarDays, BookOpen, Users, Tag, Menu, LogOut, Calendar, Ticket,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     { href: '/admin/clases',     label: tr(lang, 'Clases',      'Classes'),    icon: BookOpen,        exact: false },
     { href: '/admin/reservas',   label: tr(lang, 'Reservas',    'Bookings'),   icon: Users,           exact: false },
     { href: '/admin/upsells',    label: tr(lang, 'Upsells',     'Upsells'),    icon: Tag,             exact: false },
+    { href: '/admin/refers',     label: tr(lang, 'Códigos',     'Refer Codes'), icon: Ticket,          exact: false },
   ];
 
   return (

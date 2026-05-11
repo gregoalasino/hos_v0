@@ -10,11 +10,11 @@ export function Hero() {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src="/images/hero-yoga.jpg"
+          src="/images/yoga/NE8A7702%201.webp"
           alt="Peaceful yoga practice at House of Shakti"
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/40 to-cream" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cream/55 via-cream/35 to-cream" />
       </div>
 
       {/* Content */}

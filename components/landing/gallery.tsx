@@ -6,43 +6,43 @@ import { useRef } from "react";
 
 const images = [
   {
-    src: "/images/gallery-meditation.png",
-    alt: "Morning meditation session",
+    src: "/images/sanctuary/271A0689_websize%201.webp",
+    alt: "House of Shakti sanctuary",
     span: "col-span-2 row-span-2",
   },
   {
-    src: "/images/gallery-garden.jpg",
-    alt: "Peaceful garden walkway",
+    src: "/images/yoga/IMG_8420%201.webp",
+    alt: "Yoga class at House of Shakti",
     span: "col-span-1 row-span-1",
   },
   {
-    src: "/images/gallery-dining.jpg",
-    alt: "Mindful dining experience",
+    src: "/images/contrast_therapy/IMG_7340%201.webp",
+    alt: "Contrast therapy experience",
     span: "col-span-1 row-span-1",
   },
   {
-    src: "/images/gallery-pool.jpg",
-    alt: "Infinity pool at sunset",
+    src: "/images/sanctuary/271A0856_websize%201.webp",
+    alt: "Sanctuary outdoor space",
     span: "col-span-1 row-span-2",
   },
   {
-    src: "/images/gallery-spa.jpg",
-    alt: "Spa treatment room",
+    src: "/images/yoga/IMG_5608%201.webp",
+    alt: "Morning yoga flow",
     span: "col-span-1 row-span-1",
   },
   {
-    src: "/images/gallery-yoga-outdoor.jpg",
-    alt: "Outdoor yoga platform",
+    src: "/images/contrast_therapy/IMG_7067%201.webp",
+    alt: "Cold plunge therapy",
     span: "col-span-1 row-span-1",
   },
   {
-    src: "/images/gallery-beach.jpg",
-    alt: "Outdoor yoga platform",
+    src: "/images/yoga/IMG_8664%201.webp",
+    alt: "Yoga practice session",
     span: "col-span-1 row-span-1",
   },
   {
-    src: "/images/sauna.jpg",
-    alt: "Outdoor yoga platform",
+    src: "/images/sanctuary/271A0719_websize%201.webp",
+    alt: "Sanctuary garden",
     span: "col-span-1 row-span-1",
   },
 ];

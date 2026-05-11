@@ -13,9 +13,9 @@ import { tr } from '@/lib/i18n';
 
 // ─── Gallery images (kept from original) ─────────────────────────────────────
 const galleryImages = [
-  { src: '/images/yoga-studio-1.jpeg', alt: 'Peaceful yoga studio with natural light' },
-  { src: '/images/yoga-studio-2.jpeg', alt: 'Morning meditation practice' },
-  { src: '/images/yoga-studio-3.JPG',  alt: 'Group yoga session at sunset' },
+  { src: '/images/yoga/IMG_8420%201.webp',   alt: 'Yoga class at House of Shakti' },
+  { src: '/images/yoga/IMG_7491%201.webp',   alt: 'Morning yoga flow' },
+  { src: '/images/yoga/IMG_7526%201.webp',   alt: 'Group yoga session at sunset' },
 ];
 
 // ─── Animation variants (kept from original) ─────────────────────────────────
@@ -228,7 +228,7 @@ function ColorLegend() {
 
 // ─── WeeklyCalendar — full 7-day grid ────────────────────────────────────────
 function WeeklyCalendar() {
-  const { lang, toggleLang } = useLanguage();
+  const { lang } = useLanguage();
   const [weekOffset, setWeekOffset] = useState(0);
   const today = new Date();
   const DAY_NAMES_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -306,21 +306,9 @@ function WeeklyCalendar() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <p className="text-[11px] italic font-sans hidden md:block" style={{ color: 'rgba(52,0,0,.35)' }}>
-            {tr(lang, 'clic para reservar', 'click to book')}
-          </p>
-          {/* Language toggle */}
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border border-dark/15 hover:border-dark/30 transition-colors"
-            style={{ color: 'rgba(52,0,0,.5)' }}
-          >
-            <span style={{ opacity: lang === 'es' ? 1 : 0.4 }}>ES</span>
-            <span style={{ opacity: 0.3 }}>·</span>
-            <span style={{ opacity: lang === 'en' ? 1 : 0.4 }}>EN</span>
-          </button>
-        </div>
+        <p className="text-[11px] italic font-sans hidden md:block" style={{ color: 'rgba(52,0,0,.35)' }}>
+          {tr(lang, 'clic para reservar', 'click to book')}
+        </p>
       </div>
 
       {/* Mobile swipe hint */}
@@ -476,8 +464,8 @@ export default function YogaPage() {
       <section ref={heroRef} className="relative h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/yoga-hero.jpeg"
-            alt="Yoga studio atmosphere"
+            src="/images/yoga/IMG_8693%201.webp"
+            alt="Yoga practice at House of Shakti"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-dark/40" />

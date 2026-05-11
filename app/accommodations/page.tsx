@@ -16,9 +16,9 @@ const rooms = [
     description:
       "A sanctuary of stillness and light. The Soul Suite features floor-to-ceiling windows that frame the jungle canopy, a handcrafted king bed with organic linens, and a private terrace for morning meditation. The en-suite bathroom includes a rainfall shower surrounded by tropical plants.",
     images: [
-      "/images/room-soul-1.jpg",
-      "/images/room-soul-2.jpg",
-      "/images/room-soul-3.jpg",
+      "/images/sanctuary/271A0766_websize%201.webp",
+      "/images/sanctuary/271A0778_websize%201.webp",
+      "/images/sanctuary/271A0785_websize%201.webp",
     ],
   },
   {
@@ -30,9 +30,9 @@ const rooms = [
     description:
       "Where ocean whispers meet tropical breeze. The Sea Villa offers panoramic views of the coastline, a spacious living area with artisanal furnishings, and a private plunge pool. Wake to the rhythm of waves and fall asleep under a canopy of stars from your outdoor daybed.",
     images: [
-      "/images/room-sea-1.jpg",
-      "/images/room-sea-2.jpg",
-      "/images/room-sea-3.jpg",
+      "/images/sanctuary/271A0800_websize%201.webp",
+      "/images/sanctuary/271A0822_websize%201.webp",
+      "/images/sanctuary/271A0828_websize%201.webp",
     ],
   },
   {
@@ -44,9 +44,9 @@ const rooms = [
     description:
       "The ultimate expression of barefoot luxury. This two-bedroom residence features a full kitchen, expansive indoor-outdoor living spaces, and direct beach access. Perfect for families or groups seeking privacy and space while remaining connected to the sanctuary community.",
     images: [
-      "/images/room-beach-1.jpg",
-      "/images/room-soul-3.jpg",
-      "/images/room-sea-2.jpg",
+      "/images/sanctuary/271A0840_websize%201.webp",
+      "/images/sanctuary/271A0851_websize%201.webp",
+      "/images/sanctuary/271A0856_websize%201.webp",
     ],
   },
 ];
@@ -143,7 +143,7 @@ export default function AccommodationsPage() {
       <section ref={heroRef} className="relative h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/accommodation-hero.jpg"
+            src="/images/sanctuary/271A0642_websize%201.webp"
             alt="House of Shakti sanctuary overview"
             className="w-full h-full object-cover"
           />

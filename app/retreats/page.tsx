@@ -40,7 +40,7 @@ export default function RetreatsPage() {
 
       <section ref={heroRef} className="relative h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/retreat-hero.jpg" alt="Group meditation at sunrise" className="w-full h-full object-cover" />
+          <img src="/images/yoga/WhatsApp%20Image%202026-01-25%20at%204.06.11%20PM%201.webp" alt="Group yoga at House of Shakti" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-dark/40" />
         </div>
         <motion.div
@@ -136,16 +136,64 @@ export default function RetreatsPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-dark text-cream text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <h3 className="font-serif text-3xl md:text-4xl mb-6">Want to make your own Retreat?</h3>
-          <p className="text-cream/70 mb-8">Begin to organice your own retreat with us.</p>
-          <Link
-            href="/#hostyourretreat"
-            className="inline-block bg-burgundy text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-burgundy-light transition-colors"
-          >
-            Host your retreat
-          </Link>
+      {/* Host Your Retreat */}
+      <section className="py-24 lg:py-32 bg-cream">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* Photo */}
+            <div className="relative overflow-hidden rounded-md aspect-[4/3]">
+              <img
+                src="/images/sanctuary/271A0873_websize%201.webp"
+                alt="Host your retreat at House of Shakti"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark/30 to-transparent" />
+            </div>
+
+            {/* Text */}
+            <div>
+              <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
+                For Facilitators & Teachers
+              </span>
+              <h3 className="font-serif text-4xl md:text-5xl font-light text-dark mb-6 leading-tight">
+                Host Your Retreat
+              </h3>
+              <p className="text-dark/70 leading-relaxed mb-6">
+                Craft a transformational journey for your community at one of Costa Rica&apos;s most beautiful sanctuaries. We provide the space, support, and experience — you bring the vision.
+              </p>
+
+              <ul className="space-y-3 mb-10">
+                {[
+                  "Exclusive use of yoga shala & meditation spaces",
+                  "Fully catered organic meals tailored to your group",
+                  "Boutique accommodation for up to 20 guests",
+                  "Dedicated retreat coordinator from arrival to departure",
+                  "Contrast therapy — sauna, cold plunge & breathwork",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-dark/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-burgundy mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="https://forms.gle/YOUR_GOOGLE_FORM_ID"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-dark text-cream px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-burgundy transition-colors duration-300"
+              >
+                Apply to host
+                <ArrowRight className="w-4 h-4" />
+              </a>
+
+              <p className="text-xs text-dark/40 mt-4">
+                We respond to all inquiries within 48 hours.
+              </p>
+            </div>
+
+          </div>
         </div>
       </section>
     </motion.main>

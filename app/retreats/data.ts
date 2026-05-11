@@ -46,8 +46,8 @@ export const retreats: Retreat[] = [
       "Sacred ceremony materials",
       "Airport transfers included",
     ],
-    image: "/images/retreat-shakti.jpg",
-    heroImage: "/images/retreat-hero.jpg",
+    image: "/images/yoga/NE8A7854%201.webp",
+    heroImage: "/images/yoga/IMG_8420%201.webp",
     dates: ["Mar 15-22", "May 10-17", "Jul 5-12"],
     itinerary: [
       {
@@ -154,8 +154,8 @@ export const retreats: Retreat[] = [
       "Journaling workbook",
       "One private guidance session",
     ],
-    image: "/images/retreat-within.jpg",
-    heroImage: "/images/retreat-hero.jpg",
+    image: "/images/sanctuary/271A0873_websize%201.webp",
+    heroImage: "/images/sanctuary/271A0879_websize%201.webp",
     dates: ["Apr 1-6", "Jun 12-17", "Aug 20-25"],
     itinerary: [
       {
@@ -243,8 +243,8 @@ export const retreats: Retreat[] = [
       "All yoga sessions",
       "Beach bonfire evening with live music",
     ],
-    image: "/images/retreat-puravida.jpg",
-    heroImage: "/images/retreat-hero.jpg",
+    image: "/images/yoga/WhatsApp%20Image%202026-01-25%20at%204.06.11%20PM%201.webp",
+    heroImage: "/images/yoga/IMG_8664%201.webp",
     dates: ["Mar 28-31", "Apr 18-21", "May 23-26"],
     itinerary: [
       {

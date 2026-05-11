@@ -46,3 +46,21 @@ export type Upsell = {
   priceUsd: number;
   isActive: boolean;
 };
+
+export type ReferralCode = {
+  id: string;
+  code: string;
+  partnerName: string;
+  description: string;
+  benefitType: 'percentage' | 'fixed' | 'free_upsell';
+  discountPercent?: number;   // used when benefitType === 'percentage'
+  discountFixed?: number;     // used when benefitType === 'fixed'
+  freeUpsellId?: string;      // used when benefitType === 'free_upsell'
+  isActive: boolean;
+  usageLimit?: number;        // undefined = unlimited
+  usageCount: number;
+  validFrom?: Date;
+  validUntil?: Date;
+  minPurchaseUsd: number;
+  createdAt: Date;
+};

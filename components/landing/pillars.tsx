@@ -12,7 +12,7 @@ const pillars = [
     subtitle: "Serenity & Practice",
     description:
       "From sunrise flows to restorative evening sessions, our expert instructors guide you through practices that honor tradition while embracing modern understanding of the body.",
-    image: "/images/yoga-class.jpeg",
+    image: "/images/yoga/NE8A7854%201.webp",
     link: "/yoga",
   },
   {
@@ -20,7 +20,7 @@ const pillars = [
     subtitle: "Comfort & Design",
     description:
       "Each suite is thoughtfully designed to be your personal sanctuary—where minimalist aesthetics meet supreme comfort, and every detail invites rest and reflection.",
-    image: "/images/room-sea-1.jpg",
+    image: "/images/sanctuary/271A0822_websize%201.webp",
     link: "/accommodations",
   },
   {
@@ -28,7 +28,7 @@ const pillars = [
     subtitle: "Community & Experience",
     description:
       "Immersive multi-day journeys that weave together practice, community, and inner exploration. Leave transformed, carrying the essence of Shakti within you.",
-    image: "/images/retreat-meditation.jpeg",
+    image: "/images/sanctuary/271A0851_websize%201.webp",
     link: "/retreats",
   },
 ];

@@ -10,9 +10,10 @@ import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, Clock, MapPin, Users, Check,
-  CreditCard, Calendar,
+  CreditCard, Calendar, Tag, CheckCircle, XCircle,
 } from 'lucide-react';
-import { MOCK_UPSELLS } from '@/lib/mock-data';
+import { MOCK_UPSELLS, MOCK_REFERRAL_CODES } from '@/lib/mock-data';
+import type { ReferralCode } from '@/types';
 import { downloadICS } from '@/lib/ics';
 import BookingStep from '@/components/booking/BookingStep';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,22 @@ import {
 } from '@/components/ui/form';
 import { useLanguage } from '@/contexts/language-context';
 import { tr } from '@/lib/i18n';
+
+// ── Class photo mapping ────────────────────────────────────────────────────────
+const CLASS_PHOTOS: Record<string, string> = {
+  'Sunrise Vinyasa':        '/images/yoga/NE8A7702%201.webp',
+  'Power Flow':             '/images/yoga/IMG_8420%201.webp',
+  'Yin Yoga':               '/images/yoga/IMG_7491%201.webp',
+  'Restorative Yoga':       '/images/yoga/IMG_7526%201.webp',
+  'Pranayama & Meditación': '/images/sanctuary/271A0873_websize%201.webp',
+  'Breath & Movement':      '/images/yoga/IMG_8664%201.webp',
+  'Gentle Flow':            '/images/yoga/IMG_7538%201.webp',
+  'Hatha Foundations':      '/images/yoga/IMG_7539%201.webp',
+  'Ashtanga Primary':       '/images/yoga/NE8A7854%201.webp',
+};
+function getClassPhoto(name: string): string {
+  return CLASS_PHOTOS[name] ?? '/images/yoga/IMG_8693%201.webp';
+}
 
 type Props = {
   classId: string;
@@ -62,6 +79,39 @@ function generateRef(): string {
   return `HOS-${date}-${random}`;
 }
 
+/** Validate a code string against the mock referral codes list. */
+function validateReferralCode(
+  codeStr: string,
+  subtotal: number,
+): { code: ReferralCode; error: null } | { code: null; error: string } {
+  const upper = codeStr.trim().toUpperCase();
+  const found = MOCK_REFERRAL_CODES.find(c => c.code === upper);
+  if (!found) return { code: null, error: 'invalid' };
+  if (!found.isActive) return { code: null, error: 'inactive' };
+  const now = new Date();
+  if (found.validFrom && now < found.validFrom) return { code: null, error: 'not_started' };
+  if (found.validUntil && now > found.validUntil) return { code: null, error: 'expired' };
+  if (found.usageLimit !== undefined && found.usageCount >= found.usageLimit)
+    return { code: null, error: 'limit_reached' };
+  if (subtotal < found.minPurchaseUsd) return { code: null, error: 'min_purchase' };
+  return { code: found, error: null };
+}
+
+/** Returns the discount amount in USD given an applied code and subtotal. */
+function computeDiscount(code: ReferralCode, subtotal: number): number {
+  if (code.benefitType === 'percentage') {
+    return parseFloat(((subtotal * (code.discountPercent! / 100))).toFixed(2));
+  }
+  if (code.benefitType === 'fixed') {
+    return Math.min(code.discountFixed!, subtotal);
+  }
+  if (code.benefitType === 'free_upsell') {
+    const upsell = MOCK_UPSELLS.find(u => u.id === code.freeUpsellId);
+    return upsell ? Math.min(upsell.priceUsd, subtotal) : 0;
+  }
+  return 0;
+}
+
 export default function BookingFlow({
   classId, className, instructor, startsAt,
   durationMinutes, capacity, spotsRemaining,
@@ -73,6 +123,9 @@ export default function BookingFlow({
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'room'>('card');
   const [bookingRef, setBookingRef] = useState('');
+  const [appliedCode, setAppliedCode] = useState<ReferralCode | null>(null);
+  const [codeStatus, setCodeStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [codeErrorKey, setCodeErrorKey] = useState('');
 
   const classDate = new Date(startsAt);
   const isFree = priceUsd === 0;
@@ -85,8 +138,38 @@ export default function BookingFlow({
   );
 
   const subtotalUpsells = selectedUpsellsList.reduce((acc, u) => acc + u.priceUsd, 0);
-  const total = priceUsd + subtotalUpsells;
+  const subtotal = priceUsd + subtotalUpsells;
+  const discountAmount = appliedCode ? computeDiscount(appliedCode, subtotal) : 0;
+  const total = Math.max(0, subtotal - discountAmount);
   const isTotalFree = total === 0;
+
+  function handleApplyCode() {
+    const codeStr = form.getValues('referralCode') ?? '';
+    if (!codeStr.trim()) return;
+    const result = validateReferralCode(codeStr, subtotal);
+    if (result.code) {
+      setAppliedCode(result.code);
+      setCodeStatus('success');
+      setCodeErrorKey('');
+    } else {
+      setAppliedCode(null);
+      setCodeStatus('error');
+      setCodeErrorKey(result.error);
+    }
+  }
+
+  function codeErrorMsg(key: string): string {
+    const msgs: Record<string, [string, string]> = {
+      invalid:       ['Código no encontrado.', 'Code not found.'],
+      inactive:      ['Este código no está activo.', 'This code is not active.'],
+      expired:       ['Este código ya venció.', 'This code has expired.'],
+      not_started:   ['Este código aún no está vigente.', 'This code is not valid yet.'],
+      limit_reached: ['Este código alcanzó su límite de usos.', 'This code has reached its usage limit.'],
+      min_purchase:  [`Compra mínima requerida: $${appliedCode?.minPurchaseUsd ?? ''} USD.`,
+                      `Minimum purchase required: $${appliedCode?.minPurchaseUsd ?? ''} USD.`],
+    };
+    return tr(lang, msgs[key]?.[0] ?? 'Código inválido.', msgs[key]?.[1] ?? 'Invalid code.');
+  }
 
   function toggleUpsell(id: string) {
     setSelectedUpsellIds(prev => {
@@ -171,13 +254,13 @@ export default function BookingFlow({
             <motion.div key="step1" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
               {/* Hero image with class name overlay */}
               <div
-                className="relative h-48 rounded-2xl overflow-hidden mb-5"
+                className="relative h-56 rounded-2xl overflow-hidden mb-5"
                 style={{ background: color ? `${color}22` : '#F2EBDA' }}
               >
                 <img
-                  src="/images/yoga-hero.jpeg"
+                  src={getClassPhoto(className)}
                   alt={className}
-                  className="w-full h-full object-cover opacity-70"
+                  className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark/65 to-transparent" />
                 <div className="absolute bottom-4 left-4">
@@ -253,6 +336,7 @@ export default function BookingFlow({
           {/* ── STEP 2: Add-ons ── */}
           {step === 2 && (
             <motion.div key="step2" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
+              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
               <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Extras', 'Add extras')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Opcional — mejora tu experiencia en clase.', 'Optional — enhance your class experience.')}</p>
 
@@ -296,9 +380,9 @@ export default function BookingFlow({
                   </div>
                 ))}
                 <div className="flex justify-between font-semibold text-dark pt-2 border-t border-dark/10">
-                  <span>Total</span>
-                  <span className={isTotalFree ? 'text-emerald-600' : ''}>
-                    {isTotalFree ? tr(lang, 'Gratis', 'Free') : `$${total} USD`}
+                  <span>Subtotal</span>
+                  <span className={subtotal === 0 ? 'text-emerald-600' : ''}>
+                    {subtotal === 0 ? tr(lang, 'Gratis', 'Free') : `$${subtotal} USD`}
                   </span>
                 </div>
               </div>
@@ -317,6 +401,7 @@ export default function BookingFlow({
           {/* ── STEP 3: Your details ── */}
           {step === 3 && (
             <motion.div key="step3" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
+              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
               <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Tus datos', 'Your details')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Los usaremos para confirmar tu reserva.', 'We\'ll use this to confirm your booking.')}</p>
 
@@ -358,18 +443,67 @@ export default function BookingFlow({
                     </FormItem>
                   )} />
 
-                  {/* Referral code — free text, no validation, no API call */}
-                  {/* TODO: referralCode will be visible in admin /reservas as a filterable column (next sprint) */}
+                  {/* Referral code with Apply validation */}
                   <FormField control={form.control} name="referralCode" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-dark/50" />
                         {tr(lang, 'Código de referido', 'Referral code')}{' '}
                         <span className="text-dark/40 font-normal">({tr(lang, 'opcional', 'optional')})</span>
                       </FormLabel>
-                      <FormControl>
-                        <Input placeholder={tr(lang, 'ej. SURF-CAMP, HOTEL-PARTNER...', 'e.g. SURF-CAMP, HOTEL-PARTNER...')} {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            placeholder={tr(lang, 'ej. SURF-CAMP', 'e.g. SURF-CAMP')}
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              // Reset state when user types again
+                              setCodeStatus('idle');
+                              setAppliedCode(null);
+                            }}
+                            className="uppercase font-mono"
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleApplyCode}
+                          disabled={!field.value?.trim()}
+                          className="flex-shrink-0 px-4"
+                        >
+                          {tr(lang, 'Aplicar', 'Apply')}
+                        </Button>
+                      </div>
                       <FormMessage />
+                      {/* Success feedback */}
+                      {codeStatus === 'success' && appliedCode && (
+                        <div className="flex items-start gap-2 mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                          <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-semibold text-emerald-800">
+                              {appliedCode.partnerName} — {
+                                appliedCode.benefitType === 'percentage'
+                                  ? `${appliedCode.discountPercent}% ${tr(lang, 'de descuento', 'off')}`
+                                  : appliedCode.benefitType === 'fixed'
+                                    ? `$${appliedCode.discountFixed} ${tr(lang, 'de descuento', 'off')}`
+                                    : (() => {
+                                        const u = MOCK_UPSELLS.find(u => u.id === appliedCode.freeUpsellId);
+                                        return `${tr(lang, 'Regalo:', 'Gift:')} ${u?.name ?? 'Upsell'}`;
+                                      })()
+                              }
+                            </p>
+                            <p className="text-[11px] text-emerald-600 mt-0.5">{appliedCode.description}</p>
+                          </div>
+                        </div>
+                      )}
+                      {/* Error feedback */}
+                      {codeStatus === 'error' && (
+                        <div className="flex items-center gap-2 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                          <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                          <p className="text-xs text-red-700">{codeErrorMsg(codeErrorKey)}</p>
+                        </div>
+                      )}
                     </FormItem>
                   )} />
 
@@ -429,6 +563,7 @@ export default function BookingFlow({
           {/* ── STEP 4: Confirm & pay ── */}
           {step === 4 && personalData && (
             <motion.div key="step4" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
+              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
               <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Confirmar y pagar', 'Confirm & pay')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Revisá tu reserva antes de confirmar.', 'Review your booking before confirming.')}</p>
 
@@ -449,6 +584,21 @@ export default function BookingFlow({
                       label={tr(lang, 'Extras', 'Extras')}
                       value={selectedUpsellsList.map(u => u.name).join(', ')}
                     />
+                  )}
+                  {appliedCode && discountAmount > 0 && (
+                    <>
+                      <div className="flex justify-between text-sm py-1 border-b border-dark/5">
+                        <span className="text-dark/50">{tr(lang, 'Subtotal', 'Subtotal')}</span>
+                        <span className="text-dark">${subtotal} USD</span>
+                      </div>
+                      <div className="flex justify-between text-sm py-1 border-b border-dark/5">
+                        <span className="text-emerald-700 font-medium flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5" />
+                          {appliedCode.code}
+                        </span>
+                        <span className="text-emerald-700 font-medium">-${discountAmount} USD</span>
+                      </div>
+                    </>
                   )}
                   <div className="flex justify-between pt-2 border-t border-dark/10 font-semibold text-sm">
                     <span className="text-dark">Total</span>
@@ -586,12 +736,21 @@ export default function BookingFlow({
                   {personalData && (
                     <ConfirmRow label={tr(lang, 'Nombre', 'Name')} value={`${personalData.firstName} ${personalData.lastName}`} />
                   )}
-                  {/* Referral code — show only if provided */}
-                  {personalData?.referralCode && (
+                  {/* Applied referral code + discount */}
+                  {appliedCode && discountAmount > 0 && (
+                    <>
+                      <ConfirmRow label={tr(lang, 'Subtotal', 'Subtotal')} value={`$${subtotal} USD`} />
+                      <ConfirmRow
+                        label={`${tr(lang, 'Código', 'Code')} ${appliedCode.code}`}
+                        value={`-$${discountAmount} USD`}
+                        highlight
+                      />
+                    </>
+                  )}
+                  {!appliedCode && personalData?.referralCode && (
                     <ConfirmRow
                       label={tr(lang, 'Código de referido', 'Referred by')}
                       value={personalData.referralCode}
-                      highlight
                     />
                   )}
                   <div className="flex justify-between pt-2 border-t border-dark/10 font-semibold text-sm">
@@ -627,6 +786,36 @@ export default function BookingFlow({
           )}
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
+
+// ── Mini class reminder shown at the top of steps 2-4 ──────────────────────
+function ClassReminder({
+  className, instructor, color, classDate, lang,
+}: {
+  className: string; instructor: string; color?: string;
+  classDate: Date; lang: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 bg-cream rounded-2xl p-3 mb-6 overflow-hidden">
+      <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+        <img
+          src={getClassPhoto(className)}
+          alt={className}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-widest text-dark/40 mb-0.5">{instructor}</p>
+        <p className="font-serif text-sm font-light text-dark truncate">{className}</p>
+        <p className="text-[11px] text-dark/50 mt-0.5">
+          {format(classDate, lang === 'es' ? "EEE d MMM · h:mm a" : "EEE MMM d · h:mm a")}
+        </p>
+      </div>
+      {color && (
+        <div className="w-1 h-10 rounded-full flex-shrink-0" style={{ background: color }} />
+      )}
     </div>
   );
 }
