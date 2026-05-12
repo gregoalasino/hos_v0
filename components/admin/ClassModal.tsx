@@ -97,6 +97,7 @@ export default function ClassModal({ open, onOpenChange, onSave, classData }: Pr
     const startsAt = new Date(values.startsAt);
     onSave({
       id: classData?.id ?? `cls-${Date.now()}`,
+      slug: classData?.slug ?? values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       name: values.name,
       description: values.description ?? '',
       instructor: values.instructor,

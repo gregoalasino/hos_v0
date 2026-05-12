@@ -19,8 +19,6 @@ import {
   getDailyBookingsData,
   getWeeklyRevenueData,
   getClassDistributionData,
-  ADMIN_SAGE,
-  ADMIN_TERRA,
 } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 

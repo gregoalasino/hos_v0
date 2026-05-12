@@ -1,0 +1,54 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createServiceClient } from '@/lib/supabase/server';
+
+export async function createUpsell(data: {
+  name: string;
+  description: string;
+  priceUsd: number;
+  isActive: boolean;
+}) {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from('upsells').insert({
+    name: data.name,
+    description: data.description,
+    price_usd: data.priceUsd,
+    is_active: data.isActive,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/upsells');
+}
+
+export async function updateUpsell(
+  id: string,
+  data: { name: string; description: string; priceUsd: number; isActive: boolean },
+) {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from('upsells').update({
+    name: data.name,
+    description: data.description,
+    price_usd: data.priceUsd,
+    is_active: data.isActive,
+  }).eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/upsells');
+}
+
+export async function toggleUpsellActive(id: string) {
+  const supabase = await createServiceClient();
+  const { data: current, error: fetchError } = await supabase
+    .from('upsells').select('is_active').eq('id', id).single();
+  if (fetchError) throw new Error(fetchError.message);
+  const { error } = await supabase.from('upsells')
+    .update({ is_active: !current.is_active }).eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/upsells');
+}
+
+export async function deleteUpsell(id: string) {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from('upsells').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/upsells');
+}
