@@ -15,7 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { toggleClassActive, deleteClass, generateWeekClasses } from '@/app/actions/classes';
+import { toggleClassActive, deleteClass, generateWeekClasses, createManualClass, updateClassDetails } from '@/app/actions/classes';
 
 const TERRA = '#c4622d';
 
@@ -45,6 +45,39 @@ export default function ClasesClient({ initialClasses }: { initialClasses: Seria
     startTransition(async () => {
       await deleteClass(id);
       setDeletingId(null);
+      router.refresh();
+    });
+  }
+
+  function handleSaveClass(data: Omit<YogaClass, 'spotsRemaining'> & { spotsRemaining?: number }) {
+    startTransition(async () => {
+      if (editingClass) {
+        await updateClassDetails(data.id, {
+          name: data.name,
+          slug: data.slug,
+          description: data.description || null,
+          starts_at: data.startsAt.toISOString(),
+          duration_minutes: data.durationMinutes,
+          capacity: data.capacity,
+          price_dropin_usd: data.priceUsd,
+          location: data.location,
+          is_active: data.isActive,
+        });
+      } else {
+        await createManualClass({
+          name: data.name,
+          slug: data.slug,
+          description: data.description || null,
+          starts_at: data.startsAt.toISOString(),
+          duration_minutes: data.durationMinutes,
+          capacity: data.capacity,
+          spots_remaining: data.capacity,
+          price_dropin_usd: data.priceUsd,
+          location: data.location,
+          is_active: data.isActive,
+        });
+      }
+      setModalOpen(false);
       router.refresh();
     });
   }
@@ -198,7 +231,7 @@ export default function ClasesClient({ initialClasses }: { initialClasses: Seria
       <ClassModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onSave={() => { setModalOpen(false); router.refresh(); }}
+        onSave={handleSaveClass}
         classData={editingClass}
       />
 

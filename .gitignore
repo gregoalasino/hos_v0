@@ -8,3 +8,7 @@ node_modules/
 .next/
 .env*.local
 .DS_Store
+# Claude Code internals
+.claude/worktrees/
+.env.local
+.claire/
