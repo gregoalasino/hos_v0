@@ -25,7 +25,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-sm tracking-[0.3em] uppercase text-dark/70 mb-6"
         >
-          A Sanctuary for the Soul
+          A Sanctuary for the Heart
         </motion.p>
 
         <motion.h1
