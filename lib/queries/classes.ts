@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import type { DbClass, YogaClass } from '@/types';
 import { dbClassToYogaClass } from '@/types';
 
@@ -97,7 +97,8 @@ export async function getClassTemplates() {
 
 export async function getAllClasses(): Promise<YogaClass[]> {
   try {
-    const supabase = await createClient();
+    // Usar serviceClient para saltear RLS y ver clases inactivas también en el admin
+    const supabase = await createServiceClient();
     const { data, error } = await supabase
       .from('classes')
       .select(CLASS_WITH_INSTRUCTOR)

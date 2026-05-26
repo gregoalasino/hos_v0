@@ -104,6 +104,41 @@ export default function AdminDashboard() {
   const weeklyData = useMemo(() => getWeeklyRevenueData(), []);
   const pieData = useMemo(() => getClassDistributionData(), []);
 
+  // Clases más vendidas: agrupa por nombre de clase, cuenta reservas y suma ingresos
+  const clasesMasVendidas = useMemo(() => {
+    const map = new Map<string, {
+      name: string;
+      instructor: string;
+      color: string;
+      bookings: number;
+      personas: number;
+      ingresos: number;
+    }>();
+
+    MOCK_BOOKINGS.forEach((b) => {
+      const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
+      if (!clase) return;
+      const key = clase.name;
+      const prev = map.get(key) ?? {
+        name: clase.name,
+        instructor: clase.instructor,
+        color: clase.color ?? '#94a3b8',
+        bookings: 0,
+        personas: 0,
+        ingresos: 0,
+      };
+      map.set(key, {
+        ...prev,
+        bookings: prev.bookings + 1,
+        personas: prev.personas + b.persons,
+        ingresos: prev.ingresos + (b.paymentStatus !== 'free' ? clase.priceUsd * b.persons : 0),
+      });
+    });
+
+    return Array.from(map.values())
+      .sort((a, b) => b.bookings - a.bookings);
+  }, []);
+
   return (
     <div className="p-5 lg:p-7 max-w-7xl mx-auto space-y-6">
       <div>
@@ -236,6 +271,82 @@ export default function AdminDashboard() {
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* ── Clases más vendidas ── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-slate-700">
+            {tr(lang, 'Clases más vendidas', 'Top selling classes')}
+          </h2>
+          <Link href="/admin/clases" className="text-xs hover:underline underline-offset-4" style={{ color: SAGE }}>
+            {tr(lang, 'Ver todas →', 'View all →')}
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  {tr(lang, 'Clase', 'Class')}
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden md:table-cell">
+                  {tr(lang, 'Instructor', 'Instructor')}
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  {tr(lang, 'Reservas', 'Bookings')}
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:table-cell">
+                  {tr(lang, 'Personas', 'People')}
+                </th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  {tr(lang, 'Ingresos', 'Revenue')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {clasesMasVendidas.map((c, i) => (
+                <tr key={c.name} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: c.color }}
+                      />
+                      <div>
+                        <p className="font-medium text-slate-800">{c.name}</p>
+                        <p className="text-xs text-slate-400 md:hidden">{c.instructor}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{c.instructor}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-800">{c.bookings}</span>
+                      {i === 0 && (
+                        <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1 py-0.5 font-medium">
+                          #1
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{c.personas}</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="font-semibold text-slate-800">${c.ingresos}</span>
+                  </td>
+                </tr>
+              ))}
+              {clasesMasVendidas.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">
+                    {tr(lang, 'Sin datos de ventas aún', 'No sales data yet')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Tabla próximas clases */}

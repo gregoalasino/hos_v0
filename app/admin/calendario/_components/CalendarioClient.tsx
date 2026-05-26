@@ -17,13 +17,13 @@ import { tr } from '@/lib/i18n';
 import { generateWeekClasses } from '@/app/actions/classes';
 import { format as dateFnsFormat } from 'date-fns';
 
-const GRID_START_HOUR = 6;
-const GRID_END_HOUR   = 11;
-const HOUR_PX         = 80;
+const GRID_START_HOUR = 7;
+const GRID_END_HOUR   = 18;
+const HOUR_PX         = 72;
 const GRID_HEIGHT     = (GRID_END_HOUR - GRID_START_HOUR) * HOUR_PX;
 
 const timeLabels = Array.from(
-  { length: GRID_END_HOUR - GRID_START_HOUR + 1 },
+  { length: GRID_END_HOUR - GRID_START_HOUR },
   (_, i) => `${String(GRID_START_HOUR + i).padStart(2, '0')}:00`
 );
 
@@ -140,41 +140,81 @@ export default function CalendarioClient({
 
       {/* Calendar grid */}
       <div className="flex-1 overflow-auto">
-        <div className="flex min-w-[700px]">
-          <div className="w-14 flex-shrink-0 border-r border-gray-100 pt-10">
-            {timeLabels.map(t => (
-              <div key={t} className="flex items-start justify-end pr-2 text-[10px] text-slate-400" style={{ height: HOUR_PX }}>
-                <span className="-mt-2">{t}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-1 divide-x divide-gray-100">
-            {weekDays.map((day, dayIdx) => {
-              const isToday = isSameDay(day, new Date());
-              const dayName = lang === 'es' ? format(day, 'EEE', { locale: es }) : format(day, 'EEE');
-              return (
-                <div key={day.toISOString()} className="flex-1 min-w-0">
-                  <div className={`text-center py-2 border-b border-gray-100 ${isToday ? 'bg-slate-50' : 'bg-white'}`}>
+        <div className="min-w-[700px]">
+
+          {/* ── Header row: esquina vacía + cabeceras de días ── */}
+          <div className="flex sticky top-0 z-10 bg-white border-b border-gray-100">
+            {/* Esquina */}
+            <div className="w-14 flex-shrink-0 border-r border-gray-100" />
+            {/* Días */}
+            <div className="flex flex-1 divide-x divide-gray-100">
+              {weekDays.map((day) => {
+                const isToday = isSameDay(day, new Date());
+                const dayName = lang === 'es' ? format(day, 'EEE', { locale: es }) : format(day, 'EEE');
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={`flex-1 text-center py-2 ${isToday ? 'bg-slate-50' : 'bg-white'}`}
+                  >
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">{dayName}</p>
                     <p
-                      className={`text-sm font-semibold mt-0.5 ${isToday ? 'text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto' : 'text-slate-700'}`}
+                      className={`text-sm font-semibold mt-0.5 ${
+                        isToday
+                          ? 'text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto'
+                          : 'text-slate-700'
+                      }`}
                       style={isToday ? { backgroundColor: '#4a7c59' } : undefined}
                     >
                       {format(day, 'd')}
                     </p>
                   </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Grid body: etiquetas de hora + columnas de días ── */}
+          <div className="flex">
+            {/* Columna de horas */}
+            <div className="w-14 flex-shrink-0 border-r border-gray-100">
+              {timeLabels.map(t => (
+                <div
+                  key={t}
+                  className="flex items-start justify-end pr-2 text-[10px] text-slate-400"
+                  style={{ height: HOUR_PX }}
+                >
+                  <span className="-mt-[6px]">{t}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Columnas de días */}
+            <div className="flex flex-1 divide-x divide-gray-100">
+              {weekDays.map((day, dayIdx) => (
+                <div key={day.toISOString()} className="flex-1 min-w-0">
                   <div className="relative" style={{ height: GRID_HEIGHT }}>
+                    {/* Líneas horizontales cada hora */}
                     {Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, i) => (
-                      <div key={i} className="absolute left-0 right-0 border-b border-gray-100" style={{ top: (i + 1) * HOUR_PX }} />
+                      <div
+                        key={i}
+                        className="absolute left-0 right-0 border-b border-gray-100"
+                        style={{ top: (i + 1) * HOUR_PX }}
+                      />
                     ))}
+                    {/* Bloques de clases */}
                     {(classMap.get(dayIdx) ?? []).map(clase => (
-                      <ClassBlock key={clase.id} clase={clase} onClick={() => { setSelectedClass(clase); setDrawerOpen(true); }} />
+                      <ClassBlock
+                        key={clase.id}
+                        clase={clase}
+                        onClick={() => { setSelectedClass(clase); setDrawerOpen(true); }}
+                      />
                     ))}
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
+
         </div>
       </div>
 

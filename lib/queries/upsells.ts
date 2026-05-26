@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import type { Upsell } from '@/types';
 import type { Database } from '@/types/supabase';
 
@@ -36,7 +36,8 @@ export async function getActiveUpsells(): Promise<Upsell[]> {
 
 export async function getAllUpsells(): Promise<Upsell[]> {
   try {
-    const supabase = await createClient();
+    // Usar serviceClient para saltear RLS y ver upsells inactivos en el admin
+    const supabase = await createServiceClient();
     const { data, error } = await supabase
       .from('upsells')
       .select('*')
