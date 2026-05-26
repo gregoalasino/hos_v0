@@ -26,21 +26,15 @@ export const metadata: Metadata = {
   description: 'A serene haven for yoga, boutique accommodation, and transformational retreats. Discover the art of mindful living at House of Shakti.',
   generator: 'v0.app',
   icons: {
+    // Modern browsers pick the SVG (scales perfectly at any size).
+    // PNG is the fallback for older browsers and where SVG isn't supported.
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' },
     ],
-    apple: '/apple-icon.png',
+    shortcut: '/favicon.png',
+    // Apple touch icon — iOS ignores SVG, so we serve the PNG.
+    apple: '/favicon.png',
   },
 }
 
