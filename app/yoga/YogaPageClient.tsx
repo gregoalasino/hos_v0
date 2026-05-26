@@ -7,8 +7,6 @@ import { motion, Variants, useInView } from 'framer-motion';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { YogaClass } from '@/types';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 
@@ -186,7 +184,6 @@ function YogaNarrative() {
 // ═════════════════════════════════════════════════════════════════════════════
 function ClassCard({ clase }: { clase: SerializedClass }) {
   const router = useRouter();
-  const { lang } = useLanguage();
   const catKey = getCategoryKey(clase.name);
   const cat = CATEGORY_STYLES[catKey];
   const sold = clase.spotsRemaining === 0;
@@ -225,13 +222,11 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
           </span>
           {sold ? (
             <span className="font-body text-[10px] text-ink">
-              {tr(lang, 'Sin lugares', 'Fully booked')}
+              Fully booked
             </span>
           ) : fewLeft ? (
             <span className="font-body text-[10px] text-burgundy">
-              {tr(lang,
-                clase.spotsRemaining === 1 ? '1 lugar' : `${clase.spotsRemaining} lugares`,
-                clase.spotsRemaining === 1 ? '1 spot left' : `${clase.spotsRemaining} spots left`)}
+              {clase.spotsRemaining === 1 ? '1 spot left' : `${clase.spotsRemaining} spots left`}
             </span>
           ) : null}
         </div>
@@ -244,7 +239,6 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
 // WEEKLY CALENDAR
 // ═════════════════════════════════════════════════════════════════════════════
 function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] }) {
-  const { lang } = useLanguage();
   const [weekOffset, setWeekOffset] = useState(0);
   const [weekClasses, setWeekClasses] = useState<SerializedClass[]>(initialClasses);
   const [loadingWeek, setLoadingWeek] = useState(false);
@@ -253,9 +247,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
   const sectionInView = useInView(sectionRef, { once: true, margin: '-100px' });
 
   const today = new Date();
-  const DAY_NAMES_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const DAY_NAMES_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  const DAY_NAMES = lang === 'es' ? DAY_NAMES_ES : DAY_NAMES_EN;
+  const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
 
@@ -317,7 +309,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
             <div className="flex items-center gap-4 lg:gap-6">
               <button
                 onClick={() => navigateWeek(weekOffset - 1)}
-                aria-label={tr(lang, 'Semana anterior', 'Previous week')}
+                aria-label="Previous week"
                 className="text-ink hover:opacity-70 transition-opacity duration-300"
               >
                 <ChevronLeft className="w-4 h-4" strokeWidth={1} />
@@ -327,7 +319,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
               </p>
               <button
                 onClick={() => navigateWeek(weekOffset + 1)}
-                aria-label={tr(lang, 'Próxima semana', 'Next week')}
+                aria-label="Next week"
                 className="text-ink hover:opacity-70 transition-opacity duration-300"
               >
                 <ChevronRight className="w-4 h-4" strokeWidth={1} />
@@ -340,17 +332,17 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                   onClick={() => navigateWeek(0)}
                   className="font-body text-xs italic text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300"
                 >
-                  {tr(lang, 'volver a esta semana', 'back to this week')}
+                  back to this week
                 </button>
               )}
               <span className="font-body text-xs italic text-ink">
                 {loadingWeek
-                  ? tr(lang, 'cargando…', 'loading…')
+                  ? 'loading…'
                   : weekOffset === 0
-                    ? tr(lang, 'esta semana', 'this week')
+                    ? 'this week'
                     : weekOffset > 0
-                      ? tr(lang, 'próxima', 'upcoming')
-                      : tr(lang, 'pasada', 'past')}
+                      ? 'upcoming'
+                      : 'past'}
               </span>
             </div>
           </div>
@@ -375,7 +367,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                 <div className="flex flex-col gap-y-3 lg:gap-y-4 mt-4">
                   {dayClasses.length === 0 ? (
                     <p className="font-body text-xs italic text-ink/30 text-center mt-6">
-                      {tr(lang, 'Sin clases', 'No classes')}
+                      No classes
                     </p>
                   ) : (
                     dayClasses.map((c) => <ClassCard key={c.id} clase={c} />)
