@@ -1,106 +1,183 @@
-"use client";
+'use client';
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import Link from "next/link";
+import { useRef } from 'react';
+import Link from 'next/link';
+import { motion, useInView, Variants } from 'framer-motion';
+import { Instagram } from 'lucide-react';
 
-const exploreLinks = [
-  { label: "Yoga", href: "/yoga" },
-  { label: "Stay", href: "/accommodations" },
-  { label: "Retreats", href: "/retreats" },
-  { label: "Gallery", href: "/gallery" },
+// ─── Static content ─────────────────────────────────────────────────────────
+const sitemapLinks: { label: string; href: string }[] = [
+  { label: 'Yoga classes', href: '/yoga' },
+  { label: 'Accommodations', href: '/accommodations' },
+  { label: 'Retreats', href: '/retreats' },
+  { label: 'Gallery', href: '/gallery' },
+  { label: 'Contact', href: '/contact' },
 ];
 
-const connectLinks = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "Facebook", href: "https://facebook.com" },
-  { label: "hello@houseofshakti.com", href: "mailto:hello@houseofshakti.com" },
-];
+// TODO: confirm full street address with Nancy.
+const addressLines = ['House of Shakti', 'Santa Teresa', 'Puntarenas, Costa Rica'];
 
+// TODO: confirm exact Google Maps link with Nancy.
+const MAPS_URL =
+  'https://maps.google.com/?q=House+of+Shakti+Santa+Teresa+Costa+Rica';
+
+const INSTAGRAM_URL = 'https://www.instagram.com/house.of.shakti/';
+const INSTAGRAM_HANDLE = '@house.of.shakti';
+
+const WHITESPACEZ_URL = 'https://whitespacez.com';
+
+// ─── Stagger variants for the three right-zone columns ──────────────────────
+const columnsContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+};
+const columnItem: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+};
+
+// ─── Footer ─────────────────────────────────────────────────────────────────
 export function Footer() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const ref = useRef<HTMLElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <footer ref={ref} className="bg-dark text-cream">
-      <div className="w-[90%] md:w-[80%] mx-auto py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-16 lg:gap-24"
-        >
-          {/* Brand */}
-          <div>
-            <p className="text-base tracking-wide text-cream mb-6">
-              House of Shakti
-            </p>
-            <address className="not-italic text-sm leading-relaxed text-cream/60 space-y-1">
-              <p>Playa Hermosa</p>
-              <p>Santa Teresa</p>
-              <p>Costa Rica</p>
-            </address>
-          </div>
-
-          {/* Explore */}
-          <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6">
-              Explore
-            </p>
-            <ul className="space-y-3">
-              {exploreLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-cream/80 hover:text-cream transition-colors duration-500"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Connect */}
-          <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6">
-              Connect
-            </p>
-            <ul className="space-y-3">
-              {connectLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    target={link.href.startsWith("http") ? "_blank" : undefined}
-                    rel={
-                      link.href.startsWith("http")
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
-                    className="text-sm text-cream/80 hover:text-cream transition-colors duration-500"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </motion.div>
-
-        {/* Bottom strip */}
-        <div className="mt-24 pt-8 border-t border-cream/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-cream/50">
-            © {new Date().getFullYear()} House of Shakti
-          </p>
-          <a
-            href="https://whitespacez.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] tracking-[0.25em] uppercase text-cream/40 hover:text-cream/70 transition-colors duration-500"
+    <footer
+      ref={ref}
+      role="contentinfo"
+      className="bg-dark text-cream pt-20 lg:pt-32 pb-8 lg:pb-16 px-6 lg:px-0"
+    >
+      <div className="w-[90%] md:w-[80%] mx-auto">
+        {/* ─── TOP BAND ─────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-12">
+          {/* LEFT — brand block (logo + tagline) */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="lg:col-span-5"
           >
-            Crafted by Whitespacez
-          </a>
+            <Link
+              href="/"
+              className="inline-flex items-center hover:opacity-80 transition-opacity duration-300"
+            >
+              {/* White logo for the dark footer */}
+              <img
+                src="/logos/logo-hos-blanco.webp"
+                alt="House of Shakti"
+                draggable={false}
+                className="h-12 lg:h-14 w-auto select-none"
+              />
+            </Link>
+
+            <p className="font-body italic text-sm text-cream/60 leading-relaxed max-w-xs mt-6">
+              A sanctuary in the canopy of Costa Rica.
+            </p>
+          </motion.div>
+
+          {/* RIGHT — three columns (Sitemap, Visit, Follow) */}
+          <motion.div
+            variants={columnsContainer}
+            initial="hidden"
+            animate={inView ? 'visible' : 'hidden'}
+            className="lg:col-span-7 grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-8"
+          >
+            {/* Column 1 — Sitemap */}
+            <motion.div variants={columnItem}>
+              <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
+                Explore
+              </p>
+              <ul className="space-y-3">
+                {sitemapLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-body text-sm text-cream/80 hover:text-cream transition-colors duration-300"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Column 2 — Visit */}
+            <motion.div variants={columnItem}>
+              <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
+                Visit
+              </p>
+              <address className="not-italic space-y-1">
+                {addressLines.map((line) => (
+                  <p
+                    key={line}
+                    className="font-body text-sm text-cream/80 leading-relaxed"
+                  >
+                    {line}
+                  </p>
+                ))}
+              </address>
+              <a
+                href={MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block font-body text-sm text-cream/80 hover:text-cream underline underline-offset-4 decoration-[0.5px] transition-colors duration-300 mt-4"
+              >
+                View on Google Maps
+              </a>
+            </motion.div>
+
+            {/* Column 3 — Follow */}
+            <motion.div variants={columnItem}>
+              <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
+                Follow
+              </p>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 font-body text-sm text-cream/80 hover:text-cream transition-colors duration-300"
+              >
+                <Instagram
+                  aria-hidden
+                  className="w-4 h-4 text-cream/80 group-hover:text-cream transition-colors duration-300"
+                  strokeWidth={1.5}
+                />
+                <span>{INSTAGRAM_HANDLE}</span>
+              </a>
+            </motion.div>
+          </motion.div>
         </div>
+
+        {/* ─── SEPARATOR ────────────────────────────────────────────────── */}
+        <div className="mt-16 lg:mt-24 pt-6 lg:pt-10 border-t border-cream/15" />
+
+        {/* ─── BOTTOM BAND ──────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
+          className="flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
+        >
+          <p className="font-body text-xs text-cream/40">
+            © {new Date().getFullYear()} House of Shakti. All rights reserved.
+          </p>
+
+          <p className="font-body italic text-xs text-cream/40">
+            A{' '}
+            <a
+              href={WHITESPACEZ_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="not-italic hover:text-cream/70 transition-colors duration-300"
+            >
+              Whitespacez
+            </a>{' '}
+            build.
+          </p>
+        </motion.div>
       </div>
     </footer>
   );
