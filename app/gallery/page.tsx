@@ -82,7 +82,7 @@ export default function GalleryPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="font-serif text-5xl md:text-7xl text-dark"
+          className="font-display text-5xl md:text-7xl text-dark"
         >
           What your eyes will see
         </motion.h1>
@@ -102,7 +102,7 @@ export default function GalleryPage() {
             {/* Cabecera de cada sección */}
             <div className="max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <h2 className="font-serif text-3xl md:text-4xl text-dark mb-2">
+                <h2 className="font-display text-3xl md:text-4xl text-dark mb-2">
                   {section.title}
                 </h2>
                 <p className="text-dark/70">{section.description}</p>

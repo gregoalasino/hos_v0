@@ -42,7 +42,7 @@ export default function ShaktiSadhanaRetreat() {
           {/* AQUÍ ESTABA EL ERROR DE LA ETIQUETA, ya está corregido a </motion.h1> */}
           <motion.h1 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-            className="font-serif text-5xl md:text-7xl mb-6"
+            className="font-display text-5xl md:text-7xl mb-6"
           >
             Shakti Sadhana
           </motion.h1>
@@ -60,7 +60,7 @@ export default function ShaktiSadhanaRetreat() {
       {/* The Concept */}
       <section className="py-24 max-w-4xl mx-auto px-6 text-center">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-          <h2 className="font-serif text-3xl md:text-4xl text-dark mb-8">Return to the Source</h2>
+          <h2 className="font-display text-3xl md:text-4xl text-dark mb-8">Return to the Source</h2>
           <p className="text-dark/80 text-lg leading-relaxed mb-6">
             Shakti Sadhana Retreat is an invitation to return to the source of your vital energy. A space of pause, listening, and conscious practice, where we cultivate a relationship with the body as sacred territory and with Shakti as the creative, intuitive, and transformative life force.
           </p>
@@ -80,7 +80,7 @@ export default function ShaktiSadhanaRetreat() {
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
             <span className="uppercase tracking-widest text-sm text-dark/50 mb-4 block">Hosted By</span>
-            <h2 className="font-serif text-4xl text-dark mb-6">Nancy Goodfellow</h2>
+            <h2 className="font-display text-4xl text-dark mb-6">Nancy Goodfellow</h2>
             <p className="text-dark/70 mb-6 leading-relaxed">
               Nancy is a yoga teacher, facilitator, and space holder devoted to embodied practices that support presence, self-awareness, and inner transformation. Her work weaves together yoga, breath, meditation, and somatic exploration, creating experiences that invite a deep return to the body as a source of wisdom and truth.
             </p>
@@ -96,7 +96,7 @@ export default function ShaktiSadhanaRetreat() {
         >
           {/* Included */}
           <motion.div variants={fadeInUp} className="bg-white p-10 rounded-2xl border border-dark/5">
-            <h3 className="font-serif text-2xl text-dark mb-8">What's Included</h3>
+            <h3 className="font-display text-2xl text-dark mb-8">What's Included</h3>
             <ul className="space-y-4">
               {["Accommodation", "Daily yoga practice", "Brunch included", "1 Breathwork Journey", "2 sauna & ice bath sessions", "1 boat tour", "1 Gentle Breath & Sound Healing", "1 Shakti Tantra Workshop"].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-dark/70">
@@ -109,7 +109,7 @@ export default function ShaktiSadhanaRetreat() {
 
           {/* Not Included */}
           <motion.div variants={fadeInUp} className="bg-white p-10 rounded-2xl border border-dark/5">
-            <h3 className="font-serif text-2xl text-dark mb-8">Not Included</h3>
+            <h3 className="font-display text-2xl text-dark mb-8">Not Included</h3>
             <ul className="space-y-4">
               {["International Flights & Transfers", "Travel Insurance (Strongly recommended)", "Tourist Visa", "Dinner (Guests can cook or explore Santa Teresa)"].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-dark/70">
@@ -126,18 +126,18 @@ export default function ShaktiSadhanaRetreat() {
       <section className="py-24 bg-dark text-cream">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-            <h2 className="font-serif text-4xl mb-6">Join the Journey</h2>
+            <h2 className="font-display text-4xl mb-6">Join the Journey</h2>
             <p className="text-cream/70 mb-12">7 Days of deep immersion in the Costa Rican jungle.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 text-left">
               <div className="bg-cream/10 p-8 rounded-xl backdrop-blur-sm">
                 <span className="uppercase tracking-widest text-xs text-cream/50 mb-2 block">March Booking</span>
-                <div className="font-serif text-3xl mb-2">$1,414 <span className="text-sm font-sans text-cream/70">/ person</span></div>
+                <div className="font-display text-3xl mb-2">$1,414 <span className="text-sm font-body text-cream/70">/ person</span></div>
                 <p className="text-sm text-cream/70">Special rate: $1,305/person for 2 people.</p>
               </div>
               <div className="bg-cream/10 p-8 rounded-xl backdrop-blur-sm">
                 <span className="uppercase tracking-widest text-xs text-cream/50 mb-2 block">April Booking</span>
-                <div className="font-serif text-3xl mb-2">$1,625 <span className="text-sm font-sans text-cream/70">/ person</span></div>
+                <div className="font-display text-3xl mb-2">$1,625 <span className="text-sm font-body text-cream/70">/ person</span></div>
                 <p className="text-sm text-cream/70">Standard individual rate.</p>
               </div>
             </div>

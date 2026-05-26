@@ -60,10 +60,10 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
           <span className="text-sm tracking-[0.3em] uppercase text-cream/60 mb-4 block">
             {retreat.duration} · Starting at ${retreat.price.toLocaleString()}
           </span>
-          <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl font-light text-cream mb-4 leading-none">
+          <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-light text-cream mb-4 leading-none">
             {retreat.name}
           </h1>
-          <p className="font-serif text-xl md:text-2xl text-cream/70 italic mb-10">
+          <p className="font-display text-xl md:text-2xl text-cream/70 italic mb-10">
             {retreat.tagline}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -95,7 +95,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
               <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-6 block">
                 About This Journey
               </span>
-              <h2 className="font-serif text-4xl md:text-5xl font-light text-dark mb-8 leading-tight">
+              <h2 className="font-display text-4xl md:text-5xl font-light text-dark mb-8 leading-tight">
                 {retreat.name}
               </h2>
               <p className="text-dark/70 leading-relaxed text-lg mb-6">
@@ -124,7 +124,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
               className="space-y-8"
             >
               <div>
-                <h3 className="font-serif text-2xl text-dark mb-6">Highlights</h3>
+                <h3 className="font-display text-2xl text-dark mb-6">Highlights</h3>
                 <ul className="space-y-3">
                   {retreat.highlights.map((h, i) => (
                     <li key={i} className="flex items-start gap-3 text-dark/70">
@@ -137,7 +137,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
                 </ul>
               </div>
               <div className="bg-warm-white rounded-lg p-8">
-                <h3 className="font-serif text-2xl text-dark mb-6">What's Included</h3>
+                <h3 className="font-display text-2xl text-dark mb-6">What's Included</h3>
                 <ul className="space-y-3">
                   {retreat.included.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-dark/70">
@@ -148,7 +148,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
                 </ul>
                 <div className="mt-8 pt-6 border-t border-dark/10">
                   <span className="text-sm text-dark/50 block mb-1">Starting at</span>
-                  <span className="font-serif text-4xl text-dark">
+                  <span className="font-display text-4xl text-dark">
                     ${retreat.price.toLocaleString()}
                     <span className="text-lg text-dark/50"> / person</span>
                   </span>
@@ -168,7 +168,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
             className="text-center mb-16"
           >
             <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">Day by Day</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-light text-dark">Your Itinerary</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-light text-dark">Your Itinerary</h2>
           </motion.div>
           <div className="space-y-0">
             {retreat.itinerary.map((day, index) => (
@@ -187,7 +187,7 @@ export default function RetreatPage({ params }: { params: { slug: string } }) {
             className="text-center mb-16"
           >
             <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">Begin Your Journey</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-light text-cream mb-4">
+            <h2 className="font-display text-4xl md:text-5xl font-light text-cream mb-4">
               Reserve Your Place
             </h2>
             <p className="text-cream/60 text-lg">
@@ -234,7 +234,7 @@ function ItineraryItem({
           <span className="text-sm tracking-[0.2em] uppercase text-burgundy w-12 flex-shrink-0">
             {day.day}
           </span>
-          <span className="font-serif text-xl md:text-2xl text-dark group-hover:text-burgundy transition-colors">
+          <span className="font-display text-xl md:text-2xl text-dark group-hover:text-burgundy transition-colors">
             {day.title}
           </span>
         </div>
@@ -298,7 +298,7 @@ function BookingForm({
         <div className="w-16 h-16 rounded-full bg-burgundy/20 flex items-center justify-center mx-auto mb-6">
           <Check className="w-8 h-8 text-burgundy" />
         </div>
-        <h3 className="font-serif text-3xl text-cream mb-4">Thank You</h3>
+        <h3 className="font-display text-3xl text-cream mb-4">Thank You</h3>
         <p className="text-cream/60 text-lg max-w-md mx-auto">
           Your inquiry for <span className="text-cream">{retreatName}</span> has been received. Our team will reach out to you within 24 hours to confirm your spot.
         </p>
@@ -428,7 +428,7 @@ function BookingForm({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4 border-t border-cream/10">
         <div>
           <span className="text-sm text-cream/40 block">Total estimate</span>
-          <span className="font-serif text-3xl text-cream">
+          <span className="font-display text-3xl text-cream">
             ${(price * parseInt(formData.participants)).toLocaleString()}
             <span className="text-base text-cream/50"> / {formData.participants} {parseInt(formData.participants) === 1 ? "person" : "people"}</span>
           </span>

@@ -159,7 +159,7 @@ export default function AccommodationsPage() {
           <span className="text-sm tracking-[0.3em] uppercase text-cream/80 mb-4 block">
             Rest & Restore
           </span>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">
             Boutique Accommodation
           </h1>
         </motion.div>
@@ -173,7 +173,7 @@ export default function AccommodationsPage() {
       {/* Footer CTA */}
       <section className="py-20 bg-dark text-cream text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <h3 className="font-serif text-3xl md:text-4xl mb-6">
+          <h3 className="font-display text-3xl md:text-4xl mb-6">
             Find your perfect sanctuary
           </h3>
           <p className="text-cream/70 mb-8">
@@ -222,7 +222,7 @@ function RoomSection({ room, index }: { room: typeof rooms[0]; index: number }) 
             <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
               {room.size}
             </span>
-            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-dark mb-6">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-dark mb-6">
               {room.name}
             </h2>
 
@@ -240,7 +240,7 @@ function RoomSection({ room, index }: { room: typeof rooms[0]; index: number }) 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               <div>
                 <span className="text-sm text-dark/50 block">Starting at</span>
-                <span className="font-serif text-3xl text-dark">
+                <span className="font-display text-3xl text-dark">
                   ${room.price}
                   <span className="text-lg text-dark/60">/night</span>
                 </span>

@@ -92,7 +92,7 @@ export default function ClasesPage() {
             <ArrowLeft className="w-4 h-4" />
             House of Shakti
           </Link>
-          <h1 className="font-serif text-lg font-light text-dark">
+          <h1 className="font-display text-lg font-light text-dark">
             {tr(lang, 'Clases de Yoga', 'Yoga Classes')}
           </h1>
           <button
@@ -156,7 +156,7 @@ export default function ClasesPage() {
         {/* Grid semanal */}
         {!hasAnyClass ? (
           <div className="text-center py-20 text-dark/40">
-            <p className="font-serif text-2xl mb-2">{tr(lang, 'Sin clases esta semana', 'No classes this week')}</p>
+            <p className="font-display text-2xl mb-2">{tr(lang, 'Sin clases esta semana', 'No classes this week')}</p>
             <p className="text-sm">{tr(lang, 'Prueba con otra semana o categoría', 'Try a different week or category')}</p>
           </div>
         ) : (
@@ -175,7 +175,7 @@ export default function ClasesPage() {
                       <p className={`text-xs uppercase tracking-wide ${isToday ? 'text-burgundy font-semibold' : 'text-dark/40'}`}>
                         {lang === 'es' ? format(day, 'EEE', { locale: es }) : format(day, 'EEE')}
                       </p>
-                      <p className={`text-lg font-serif mt-0.5 ${isToday ? 'text-burgundy' : 'text-dark'}`}>
+                      <p className={`text-lg font-display mt-0.5 ${isToday ? 'text-burgundy' : 'text-dark'}`}>
                         {format(day, 'd')}
                       </p>
                     </div>

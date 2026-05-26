@@ -1,20 +1,25 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { LanguageProvider } from '@/contexts/language-context'
 import './globals.css'
 import Script from 'next/script';
 
-const cormorant = Cormorant_Garamond({ 
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-serif"
-});
+// Display face — Krylon. Applied to all headings via `font-display`.
+const krylon = localFont({
+  src: '../public/fonts/krylon/Krylon-Regular.woff2',
+  variable: '--font-display',
+  display: 'swap',
+  weight: '400',
+})
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  variable: "--font-sans"
-});
+// Body face — Chalet Paris Nineteen Sixty. Default for body, UI, microcopy.
+const chalet = localFont({
+  src: '../public/fonts/chalet/Chalet-ParisNineteenSixty.woff2',
+  variable: '--font-body',
+  display: 'swap',
+  weight: '400',
+})
 
 export const metadata: Metadata = {
   title: 'House of Shakti | Luxury Wellness Sanctuary',
@@ -45,14 +50,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="en" className={`${krylon.variable} ${chalet.variable}`}>
+      <body className="font-body antialiased">
         <LanguageProvider>
           {children}
         </LanguageProvider>
         <Analytics />
-        <Script 
-          src="https://static1.cloudbeds.com/booking-engine/latest/static/js/immersive-experience/cb-immersive-experience.js" 
+        <Script
+          src="https://static1.cloudbeds.com/booking-engine/latest/static/js/immersive-experience/cb-immersive-experience.js"
           strategy="afterInteractive"
         />
       </body>

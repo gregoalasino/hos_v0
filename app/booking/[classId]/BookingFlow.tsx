@@ -299,7 +299,7 @@ export default function BookingFlow({
             <ArrowLeft className="w-4 h-4" />
             {tr(lang, 'Clases', 'Classes')}
           </Link>
-          <span className="font-serif text-base font-light">House of Shakti</span>
+          <span className="font-display text-base font-light">House of Shakti</span>
           <button
             onClick={toggleLang}
             className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border border-cream/20 hover:border-cream/40 transition-colors text-cream/60"
@@ -333,7 +333,7 @@ export default function BookingFlow({
                     {color && <span className="w-2 h-2 rounded-full" style={{ background: color }} />}
                     <span className="text-xs text-cream/80 uppercase tracking-widest">{instructor}</span>
                   </div>
-                  <h2 className="font-serif text-2xl text-cream font-light">{className}</h2>
+                  <h2 className="font-display text-2xl text-cream font-light">{className}</h2>
                 </div>
               </div>
 
@@ -359,7 +359,7 @@ export default function BookingFlow({
 
               <div className="flex items-center gap-3 bg-cream rounded-2xl p-4 mb-5">
                 <div className="w-10 h-10 rounded-full bg-dark/10 flex items-center justify-center flex-shrink-0">
-                  <span className="font-serif text-sm font-semibold text-dark">
+                  <span className="font-display text-sm font-semibold text-dark">
                     {instructor.slice(0, 2).toUpperCase()}
                   </span>
                 </div>
@@ -375,11 +375,11 @@ export default function BookingFlow({
 
               <div className="text-center py-5 mb-5 border-y border-dark/8">
                 {isFree ? (
-                  <p className="font-serif text-3xl font-light" style={{ color: '#4a7c59' }}>{tr(lang, 'Gratis', 'Free')}</p>
+                  <p className="font-display text-3xl font-light" style={{ color: '#4a7c59' }}>{tr(lang, 'Gratis', 'Free')}</p>
                 ) : (
                   <>
-                    <p className="font-serif text-3xl font-light text-dark">${priceUsd}</p>
-                    <p className="text-xs text-dark/40 font-sans mt-1">{tr(lang, 'por persona · pago en el estudio', 'per person · pay at studio')}</p>
+                    <p className="font-display text-3xl font-light text-dark">${priceUsd}</p>
+                    <p className="text-xs text-dark/40 font-body mt-1">{tr(lang, 'por persona · pago en el estudio', 'per person · pay at studio')}</p>
                   </>
                 )}
               </div>
@@ -398,7 +398,7 @@ export default function BookingFlow({
           {step === 2 && (
             <motion.div key="step2" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
               <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Extras', 'Add extras')}</h2>
+              <h2 className="font-display text-2xl font-light text-dark mb-1">{tr(lang, 'Extras', 'Add extras')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Opcional — mejora tu experiencia en clase.', 'Optional — enhance your class experience.')}</p>
 
               {activeUpsells.length > 0 ? (
@@ -457,7 +457,7 @@ export default function BookingFlow({
           {step === 3 && (
             <motion.div key="step3" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
               <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Tus datos', 'Your details')}</h2>
+              <h2 className="font-display text-2xl font-light text-dark mb-1">{tr(lang, 'Tus datos', 'Your details')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Los usaremos para confirmar tu reserva.', 'We\'ll use this to confirm your booking.')}</p>
 
               <Form {...form}>
@@ -609,7 +609,7 @@ export default function BookingFlow({
           {step === 4 && personalData && (
             <motion.div key="step4" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
               <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Confirmar reserva', 'Confirm booking')}</h2>
+              <h2 className="font-display text-2xl font-light text-dark mb-1">{tr(lang, 'Confirmar reserva', 'Confirm booking')}</h2>
               <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Revisá tu reserva antes de confirmar.', 'Review your booking before confirming.')}</p>
 
               {/* Booking summary */}
@@ -739,7 +739,7 @@ export default function BookingFlow({
                 <Check className="w-10 h-10 text-emerald-600" />
               </motion.div>
 
-              <h2 className="font-serif text-3xl font-light text-dark mb-2">{tr(lang, '¡Reserva confirmada!', 'Booking confirmed!')}</h2>
+              <h2 className="font-display text-3xl font-light text-dark mb-2">{tr(lang, '¡Reserva confirmada!', 'Booking confirmed!')}</h2>
               <p className="text-dark/50 text-sm mb-3">
                 {tr(lang, 'Tu lugar está reservado. Presentate 10 minutos antes de la clase.', 'Your spot is reserved. Please arrive 10 minutes before class.')}
               </p>
@@ -827,7 +827,7 @@ function ClassReminder({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] uppercase tracking-widest text-dark/40 mb-0.5">{instructor}</p>
-        <p className="font-serif text-sm font-light text-dark truncate">{className}</p>
+        <p className="font-display text-sm font-light text-dark truncate">{className}</p>
         <p className="text-[11px] text-dark/50 mt-0.5">
           {format(classDate, lang === 'es' ? "EEE d MMM · h:mm a" : "EEE MMM d · h:mm a")}
         </p>

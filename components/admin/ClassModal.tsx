@@ -116,7 +116,7 @@ export default function ClassModal({ open, onOpenChange, onSave, classData }: Pr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl font-light text-dark">
+          <DialogTitle className="font-display text-xl font-light text-dark">
             {isEditing ? 'Editar clase' : 'Nueva clase'}
           </DialogTitle>
         </DialogHeader>

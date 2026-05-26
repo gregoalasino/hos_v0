@@ -190,7 +190,7 @@ export default function CalendarioClient({
                     {selectedClass.location}
                   </span>
                 </div>
-                <h2 className="font-serif text-[26px] font-light text-slate-900 leading-tight mb-5">
+                <h2 className="font-display text-[26px] font-light text-slate-900 leading-tight mb-5">
                   {selectedClass.name}
                 </h2>
                 <div>

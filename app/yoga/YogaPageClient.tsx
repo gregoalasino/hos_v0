@@ -102,13 +102,13 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
         transition: 'border-color 0.15s ease',
       }}
     >
-      <p style={{ fontSize: 9, color: 'rgba(0,0,0,.45)', marginBottom: 3, fontFamily: 'var(--font-sans)' }}>
+      <p style={{ fontSize: 9, color: 'rgba(0,0,0,.45)', marginBottom: 3, fontFamily: 'var(--font-body)' }}>
         {timeStr} · {clase.durationMinutes} min
       </p>
-      <p style={{ fontFamily: 'var(--font-serif)', fontSize: 13, fontWeight: 600, lineHeight: 1.25, color: cat.text, textDecoration: sold ? 'line-through' : 'none', marginBottom: 2 }}>
+      <p style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600, lineHeight: 1.25, color: cat.text, textDecoration: sold ? 'line-through' : 'none', marginBottom: 2 }}>
         {clase.name}
       </p>
-      <p style={{ fontSize: 10, color: cat.text, opacity: 0.6, marginBottom: 8, fontFamily: 'var(--font-sans)' }}>
+      <p style={{ fontSize: 10, color: cat.text, opacity: 0.6, marginBottom: 8, fontFamily: 'var(--font-body)' }}>
         with {clase.instructor} · {clase.location}
       </p>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
@@ -116,11 +116,11 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
           <div style={{ width: 28, height: 3, background: 'rgba(0,0,0,.12)', borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
             <div style={{ width: `${fillPct}%`, height: '100%', background: cat.accent, borderRadius: 2 }} />
           </div>
-          <span style={{ fontSize: 9, color: 'rgba(0,0,0,.4)', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)' }}>
+          <span style={{ fontSize: 9, color: 'rgba(0,0,0,.4)', whiteSpace: 'nowrap', fontFamily: 'var(--font-body)' }}>
             {booked}/{clase.capacity}
           </span>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 600, color: isFree ? '#4a7c59' : cat.text, flexShrink: 0, fontFamily: 'var(--font-sans)' }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: isFree ? '#4a7c59' : cat.text, flexShrink: 0, fontFamily: 'var(--font-body)' }}>
           {isFree ? 'Free' : `$${clase.priceUsd}`}
         </span>
         <span style={{
@@ -132,7 +132,7 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
           display: 'inline-block',
           flexShrink: 0,
           whiteSpace: 'nowrap',
-          fontFamily: 'var(--font-sans)',
+          fontFamily: 'var(--font-body)',
         }}>
           {sold ? tr(lang, 'Completa', 'Full') : tr(lang, 'Reservar', 'Book')}
         </span>
@@ -158,7 +158,7 @@ function ColorLegend() {
         return (
           <div key={cat.label} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: cat.accent }} />
-            <span className="text-[11px] font-sans text-dark/50">
+            <span className="text-[11px] font-body text-dark/50">
               {labels ? labels[lang] : cat.label}
             </span>
           </div>
@@ -166,7 +166,7 @@ function ColorLegend() {
       })}
       <div className="flex items-center gap-1.5">
         <span className="w-2.5 h-2.5 rounded-sm border border-dashed flex-shrink-0" style={{ borderColor: '#9a8ab0' }} />
-        <span className="text-[11px] font-sans text-dark/50">{tr(lang, 'Agotada', 'Sold out')}</span>
+        <span className="text-[11px] font-body text-dark/50">{tr(lang, 'Agotada', 'Sold out')}</span>
       </div>
     </div>
   );
@@ -227,10 +227,10 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
   return (
     <div>
       <div className="text-center mb-10">
-        <span className="block font-sans text-[11px] uppercase tracking-[0.15em] mb-3" style={{ color: '#8D0000' }}>
+        <span className="block font-body text-[11px] uppercase tracking-[0.15em] mb-3" style={{ color: '#8D0000' }}>
           {tr(lang, 'Horario Semanal', 'Weekly Schedule')}
         </span>
-        <h2 className="font-serif text-[38px] lg:text-[48px] font-light text-dark leading-none">
+        <h2 className="font-display text-[38px] lg:text-[48px] font-light text-dark leading-none">
           {tr(lang, 'Clases Matutinas', 'Morning Classes')}
         </h2>
       </div>
@@ -254,11 +254,11 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
           <div>
-            <p className="text-sm font-medium font-sans text-dark">{weekLabel}</p>
+            <p className="text-sm font-medium font-body text-dark">{weekLabel}</p>
             {weekOffset !== 0 && (
               <button
                 onClick={() => navigateWeek(0)}
-                className="text-[11px] font-sans hover:underline underline-offset-2"
+                className="text-[11px] font-body hover:underline underline-offset-2"
                 style={{ color: '#8D0000' }}
               >
                 {tr(lang, 'volver a esta semana', 'back to this week')}
@@ -266,12 +266,12 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
             )}
           </div>
         </div>
-        <p className="text-[11px] italic font-sans hidden md:block" style={{ color: 'rgba(52,0,0,.35)' }}>
+        <p className="text-[11px] italic font-body hidden md:block" style={{ color: 'rgba(52,0,0,.35)' }}>
           {loadingWeek ? '...' : tr(lang, 'clic para reservar', 'click to book')}
         </p>
       </div>
 
-      <p className="lg:hidden text-center text-[11px] font-sans text-dark/30 animate-pulse mb-3">
+      <p className="lg:hidden text-center text-[11px] font-body text-dark/30 animate-pulse mb-3">
         {tr(lang, '← Desliza para ver la semana →', '← Swipe to see full week →')}
       </p>
 
@@ -301,10 +301,10 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                 const isToday = isSameDay(day, today);
                 return (
                   <div key={i} style={{ backgroundColor: '#F2EBDA', padding: '10px 6px', textAlign: 'center' }}>
-                    <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', color: isToday ? '#8d0000' : 'rgba(52,0,0,0.4)', fontFamily: 'var(--font-sans)' }}>
+                    <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', color: isToday ? '#8d0000' : 'rgba(52,0,0,0.4)', fontFamily: 'var(--font-body)' }}>
                       {DAY_NAMES[i]}
                     </p>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: isToday ? '#8d0000' : '#340000', lineHeight: 1.1, marginTop: 2 }}>
+                    <p style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: isToday ? '#8d0000' : '#340000', lineHeight: 1.1, marginTop: 2 }}>
                       {format(day, 'd')}
                     </p>
                   </div>
@@ -315,7 +315,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
               {timeSlots.length === 0 ? (
                 <>
                   <div style={{ backgroundColor: '#F2EBDA', paddingTop: 10, paddingRight: 8, textAlign: 'right' }}>
-                    <span style={{ fontSize: 10, color: '#9a7a5a', fontFamily: 'var(--font-sans)' }}>—</span>
+                    <span style={{ fontSize: 10, color: '#9a7a5a', fontFamily: 'var(--font-body)' }}>—</span>
                   </div>
                   {weekDays.map((_, i) => (
                     <div key={i} style={{ backgroundColor: '#fffdf7', minHeight: 100, padding: 6 }} />
@@ -325,7 +325,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                 timeSlots.map((time) => (
                   <Fragment key={time}>
                     <div style={{ backgroundColor: '#F2EBDA', paddingTop: 10, paddingRight: 8, paddingLeft: 4, paddingBottom: 6, textAlign: 'right' }}>
-                      <span style={{ fontSize: 10, color: '#9a7a5a', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 10, color: '#9a7a5a', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>
                         {formatTimeLabel(time)}
                       </span>
                     </div>
@@ -387,7 +387,7 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
           className="relative z-10 text-center px-6"
         >
           <span className="text-sm tracking-[0.3em] uppercase text-cream/80 mb-4 block">The Practice</span>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">Yoga Classes</h1>
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">Yoga Classes</h1>
         </motion.div>
       </section>
 
@@ -406,7 +406,7 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
               transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-6 block">Serenity &amp; Practice</span>
-              <h2 className="font-serif text-4xl md:text-5xl font-light text-dark mb-8 leading-tight">
+              <h2 className="font-display text-4xl md:text-5xl font-light text-dark mb-8 leading-tight">
                 Donde el aliento se convierte en movimiento, y el movimiento en meditación
               </h2>
               <div className="space-y-6 text-dark/70 leading-relaxed">
@@ -419,7 +419,7 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
                   Cada sesión es cuidadosamente elaborada por nuestros maestros residentes,
                   quienes traen décadas de estudio y devoción a su práctica.
                 </p>
-                <p className="font-serif text-lg text-dark/60 italic">
+                <p className="font-display text-lg text-dark/60 italic">
                   &ldquo;El cuerpo es tu templo. Mantenlo puro y limpio para que el alma pueda residir en él.&rdquo;
                 </p>
               </div>
@@ -448,7 +448,7 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
 
       <section className="py-20 bg-dark text-cream text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <h3 className="font-serif text-3xl md:text-4xl mb-6">
+          <h3 className="font-display text-3xl md:text-4xl mb-6">
             {tr(lang, '¿Listo para comenzar tu práctica?', 'Ready to start your practice?')}
           </h3>
           <p className="text-cream/70 mb-8">
