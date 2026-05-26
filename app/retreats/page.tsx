@@ -50,7 +50,7 @@ export default function RetreatsPage() {
           className="relative z-10 text-center px-6"
         >
           <span className="text-sm tracking-[0.3em] uppercase text-cream/80 mb-4 block">Transform & Evolve</span>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">
             Transformational Retreats
           </h1>
         </motion.div>
@@ -65,7 +65,7 @@ export default function RetreatsPage() {
             className="text-center mb-20"
           >
             <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">Our Journeys</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-light text-dark">Choose Your Path</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-light text-dark">Choose Your Path</h2>
           </motion.div>
           <motion.div
             variants={containerVariants}
@@ -94,7 +94,7 @@ export default function RetreatsPage() {
                   </Link>
                 </div>
                 <div className={`${index % 2 === 1 ? "lg:col-start-1 lg:row-start-1" : ""}`}>
-                  <h3 className="font-serif text-3xl md:text-4xl lg:text-5xl text-dark mb-2">{retreat.name}</h3>
+                  <h3 className="font-display text-3xl md:text-4xl lg:text-5xl text-dark mb-2">{retreat.name}</h3>
                   <p className="text-sm tracking-[0.2em] uppercase text-burgundy mb-4">{retreat.tagline}</p>
                   <p className="text-dark/70 leading-relaxed mb-6">{retreat.description}</p>
                   <div className="mb-8">
@@ -111,7 +111,7 @@ export default function RetreatsPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                     <div>
                       <span className="text-sm text-dark/50 block">Starting at</span>
-                      <span className="font-serif text-3xl text-dark">${retreat.price.toLocaleString()}</span>
+                      <span className="font-display text-3xl text-dark">${retreat.price.toLocaleString()}</span>
                     </div>
                     <Link
                       href={`/retreats/${retreat.id}`}
@@ -156,7 +156,7 @@ export default function RetreatsPage() {
               <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
                 For Facilitators & Teachers
               </span>
-              <h3 className="font-serif text-4xl md:text-5xl font-light text-dark mb-6 leading-tight">
+              <h3 className="font-display text-4xl md:text-5xl font-light text-dark mb-6 leading-tight">
                 Host Your Retreat
               </h3>
               <p className="text-dark/70 leading-relaxed mb-6">

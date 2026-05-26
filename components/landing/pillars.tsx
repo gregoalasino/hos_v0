@@ -1,33 +1,31 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, Variants, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 const pillars = [
   {
-    title: "Yoga Classes",
-    subtitle: "Serenity & Practice",
+    eyebrow: "Daily Practice",
+    title: "Yoga classes",
     description:
-      "From sunrise flows to restorative evening sessions, our expert instructors guide you through practices that honor tradition while embracing modern understanding of the body.",
+      "Mornings open with breath and movement on the open-air shala. Afternoons close softer — restorative, slow.",
     image: "/images/yoga/NE8A7854%201.webp",
     link: "/yoga",
   },
   {
-    title: "Boutique Accommodation",
-    subtitle: "Comfort & Design",
+    eyebrow: "Considered Rest",
+    title: "Boutique accommodation",
     description:
-      "Each suite is thoughtfully designed to be your personal sanctuary—where minimalist aesthetics meet supreme comfort, and every detail invites rest and reflection.",
+      "Six rooms shaped by the land they sit in. Hardwood, natural linen, light filtered through tropical canopy.",
     image: "/images/sanctuary/271A0822_websize%201.webp",
     link: "/accommodations",
   },
   {
-    title: "Transformational Retreats",
-    subtitle: "Community & Experience",
+    eyebrow: "Seasonal Gatherings",
+    title: "Transformational retreats",
     description:
-      "Immersive multi-day journeys that weave together practice, community, and inner exploration. Leave transformed, carrying the essence of Shakti within you.",
+      "A handful of immersive programs each year, each tied to a season and a teacher.",
     image: "/images/sanctuary/271A0851_websize%201.webp",
     link: "/retreats",
   },
@@ -38,18 +36,18 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.15,
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 1.0,
       ease: "easeOut",
     },
   },
@@ -60,54 +58,65 @@ export function Pillars() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="pillars" ref={ref} className="py-32 lg:py-40 bg-cream">
-      <div className="max-w-7xl mx-auto px-6">
+    <section
+      id="pillars"
+      ref={ref}
+      className="bg-warm-white py-20 lg:py-28"
+    >
+      <div className="w-[90%] md:w-[80%] mx-auto">
+        {/* Section heading — single line, restrained */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-20"
+          initial={{ opacity: 0, y: 16 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          transition={{ duration: 1.0, ease: "easeOut" }}
+          className="text-center mb-16 lg:mb-20"
         >
-          <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
-            The Three Pillars
-          </span>
-          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-dark text-balance">
-            The Core of Our Sanctuary
+          <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
+            The world of Shakti
           </h2>
         </motion.div>
 
+        {/* Cards */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid md:grid-cols-3 gap-8 lg:gap-12"
+          className="grid md:grid-cols-3 gap-8 lg:gap-10"
         >
-          {pillars.map((pillar, index) => (
-            <motion.div key={index} variants={itemVariants}>
+          {pillars.map((pillar) => (
+            <motion.article key={pillar.title} variants={itemVariants}>
+              {/* Entire card is one link — image, title, description, CTA all clickable */}
               <Link href={pillar.link} className="group block">
-                <div className="relative aspect-[3/4] mb-6 overflow-hidden rounded-md">
+                {/* Image — static, no hover zoom */}
+                <div className="relative aspect-[4/5] overflow-hidden">
                   <img
                     src={pillar.image}
-                    alt={pillar.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    alt=""
+                    aria-hidden
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/10 transition-colors duration-300" />
                 </div>
 
-                <span className="text-xs tracking-[0.2em] uppercase text-burgundy mb-2 block">
-                  {pillar.subtitle}
-                </span>
+                {/* Text block */}
+                <div className="mt-6 lg:mt-8">
+                  <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mb-3 lg:mb-4">
+                    {pillar.eyebrow}
+                  </p>
 
-                <h3 className="font-serif text-2xl md:text-3xl text-dark mb-4 flex items-center gap-2">
-                  {pillar.title}
-                  <ArrowUpRight className="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                </h3>
+                  <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mb-3 lg:mb-4">
+                    {pillar.title}
+                  </h3>
 
-                <p className="text-dark/70 leading-relaxed">
-                  {pillar.description}
-                </p>
+                  <p className="font-body text-sm text-ink leading-relaxed mb-6 lg:mb-8">
+                    {pillar.description}
+                  </p>
+
+                  <span className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70">
+                    Discover more
+                  </span>
+                </div>
               </Link>
-            </motion.div>
+            </motion.article>
           ))}
         </motion.div>
       </div>
