@@ -47,8 +47,12 @@ export async function toggleUpsellActive(id: string) {
 }
 
 export async function deleteUpsell(id: string) {
+  // Soft delete: marcamos como inactivo para no romper bookings que lo referencian
   const supabase = await createServiceClient();
-  const { error } = await supabase.from('upsells').delete().eq('id', id);
+  const { error } = await supabase
+    .from('upsells')
+    .update({ is_active: false })
+    .eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/admin/upsells');
 }
