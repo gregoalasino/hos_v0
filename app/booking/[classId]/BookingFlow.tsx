@@ -85,6 +85,7 @@ type BookingError = 'no_spots' | 'too_late' | 'generic' | null;
 async function validateReferralCodeFromDB(
   code: string,
   subtotal: number,
+  classPrice: number,
 ): Promise<{ valid: boolean; code?: ReferralCode; error?: string }> {
   try {
     const res = await fetch('/api/referral-codes/validate', {
@@ -94,6 +95,24 @@ async function validateReferralCodeFromDB(
     });
     const data = await res.json();
     if (!data.valid) return { valid: false, error: data.error };
+
+    // A class-pack code waives the class fee. Model it as a fixed discount equal
+    // to the class price so the existing discount math leaves upsells charged.
+    if (data.kind === 'pack') {
+      const packCode: ReferralCode = {
+        id: code,
+        code: code.toUpperCase(),
+        partnerName: 'Class pack',
+        description: data.description ?? 'Class pack applied',
+        benefitType: 'fixed',
+        discountFixed: classPrice,
+        isActive: true,
+        usageCount: 0,
+        minPurchaseUsd: 0,
+        createdAt: new Date(),
+      };
+      return { valid: true, code: packCode };
+    }
 
     const rc: ReferralCode = {
       id: code,
@@ -212,7 +231,7 @@ export default function BookingFlow({
     const codeStr = form.getValues('referralCode') ?? '';
     if (!codeStr.trim()) return;
     setCodeStatus('loading');
-    const result = await validateReferralCodeFromDB(codeStr, subtotal);
+    const result = await validateReferralCodeFromDB(codeStr, subtotal, priceUsd);
     if (result.valid && result.code) {
       setAppliedCode(result.code);
       setCodeStatus('success');

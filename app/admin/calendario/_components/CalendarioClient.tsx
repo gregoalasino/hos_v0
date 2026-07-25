@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -20,7 +20,7 @@ import {
   CalendarX,
 } from 'lucide-react';
 import type { YogaClass, Booking } from '@/types';
-import { generateWeekClasses, deleteClass } from '@/app/actions/classes';
+import { deleteClass } from '@/app/actions/classes';
 import { Button } from '@/components/admin/Button';
 import { Badge } from '@/components/admin/Badge';
 import { EmptyState } from '@/components/admin/EmptyState';
@@ -103,7 +103,6 @@ export default function CalendarioClient({
   initialBookings: SerializedBooking[];
 }) {
   const router = useRouter();
-  const [isGenerating, startGenerate] = useTransition();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedClass, setSelectedClass] = useState<SerializedClass | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -162,14 +161,6 @@ export default function CalendarioClient({
   const occupancyPct = selectedClass
     ? Math.min(100, (occupied / selectedClass.capacity) * 100)
     : 0;
-
-  function handleGenerateWeek() {
-    const weekStart = format(weekDays[0], 'yyyy-MM-dd');
-    startGenerate(async () => {
-      await generateWeekClasses(weekStart);
-      router.refresh();
-    });
-  }
 
   function openDrawer(c: SerializedClass) {
     setSelectedClass(c);
@@ -230,15 +221,14 @@ export default function CalendarioClient({
           <h2 className="font-body text-base font-medium text-ink">{weekLabel}</h2>
         </div>
 
-        {/* Generate week */}
+        {/* Manage the recurring schedule / add a one-off class */}
         <div>
           <Button
-            variant="primary"
+            variant="secondary"
             icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-            onClick={handleGenerateWeek}
-            loading={isGenerating}
+            onClick={() => router.push('/admin/clases')}
           >
-            Generate week
+            Manage classes
           </Button>
         </div>
       </div>
@@ -248,15 +238,14 @@ export default function CalendarioClient({
         <EmptyState
           icon={<CalendarX strokeWidth={1} />}
           heading="No classes this week"
-          description="Generate the weekly schedule or create a class manually."
+          description="Classes appear automatically from the recurring weekly schedule. Manage the schedule or add a one-off class."
           action={
             <Button
               variant="primary"
               icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-              onClick={handleGenerateWeek}
-              loading={isGenerating}
+              onClick={() => router.push('/admin/clases')}
             >
-              Generate week
+              Manage classes
             </Button>
           }
         />

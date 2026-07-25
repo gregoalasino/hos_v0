@@ -11,6 +11,7 @@ import {
   Users,
   Tag,
   Ticket,
+  Package,
   LogOut,
   Menu,
   X,
@@ -25,8 +26,9 @@ type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean 
 const navItems: NavItem[] = [
   { href: '/admin',            label: 'Dashboard',   icon: LayoutDashboard, exact: true },
   { href: '/admin/calendario', label: 'Calendar',    icon: Calendar },
-  { href: '/admin/clases',     label: 'Classes',     icon: BookOpen },
+  { href: '/admin/clases',     label: 'Schedule',    icon: BookOpen },
   { href: '/admin/reservas',   label: 'Bookings',    icon: Users },
+  { href: '/admin/paquetes',   label: 'Packs',       icon: Package },
   { href: '/admin/upsells',    label: 'Upsells',     icon: Tag },
   { href: '/admin/refers',     label: 'Promo codes', icon: Ticket },
 ];

@@ -1,14 +1,11 @@
-import { getAllClasses } from '@/lib/queries/classes';
-import ClasesClient from './_components/ClasesClient';
-import type { YogaClass } from '@/types';
+import { getAllTemplatesAdmin, getInstructors } from '@/lib/queries/classes';
+import HorarioClient from './_components/HorarioClient';
 
 export default async function AdminClasesPage() {
-  const classes = await getAllClasses();
+  const [templates, instructors] = await Promise.all([
+    getAllTemplatesAdmin(),
+    getInstructors(),
+  ]);
 
-  const serialized = classes.map((c) => ({
-    ...c,
-    startsAt: c.startsAt.toISOString(),
-  })) as (Omit<YogaClass, 'startsAt'> & { startsAt: string })[];
-
-  return <ClasesClient initialClasses={serialized} />;
+  return <HorarioClient templates={templates} instructors={instructors} />;
 }

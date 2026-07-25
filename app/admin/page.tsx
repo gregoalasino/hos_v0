@@ -356,10 +356,10 @@ export default function AdminDashboard() {
           <EmptyState
             icon={<CalendarPlus strokeWidth={1} />}
             heading="No upcoming classes"
-            description="Create a class or generate the week to populate the schedule."
+            description="Classes appear automatically from the recurring weekly schedule. Manage the schedule or add a one-off class."
             action={
               <Link href="/admin/clases">
-                <Button variant="primary">Generate week</Button>
+                <Button variant="primary">Manage classes</Button>
               </Link>
             }
           />

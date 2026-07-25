@@ -10,7 +10,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  RefreshCw,
   Search,
   BookOpen,
 } from 'lucide-react';
@@ -25,7 +24,6 @@ import { NativeSelect } from '@/components/admin/NativeSelect';
 import {
   toggleClassActive,
   deleteClass,
-  generateWeekClasses,
   createManualClass,
   updateClassDetails,
 } from '@/app/actions/classes';
@@ -175,17 +173,9 @@ export default function ClasesClient({
     });
   }
 
-  function handleGenerateWeek() {
-    const today = new Date();
-    const day = today.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    const weekStart = format(monday, 'yyyy-MM-dd');
-    startTransition(async () => {
-      await generateWeekClasses(weekStart);
-      router.refresh();
-    });
+  function openNewClass() {
+    setEditingClass(undefined);
+    setModalOpen(true);
   }
 
   return (
@@ -194,26 +184,13 @@ export default function ClasesClient({
         heading="Classes"
         description={`${clases.length} ${clases.length === 1 ? 'class' : 'classes'} total`}
         actions={
-          <>
-            <Button
-              variant="secondary"
-              icon={<RefreshCw width={16} height={16} strokeWidth={1.5} className={isPending ? 'animate-spin' : ''} />}
-              onClick={handleGenerateWeek}
-              loading={isPending}
-            >
-              Regenerate week
-            </Button>
-            <Button
-              variant="primary"
-              icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-              onClick={() => {
-                setEditingClass(undefined);
-                setModalOpen(true);
-              }}
-            >
-              New class
-            </Button>
-          </>
+          <Button
+            variant="primary"
+            icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+            onClick={openNewClass}
+          >
+            New class
+          </Button>
         }
       />
 
@@ -221,15 +198,14 @@ export default function ClasesClient({
         <EmptyState
           icon={<BookOpen strokeWidth={1} />}
           heading="No classes yet"
-          description="Start by generating the weekly schedule or creating a class manually."
+          description="Classes appear automatically from the weekly schedule. You can also add a one-off class manually."
           action={
             <Button
               variant="primary"
               icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-              onClick={handleGenerateWeek}
-              loading={isPending}
+              onClick={openNewClass}
             >
-              Generate week
+              New class
             </Button>
           }
         />
