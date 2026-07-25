@@ -2,16 +2,38 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { format, isThisWeek, isToday, isYesterday, subWeeks, startOfMonth } from 'date-fns';
-import { es, enUS } from 'date-fns/locale';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  format,
+  isThisWeek,
+  isToday,
+  isYesterday,
+  subWeeks,
+  startOfMonth,
+} from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
 } from 'recharts';
 import {
-  CalendarDays, Users, DollarSign, TrendingUp, Clock, UserCheck,
+  CalendarDays,
+  Users,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  UserCheck,
+  CalendarPlus,
+  type LucideIcon,
 } from 'lucide-react';
 import {
   MOCK_CLASSES,
@@ -20,17 +42,47 @@ import {
   getWeeklyRevenueData,
   getClassDistributionData,
 } from '@/lib/mock-data';
-import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { Card } from '@/components/admin/Card';
+import { Badge } from '@/components/admin/Badge';
+import { Button } from '@/components/admin/Button';
+import { EmptyState } from '@/components/admin/EmptyState';
 
-// Importación del color desde DashboardLayout directamente en las constantes
-const SAGE = '#4a7c59';
-const TERRA = '#c4622d';
+// ─── Earth-tone palette (mirrors DESIGN_SYSTEM.md §2 Accents) ───────────────
+const COLORS = {
+  sage: '#6B7355',
+  terracotta: '#8B6F47',
+  burgundy: '#8D0000',
+  sand: '#A6896D',
+  warmGray: '#7A6B5D',
+} as const;
 
+// Positional palette for the donut (6th category falls back to ink/60).
+const DONUT_COLORS = [
+  COLORS.sage,
+  COLORS.terracotta,
+  COLORS.burgundy,
+  COLORS.sand,
+  COLORS.warmGray,
+  'rgba(49,49,49,0.6)', // ink/60 fallback
+];
+
+// Shared Recharts cosmetics.
+const AXIS_TICK = { fontSize: 11, fill: 'rgba(49,49,49,0.5)' } as const;
+const GRID_STROKE = 'rgba(49,49,49,0.08)';
+const TOOLTIP_STYLE: React.CSSProperties = {
+  fontSize: 12,
+  border: '1px solid rgba(49,49,49,0.1)',
+  borderRadius: 0,
+  background: '#ffffff',
+  padding: '12px',
+};
+
+// ─── Page ───────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const { lang } = useLanguage();
-  const dateFnsLocale = lang === 'es' ? es : enUS;
   const now = new Date();
 
+  // Metrics — data fetching preserved verbatim from the existing implementation.
   const metrics = useMemo(() => {
     const reservasHoy = MOCK_BOOKINGS.filter((b) => {
       const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
@@ -51,39 +103,48 @@ export default function AdminDashboard() {
       const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
       if (!clase) return false;
       const semAnt = subWeeks(now, 1);
-      return isThisWeek(clase.startsAt, { weekStartsOn: 1 }) === false &&
-        clase.startsAt >= subWeeks(semAnt, 1);
+      return (
+        isThisWeek(clase.startsAt, { weekStartsOn: 1 }) === false &&
+        clase.startsAt >= subWeeks(semAnt, 1)
+      );
     }).length;
 
-    const ingresosDelMes = MOCK_BOOKINGS
-      .filter((b) => {
-        return b.paymentStatus === 'paid' && b.createdAt >= startOfMonth(now);
-      })
-      .reduce((acc, b) => {
-        const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
-        return acc + (clase?.priceUsd ?? 0) * b.persons;
-      }, 0);
+    const ingresosDelMes = MOCK_BOOKINGS.filter(
+      (b) => b.paymentStatus === 'paid' && b.createdAt >= startOfMonth(now),
+    ).reduce((acc, b) => {
+      const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
+      return acc + (clase?.priceUsd ?? 0) * b.persons;
+    }, 0);
 
     const clasesPrximos7 = MOCK_CLASSES.filter(
-      (c) => c.isActive && c.startsAt >= now &&
-        c.startsAt <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      (c) =>
+        c.isActive &&
+        c.startsAt >= now &&
+        c.startsAt <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
     ).length;
 
-    const clasesConReservas = MOCK_CLASSES.filter((c) => c.isActive && c.startsAt > now);
-    const tasaOcupacion = clasesConReservas.length > 0
-      ? Math.round(
-          clasesConReservas.reduce(
-            (acc, c) => acc + (c.capacity - c.spotsRemaining) / c.capacity,
-            0
-          ) / clasesConReservas.length * 100
-        )
-      : 0;
+    const clasesConReservas = MOCK_CLASSES.filter(
+      (c) => c.isActive && c.startsAt > now,
+    );
+    const tasaOcupacion =
+      clasesConReservas.length > 0
+        ? Math.round(
+            (clasesConReservas.reduce(
+              (acc, c) => acc + (c.capacity - c.spotsRemaining) / c.capacity,
+              0,
+            ) /
+              clasesConReservas.length) *
+              100,
+          )
+        : 0;
 
     const alumnosUnicos = new Set(MOCK_BOOKINGS.map((b) => b.email)).size;
 
     return {
-      reservasHoy, reservasAyer,
-      reservasEstaSemana, reservasSemanaAnterior,
+      reservasHoy,
+      reservasAyer,
+      reservasEstaSemana,
+      reservasSemanaAnterior,
       ingresosDelMes,
       clasesPrximos7,
       tasaOcupacion,
@@ -91,353 +152,358 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  const proximasClases = useMemo(
+  const upcomingClasses = useMemo(
     () =>
-      MOCK_CLASSES
-        .filter((c) => c.isActive && c.startsAt >= now)
+      MOCK_CLASSES.filter((c) => c.isActive && c.startsAt >= now)
         .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
-        .slice(0, 8),
-    []
+        .slice(0, 5),
+    [],
   );
 
   const dailyData = useMemo(() => getDailyBookingsData(), []);
   const weeklyData = useMemo(() => getWeeklyRevenueData(), []);
   const pieData = useMemo(() => getClassDistributionData(), []);
 
-  // Clases más vendidas: agrupa por nombre de clase, cuenta reservas y suma ingresos
-  const clasesMasVendidas = useMemo(() => {
-    const map = new Map<string, {
-      name: string;
-      instructor: string;
-      color: string;
-      bookings: number;
-      personas: number;
-      ingresos: number;
-    }>();
+  // Translate the "Otras" fallback category to English and remap colors to the
+  // earth-tone palette positionally. The underlying mock data is left untouched.
+  const pieDataView = useMemo(
+    () =>
+      pieData.map((slice, i) => ({
+        ...slice,
+        name: slice.name === 'Otras' ? 'Other' : slice.name,
+        color: DONUT_COLORS[i] ?? DONUT_COLORS[DONUT_COLORS.length - 1],
+      })),
+    [pieData],
+  );
 
-    MOCK_BOOKINGS.forEach((b) => {
-      const clase = MOCK_CLASSES.find((c) => c.id === b.classId);
-      if (!clase) return;
-      const key = clase.name;
-      const prev = map.get(key) ?? {
-        name: clase.name,
-        instructor: clase.instructor,
-        color: clase.color ?? '#94a3b8',
-        bookings: 0,
-        personas: 0,
-        ingresos: 0,
-      };
-      map.set(key, {
-        ...prev,
-        bookings: prev.bookings + 1,
-        personas: prev.personas + b.persons,
-        ingresos: prev.ingresos + (b.paymentStatus !== 'free' ? clase.priceUsd * b.persons : 0),
-      });
-    });
-
-    return Array.from(map.values())
-      .sort((a, b) => b.bookings - a.bookings);
-  }, []);
+  const todayEyebrow = format(now, 'EEEE, MMMM d, yyyy', { locale: enUS });
 
   return (
-    <div className="p-5 lg:p-7 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-0.5 capitalize">
-          {lang === 'es'
-            ? format(now, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
-            : format(now, 'EEEE, MMMM d, yyyy', { locale: enUS })}
-        </p>
-      </div>
+    <div className="px-6 lg:px-10 py-8 lg:py-10 max-w-7xl mx-auto">
+      <PageHeader eyebrow={todayEyebrow} heading="Dashboard" />
 
-      {/* 6 Métricas */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <MetricCard
-          icon={<Users className="w-4 h-4" />}
-          label={tr(lang, 'Reservas hoy', 'Bookings today')}
+      {/* ─── Stats row ────────────────────────────────────────────────── */}
+      <section
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10 lg:mb-12"
+        aria-label="Key metrics"
+      >
+        <StatCard
+          icon={Users}
+          color={COLORS.sage}
           value={metrics.reservasHoy}
+          label="Bookings today"
           delta={metrics.reservasHoy - metrics.reservasAyer}
-          deltaLabel={tr(lang, 'vs ayer', 'vs yesterday')}
-          color={SAGE}
+          deltaLabel="vs yesterday"
         />
-        <MetricCard
-          icon={<CalendarDays className="w-4 h-4" />}
-          label={tr(lang, 'Esta semana', 'This week')}
+        <StatCard
+          icon={CalendarDays}
+          color={COLORS.sage}
           value={metrics.reservasEstaSemana}
+          label="This week"
           delta={metrics.reservasEstaSemana - metrics.reservasSemanaAnterior}
-          deltaLabel={tr(lang, 'vs sem. ant.', 'vs last week')}
-          color={SAGE}
+          deltaLabel="vs last week"
         />
-        <MetricCard
-          icon={<DollarSign className="w-4 h-4" />}
-          label={tr(lang, 'Ingresos del mes', 'Monthly revenue')}
+        <StatCard
+          icon={DollarSign}
+          color={COLORS.terracotta}
           value={`$${metrics.ingresosDelMes}`}
-          color={TERRA}
+          label="Revenue this month"
         />
-        <MetricCard
-          icon={<Clock className="w-4 h-4" />}
-          label={tr(lang, 'Clases (7 días)', 'Classes (7 days)')}
+        <StatCard
+          icon={Clock}
+          color={COLORS.sand}
           value={metrics.clasesPrximos7}
-          color={SAGE}
+          label="Classes (7 days)"
         />
-        <MetricCard
-          icon={<TrendingUp className="w-4 h-4" />}
-          label={tr(lang, 'Ocupación prom.', 'Avg. occupancy')}
+        <StatCard
+          icon={TrendingUp}
+          color={COLORS.burgundy}
           value={`${metrics.tasaOcupacion}%`}
-          color={TERRA}
+          label="Avg. occupancy"
         />
-        <MetricCard
-          icon={<UserCheck className="w-4 h-4" />}
-          label={tr(lang, 'Alumnos únicos', 'Unique students')}
+        <StatCard
+          icon={UserCheck}
+          color={COLORS.warmGray}
           value={metrics.alumnosUnicos}
-          color={SAGE}
+          label="Unique students"
         />
-      </div>
+      </section>
 
-      {/* Gráficos */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Barras: reservas por día */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">{tr(lang, 'Reservas por día (últimos 30 días)', 'Bookings per day (last 30 days)')}</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={dailyData} barSize={6}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} interval={4} />
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={25} />
-              <Tooltip
-                contentStyle={{ fontSize: 12, border: '1px solid #e2e8f0', borderRadius: 8 }}
-                cursor={{ fill: '#f8fafc' }}
-              />
-              <Bar dataKey="reservas" fill={SAGE} radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      {/* ─── Charts row — bar (2/3) + donut (1/3) ──────────────────────── */}
+      <section
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 lg:mb-12"
+        aria-label="Bookings and class distribution"
+      >
+        {/* Bookings per day */}
+        <Card className="lg:col-span-2">
+          <ChartHeading title="Bookings per day" subtitle="Last 30 days" />
+          <div className="mt-4">
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={dailyData} barSize={6}>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+                <XAxis dataKey="date" tick={AXIS_TICK} interval={4} />
+                <YAxis tick={AXIS_TICK} width={28} />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  cursor={{ fill: 'rgba(49,49,49,0.04)' }}
+                />
+                <Bar dataKey="reservas" fill={COLORS.sage} radius={0} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-        {/* Donut: distribución por clase */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">{tr(lang, 'Clases más populares', 'Most popular classes')}</h2>
-          <ResponsiveContainer width="100%" height={140}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={40}
-                outerRadius={65}
-                dataKey="value"
-                paddingAngle={2}
+        {/* Most popular classes */}
+        <Card>
+          <ChartHeading title="Most popular classes" />
+          <div className="mt-4">
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={pieDataView}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={72}
+                  dataKey="value"
+                  paddingAngle={2}
+                  stroke="none"
+                >
+                  {pieDataView.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(val: number) => [`${val}%`, '']}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <ul className="mt-6 space-y-3">
+            {pieDataView.map((d) => (
+              <li
+                key={d.name}
+                className="flex justify-between items-center gap-3"
               >
-                {pieData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{ fontSize: 12, border: '1px solid #e2e8f0', borderRadius: 8 }}
-                formatter={(val) => [`${val}%`, '']}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <ul className="mt-3 space-y-1.5">
-            {pieData.map((d) => (
-              <li key={d.name} className="flex items-center gap-2 text-xs text-slate-600">
-                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                <span className="flex-1 truncate">{d.name}</span>
-                <span className="font-medium text-slate-800">{d.value}%</span>
+                <span className="flex items-center gap-3 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-2 h-2 flex-shrink-0"
+                    style={{ background: d.color }}
+                  />
+                  <span className="font-body text-sm text-ink/80 truncate">
+                    {d.name}
+                  </span>
+                </span>
+                <span className="font-body text-sm font-medium text-ink">
+                  {d.value}%
+                </span>
               </li>
             ))}
           </ul>
-        </div>
-      </div>
+        </Card>
+      </section>
 
-      {/* Line chart: ingresos por semana */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">{tr(lang, 'Ingresos por semana (últimas 8 semanas)', 'Revenue per week (last 8 weeks)')}</h2>
-        <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={weeklyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="semana" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} width={40} tickFormatter={(v) => `$${v}`} />
-            <Tooltip
-              contentStyle={{ fontSize: 12, border: '1px solid #e2e8f0', borderRadius: 8 }}
-              formatter={(val) => [`$${val}`, tr(lang, 'Ingresos', 'Revenue')]}
-            />
-            <Line
-              type="monotone"
-              dataKey="ingresos"
-              stroke={TERRA}
-              strokeWidth={2}
-              dot={{ r: 3, fill: TERRA }}
-              activeDot={{ r: 5 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {/* ─── Revenue per week (full width) ──────────────────────────────── */}
+      <section className="mb-10 lg:mb-12" aria-label="Revenue trend">
+        <Card>
+          <ChartHeading title="Revenue per week" subtitle="Last 8 weeks" />
+          <div className="mt-4">
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={weeklyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+                <XAxis dataKey="semana" tick={AXIS_TICK} />
+                <YAxis
+                  tick={AXIS_TICK}
+                  width={44}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(val: number) => [`$${val}`, 'Revenue']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="ingresos"
+                  stroke={COLORS.terracotta}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: COLORS.terracotta, strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </section>
 
-      {/* ── Clases más vendidas ── */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">
-            {tr(lang, 'Clases más vendidas', 'Top selling classes')}
+      {/* ─── Upcoming classes ───────────────────────────────────────────── */}
+      <section aria-label="Upcoming classes">
+        <header className="flex justify-between items-end mb-6">
+          <h2 className="font-body text-base font-medium text-ink">
+            Upcoming classes
           </h2>
-          <Link href="/admin/clases" className="text-xs hover:underline underline-offset-4" style={{ color: SAGE }}>
-            {tr(lang, 'Ver todas →', 'View all →')}
+          <Link
+            href="/admin/calendario"
+            className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-200"
+          >
+            View calendar →
           </Link>
-        </div>
+        </header>
 
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-                  {tr(lang, 'Clase', 'Class')}
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden md:table-cell">
-                  {tr(lang, 'Instructor', 'Instructor')}
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-                  {tr(lang, 'Reservas', 'Bookings')}
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:table-cell">
-                  {tr(lang, 'Personas', 'People')}
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-                  {tr(lang, 'Ingresos', 'Revenue')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {clasesMasVendidas.map((c, i) => (
-                <tr key={c.name} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ background: c.color }}
-                      />
-                      <div>
-                        <p className="font-medium text-slate-800">{c.name}</p>
-                        <p className="text-xs text-slate-400 md:hidden">{c.instructor}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{c.instructor}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">{c.bookings}</span>
-                      {i === 0 && (
-                        <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1 py-0.5 font-medium">
-                          #1
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{c.personas}</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="font-semibold text-slate-800">${c.ingresos}</span>
-                  </td>
-                </tr>
-              ))}
-              {clasesMasVendidas.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">
-                    {tr(lang, 'Sin datos de ventas aún', 'No sales data yet')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Tabla próximas clases */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">{tr(lang, 'Próximas clases', 'Upcoming classes')}</h2>
-          <Link href="/admin/calendario" className="text-xs hover:underline underline-offset-4" style={{ color: SAGE }}>
-            {tr(lang, 'Ver calendario →', 'View calendar →')}
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">{tr(lang, 'Hora', 'Time')}</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">{tr(lang, 'Clase', 'Class')}</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden md:table-cell">{tr(lang, 'Instructor', 'Instructor')}</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:table-cell">{tr(lang, 'Reservas', 'Bookings')}</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">{tr(lang, 'Estado', 'Status')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {proximasClases.map((clase) => {
-                const reservas = MOCK_BOOKINGS.filter((b) => b.classId === clase.id).length;
-                const llena = clase.spotsRemaining === 0;
-                return (
-                  <tr key={clase.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-slate-700 text-xs capitalize">
-                        {format(clase.startsAt, lang === 'es' ? "EEE d MMM" : "EEE MMM d", { locale: dateFnsLocale })}
-                      </p>
-                      <p className="text-slate-400 text-xs">{format(clase.startsAt, "HH:mm")}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: clase.color }} />
-                        <span className="font-medium text-slate-800">{clase.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{clase.instructor}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className={`text-sm font-medium ${llena ? 'text-red-500' : 'text-slate-700'}`}>
-                        {clase.capacity - clase.spotsRemaining}/{clase.capacity}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${
-                          llena
-                            ? 'bg-red-50 text-red-600 border-red-200'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        }`}
-                      >
-                        {llena ? tr(lang, 'Llena', 'Full') : tr(lang, 'Disponible', 'Available')}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        {upcomingClasses.length === 0 ? (
+          <EmptyState
+            icon={<CalendarPlus strokeWidth={1} />}
+            heading="No upcoming classes"
+            description="Create a class or generate the week to populate the schedule."
+            action={
+              <Link href="/admin/clases">
+                <Button variant="primary">Generate week</Button>
+              </Link>
+            }
+          />
+        ) : (
+          <div className="space-y-3">
+            {upcomingClasses.map((clase) => (
+              <UpcomingClassRow key={clase.id} clase={clase} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function MetricCard({
-  icon, label, value, delta, deltaLabel, color,
-}: {
-  icon: React.ReactNode;
-  label: string;
+// ─── Stat card ──────────────────────────────────────────────────────────────
+type StatCardProps = {
+  icon: LucideIcon;
+  color: string;
   value: string | number;
+  label: string;
   delta?: number;
   deltaLabel?: string;
-  color: string;
-}) {
+};
+
+function StatCard({
+  icon: Icon,
+  color,
+  value,
+  label,
+  delta,
+  deltaLabel,
+}: StatCardProps) {
+  const deltaSign = delta === undefined ? null : delta > 0 ? '+' : delta < 0 ? '' : '+';
+  const deltaColorClass =
+    delta === undefined
+      ? ''
+      : delta > 0
+      ? 'text-[#6B7355]' // sage — positive
+      : delta < 0
+      ? 'text-[#8B6F47]' // terracotta — negative
+      : 'text-ink/40'; // neutral
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4">
-      <div className="w-7 h-7 rounded-md flex items-center justify-center mb-2 text-white" style={{ background: color }}>
-        {icon}
+    <Card padding="tight" className="hover:border-ink/20 transition-colors duration-200">
+      <div
+        aria-hidden
+        className="w-8 h-8 flex items-center justify-center"
+        style={{ background: `${color}1A` /* hex + 1A ≈ 10% alpha */ }}
+      >
+        <Icon width={16} height={16} strokeWidth={1.5} style={{ color }} />
       </div>
-      <p className="text-xl font-bold text-slate-900">{value}</p>
-      <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+      <p className="font-body text-3xl font-light text-ink leading-none mt-4">
+        {value}
+      </p>
+      <p className="font-body text-xs text-ink/60 mt-1">{label}</p>
       {delta !== undefined && deltaLabel && (
-        <p className={`text-xs mt-1 font-medium ${delta >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-          {delta >= 0 ? '+' : ''}{delta} {deltaLabel}
+        <p className={`font-body text-xs font-medium mt-2 ${deltaColorClass}`}>
+          {deltaSign}
+          {delta} {deltaLabel}
         </p>
       )}
+    </Card>
+  );
+}
+
+// ─── Chart heading ──────────────────────────────────────────────────────────
+function ChartHeading({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div>
+      <h2 className="font-body text-base font-medium text-ink leading-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="font-body text-xs text-ink/50 mt-1">{subtitle}</p>
+      )}
     </div>
+  );
+}
+
+// ─── Upcoming class row ─────────────────────────────────────────────────────
+type ClaseLike = (typeof MOCK_CLASSES)[number];
+
+function UpcomingClassRow({ clase }: { clase: ClaseLike }) {
+  const booked = clase.capacity - clase.spotsRemaining;
+  const remaining = clase.spotsRemaining;
+  const remainingPct = clase.capacity > 0 ? remaining / clase.capacity : 0;
+
+  // Status: destructive when full, warning when <50% remaining, otherwise active.
+  const statusVariant: 'active' | 'warning' | 'destructive' =
+    remaining === 0 ? 'destructive' : remainingPct < 0.5 ? 'warning' : 'active';
+  const statusLabel =
+    remaining === 0 ? 'Full' : remainingPct < 0.5 ? 'Low' : 'Open';
+
+  return (
+    <Card padding="tight" className="hover:border-ink/20 transition-colors duration-200">
+      <div className="grid grid-cols-12 gap-4 items-center">
+        {/* Date */}
+        <div className="col-span-3 md:col-span-1">
+          <p className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">
+            {format(clase.startsAt, 'EEE', { locale: enUS })}
+          </p>
+          <p className="font-body text-xl font-light text-ink leading-none mt-0.5">
+            {format(clase.startsAt, 'd', { locale: enUS })}
+          </p>
+        </div>
+
+        {/* Time */}
+        <div className="col-span-3 md:col-span-1">
+          <p className="font-body text-sm text-ink">
+            {format(clase.startsAt, 'HH:mm')}
+          </p>
+        </div>
+
+        {/* Class name */}
+        <div className="col-span-6 md:col-span-4 min-w-0">
+          <p className="font-body text-sm font-medium text-ink truncate">
+            {clase.name}
+          </p>
+        </div>
+
+        {/* Instructor */}
+        <div className="col-span-6 md:col-span-2 min-w-0">
+          {clase.instructor ? (
+            <p className="font-body text-sm text-ink/70 truncate">
+              {clase.instructor}
+            </p>
+          ) : (
+            <p className="font-body text-sm text-ink/30">—</p>
+          )}
+        </div>
+
+        {/* Capacity */}
+        <div className="col-span-3 md:col-span-2">
+          <p className="font-body text-sm text-ink">
+            {booked} / {clase.capacity}
+          </p>
+        </div>
+
+        {/* Status */}
+        <div className="col-span-3 md:col-span-2 flex md:justify-end">
+          <Badge variant={statusVariant}>{statusLabel}</Badge>
+        </div>
+      </div>
+    </Card>
   );
 }
