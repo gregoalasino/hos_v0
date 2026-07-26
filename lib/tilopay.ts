@@ -11,7 +11,41 @@
 //      (code=1 approved, order, transaction, hash…). Our callback confirms.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { createHmac } from 'crypto';
+
 const BASE_URL = 'https://app.tilopay.com/api/v1';
+
+// Recomputes the OrderHash Tilopay returns on the callback, per their official
+// WooCommerce plugin: HMAC-SHA256(http_build_query(params), "{tpt}|{key}|{pass}").
+// Used to verify a callback really came from Tilopay for the given amount.
+export function computeOrderHash(p: {
+  orderId: string; // tpt / tilopay-transaction
+  externalOrderId: string; // our order number
+  amount: string; // "1.00" (2 decimals)
+  currency: string; // "USD"
+  responseCode: string; // "1"
+  auth: string;
+  email: string;
+}): string | null {
+  const key = process.env.TILOPAY_API_KEY;
+  const user = process.env.TILOPAY_API_USER;
+  const pass = process.env.TILOPAY_API_PASSWORD;
+  if (!key || !user || !pass) return null;
+
+  const params = new URLSearchParams();
+  params.append('api_Key', key);
+  params.append('api_user', user);
+  params.append('orderId', p.orderId);
+  params.append('external_orden_id', p.externalOrderId);
+  params.append('amount', p.amount);
+  params.append('currency', p.currency);
+  params.append('responseCode', p.responseCode);
+  params.append('auth', p.auth);
+  params.append('email', p.email);
+
+  const hashKey = `${p.orderId}|${key}|${pass}`;
+  return createHmac('sha256', hashKey).update(params.toString()).digest('hex');
+}
 
 function creds() {
   const apiuser = process.env.TILOPAY_API_USER;
