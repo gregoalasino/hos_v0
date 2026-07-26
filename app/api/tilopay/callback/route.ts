@@ -1,58 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { confirmPackPayment } from '@/app/actions/packs';
+import {
+  confirmBookingPaid,
+  confirmPackAndBooking,
+  releaseBookingOrder,
+} from '@/app/actions/checkout';
 
 // Tilopay redirects the customer here after the hosted payment completes.
-// Documented result: code=1 means approved. Tilopay also returns the order
-// number, transaction id and a hash we can use to verify authenticity.
+// code=1 means approved. The `order` is either a pack_purchases id (pack bought
+// from /paquetes or from the booking flow) or a bookings id (drop-in).
 //
-// SECURITY TODO: once we capture a real callback (from the $1 production test),
-// harden this by verifying the returned hash and/or re-querying Tilopay for the
-// transaction status before confirming — so a forged code=1 can't mint a code.
+// SECURITY TODO: validate the returned OrderHash with the Tilopay panel hash
+// secret (or re-query the transaction) before confirming, so a forged code=1
+// can't confirm an order without a real payment.
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const params = Object.fromEntries(searchParams.entries());
-  console.log('[tilopay/callback] params:', params);
+  console.log('[tilopay/callback] params:', Object.fromEntries(searchParams.entries()));
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin;
   const code = searchParams.get('code');
+  const tx = searchParams.get('tilopay-transaction') ?? searchParams.get('tpt');
   const order =
     searchParams.get('order') ??
     searchParams.get('orderNumber') ??
     searchParams.get('ordernumber');
 
-  const resultUrl = (status: string) =>
-    NextResponse.redirect(`${siteUrl}/paquetes/resultado?status=${status}`);
+  const result = (status: string, kind: 'pack' | 'booking' = 'pack') =>
+    NextResponse.redirect(`${siteUrl}/paquetes/resultado?status=${status}&kind=${kind}`);
 
-  if (!order) {
-    console.error('[tilopay/callback] missing order');
-    return resultUrl('error');
-  }
+  if (!order) return result('error');
 
   const supabase = await createServiceClient();
-  const { data: purchase } = await supabase
+  const approved = code === '1';
+
+  // Is this order a pack purchase?
+  const { data: pack } = await supabase
     .from('pack_purchases')
-    .select('id, status')
+    .select('id')
     .eq('id', order)
     .single();
 
-  if (!purchase) {
-    console.error('[tilopay/callback] purchase not found for order', order);
-    return resultUrl('error');
-  }
-
-  // Approved.
-  if (code === '1') {
-    if (purchase.status !== 'paid') {
-      const res = await confirmPackPayment(purchase.id);
-      if (!res.ok) {
-        console.error('[tilopay/callback] confirm failed', res.error);
-        return resultUrl('error');
-      }
+  if (pack) {
+    if (approved) {
+      await confirmPackAndBooking(order, tx);
+      return result('ok');
     }
-    return resultUrl('ok');
+    await releaseBookingOrder('pack', order);
+    return result('declined');
   }
 
-  // Declined / cancelled — leave the purchase pending so it can be retried.
-  return resultUrl('declined');
+  // Otherwise it should be a booking (drop-in).
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('id', order)
+    .single();
+
+  if (booking) {
+    if (approved) {
+      await confirmBookingPaid(order, tx);
+      return result('ok', 'booking');
+    }
+    await releaseBookingOrder('booking', order);
+    return result('declined', 'booking');
+  }
+
+  console.error('[tilopay/callback] order not found:', order);
+  return result('error');
 }

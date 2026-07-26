@@ -11,6 +11,7 @@ import {
   Tag, Check, CheckCircle, XCircle, Loader2,
 } from 'lucide-react';
 import type { Upsell, ReferralCode } from '@/types';
+import { startBookingCheckout } from '@/app/actions/checkout';
 import { downloadICS } from '@/lib/ics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,12 +73,13 @@ const personalSchema = z.object({
 
 type PersonalData = z.infer<typeof personalSchema>;
 
-type PackType = 'dropin' | 'pack5' | 'pack10';
+type PackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
 
 const PACKS: { id: PackType; name: string; classes: number; price: number; saving?: string }[] = [
-  { id: 'dropin', name: 'Drop-in',   classes: 1,  price: 20 },
-  { id: 'pack5',  name: 'Pack of 5', classes: 5,  price: 75,  saving: 'Save $25' },
+  { id: 'dropin', name: 'Drop-in',    classes: 1,  price: 20 },
+  { id: 'pack5',  name: 'Pack of 5',  classes: 5,  price: 75,  saving: 'Save $25' },
   { id: 'pack10', name: 'Pack of 10', classes: 10, price: 130, saving: 'Save $70' },
+  { id: 'pack20', name: 'Pack of 20', classes: 20, price: 240, saving: 'Save $160' },
 ];
 
 type BookingError = 'no_spots' | 'too_late' | 'generic' | null;
@@ -224,7 +226,16 @@ export default function BookingFlow({
   const subtotalUpsells = selectedUpsellsList.reduce((acc, u) => acc + u.priceUsd, 0);
   const subtotal = priceUsd + subtotalUpsells;
   const discountAmount = appliedCode ? computeDiscount(appliedCode, subtotal, upsells) : 0;
-  const total = Math.max(0, subtotal - discountAmount);
+
+  // Amount actually charged depends on the selected option: a drop-in charges the
+  // class (a code may discount it); a pack charges the pack price (codes don't
+  // apply to pack purchases). Upsells are always added.
+  const packDef = PACKS.find((p) => p.id === packType)!;
+  const isPack = packType !== 'dropin';
+  const basePrice = isPack ? packDef.price : priceUsd;
+  const priceLabel = isPack ? packDef.name : 'Class';
+  const payDiscount = isPack ? 0 : discountAmount;
+  const total = Math.max(0, basePrice + subtotalUpsells - payDiscount);
   const isTotalFree = total === 0;
 
   async function handleApplyCode() {
@@ -296,40 +307,37 @@ export default function BookingFlow({
     }
 
     try {
-      const res = await fetch('/api/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          classId,
-          upsellIds: Array.from(selectedUpsellIds),
-          personalData: {
-            firstName: personalData.firstName,
-            lastName: personalData.lastName,
-            email: personalData.email,
-            phone: personalData.phone,
-            referralCode: personalData.referralCode,
-            isHotelGuest: personalData.isHotelGuest,
-            cloudbedsRef: personalData.cloudbedsRef,
-          },
-          packType,
-        }),
+      const res = await startBookingCheckout({
+        classId,
+        upsellIds: Array.from(selectedUpsellIds),
+        personalData: {
+          firstName: personalData.firstName,
+          lastName: personalData.lastName,
+          email: personalData.email,
+          phone: personalData.phone,
+          referralCode: personalData.referralCode,
+          isHotelGuest: personalData.isHotelGuest,
+          cloudbedsRef: personalData.cloudbedsRef,
+        },
+        packType,
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        if (data.error === 'no_spots_available') {
-          setBookingError('no_spots');
-        } else if (data.error === 'booking_too_late') {
-          setBookingError('too_late');
-        } else {
-          setBookingError('generic');
-        }
+        if (res.error === 'no_spots_available') setBookingError('no_spots');
+        else if (res.error === 'booking_too_late') setBookingError('too_late');
+        else setBookingError('generic');
         return;
       }
 
-      setBookingRef(data.bookingReference);
-      goToStep(5);
+      if (res.free) {
+        // Fully covered (pack code / discount) — no payment needed.
+        setBookingRef(res.bookingReference);
+        goToStep(5);
+        return;
+      }
+
+      // Hand off to Tilopay's secure hosted payment page.
+      window.location.href = res.url;
     } catch {
       setBookingError('generic');
     } finally {
@@ -394,12 +402,13 @@ export default function BookingFlow({
     instructor,
     classDate,
     durationMinutes,
-    priceUsd,
+    priceUsd: basePrice,
+    priceLabel,
     selectedUpsells: selectedUpsellsList,
-    appliedCode,
-    discountAmount,
+    appliedCode: isPack ? null : appliedCode,
+    discountAmount: payDiscount,
     total,
-    isFree,
+    isFree: isTotalFree,
   };
 
   return (
@@ -780,7 +789,8 @@ export default function BookingFlow({
                         transition={{ duration: 0.4, ease: 'easeOut' }}
                       >
                         <p className="font-body text-sm text-ink max-w-md">
-                          Payment is collected at the studio. Choose how you&apos;d like to settle.
+                          Pay securely by card. Choose a single class or save with a pack — a pack
+                          also covers this class and sends you a code for future ones.
                         </p>
 
                         {/* Pack type selector — editorial flat cards, no radius */}

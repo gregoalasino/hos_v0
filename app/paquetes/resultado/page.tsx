@@ -3,31 +3,39 @@ import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { Check, X, AlertCircle } from 'lucide-react';
 
-const COPY: Record<string, { icon: 'ok' | 'declined' | 'error'; title: string; body: string }> = {
-  ok: {
-    icon: 'ok',
-    title: 'Payment received',
-    body: "Thank you! Your class pack is confirmed. We've emailed your personal class code — use it at checkout to book each class for free.",
-  },
-  declined: {
-    icon: 'declined',
-    title: 'Payment not completed',
-    body: 'Your payment was declined or cancelled. No charge was made. You can try again whenever you like.',
-  },
-  error: {
+type Copy = { icon: 'ok' | 'declined' | 'error'; title: string; body: string };
+
+const OK_BODY: Record<string, string> = {
+  pack: "Thank you! Your class pack is confirmed. We've emailed your personal class code — use it at checkout to book each class for free.",
+  booking:
+    "Thank you! Your class is booked and your payment is confirmed. We look forward to seeing you on the mat.",
+};
+
+function copyFor(status: string, kind: string): Copy {
+  if (status === 'ok') {
+    return { icon: 'ok', title: kind === 'booking' ? 'Booking confirmed' : 'Payment received', body: OK_BODY[kind] ?? OK_BODY.pack };
+  }
+  if (status === 'declined') {
+    return {
+      icon: 'declined',
+      title: 'Payment not completed',
+      body: 'Your payment was declined or cancelled. No charge was made. You can try again whenever you like.',
+    };
+  }
+  return {
     icon: 'error',
     title: 'Something went wrong',
     body: "We couldn't confirm your payment automatically. If you were charged, don't worry — contact us and we'll sort it out right away.",
-  },
-};
+  };
+}
 
 export default async function ResultadoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; kind?: string }>;
 }) {
-  const { status } = await searchParams;
-  const c = COPY[status ?? 'error'] ?? COPY.error;
+  const { status, kind } = await searchParams;
+  const c = copyFor(status ?? 'error', kind ?? 'pack');
 
   return (
     <>

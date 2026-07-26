@@ -255,6 +255,8 @@ export interface Database {
           cloudbeds_ref: string | null;
           total_usd: number | null;
           notes: string | null;
+          pack_purchase_id: string | null;
+          tilopay_transaction: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -275,6 +277,8 @@ export interface Database {
           cloudbeds_ref?: string | null;
           total_usd?: number | null;
           notes?: string | null;
+          pack_purchase_id?: string | null;
+          tilopay_transaction?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -295,6 +299,8 @@ export interface Database {
           cloudbeds_ref?: string | null;
           total_usd?: number | null;
           notes?: string | null;
+          pack_purchase_id?: string | null;
+          tilopay_transaction?: string | null;
           created_at?: string;
           updated_at?: string;
         };
