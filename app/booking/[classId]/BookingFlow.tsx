@@ -797,6 +797,8 @@ export default function BookingFlow({
                         <div className="mt-12 border-y border-ink/10 divide-y divide-ink/10">
                           {PACKS.map((pack) => {
                             const active = packType === pack.id;
+                            // Drop-in shows this class's real price; packs are fixed.
+                            const displayPrice = pack.id === 'dropin' ? priceUsd : pack.price;
                             return (
                               <button
                                 key={pack.id}
@@ -837,7 +839,7 @@ export default function BookingFlow({
                                     )}
                                   </div>
                                 </div>
-                                <span className="font-body text-sm text-ink">${pack.price} USD</span>
+                                <span className="font-body text-sm text-ink">${displayPrice} USD</span>
                               </button>
                             );
                           })}

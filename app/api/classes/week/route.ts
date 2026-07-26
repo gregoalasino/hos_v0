@@ -4,6 +4,10 @@ import { ensureWeekMaterialized } from '@/lib/queries/classes';
 import type { DbClass } from '@/types';
 import { dbClassToYogaClass } from '@/types';
 
+// Always run fresh: the endpoint materializes the week's occurrences and must
+// reflect the live schedule (no static/route caching).
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
