@@ -10,6 +10,8 @@ type Props = {
   classDate: Date;
   durationMinutes: number;
   priceUsd: number;
+  /** Label for the primary line item — "Class" for a drop-in, or the pack name. */
+  priceLabel?: string;
   selectedUpsells: Upsell[];
   appliedCode: ReferralCode | null;
   discountAmount: number;
@@ -26,7 +28,7 @@ type Props = {
  */
 export function BookingSummary({
   className, instructor, classDate, durationMinutes,
-  priceUsd, selectedUpsells, appliedCode, discountAmount, total, isFree, bare = false,
+  priceUsd, priceLabel = 'Class', selectedUpsells, appliedCode, discountAmount, total, isFree, bare = false,
 }: Props) {
   const endTime = new Date(classDate.getTime() + durationMinutes * 60000);
   const dateStr =
@@ -54,7 +56,7 @@ export function BookingSummary({
       {/* Line items */}
       <div className="space-y-2">
         <LineRow
-          label="Class"
+          label={priceLabel}
           amount={isFree ? 'Free' : `$${priceUsd}`}
         />
         {selectedUpsells.map((u) => (

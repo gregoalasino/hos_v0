@@ -63,6 +63,8 @@ export async function POST(req: NextRequest) {
       usage_count: number;
     };
     let validCode: CodeRow | null = null;
+    // A valid class-pack code makes the class itself free (upsells still charged).
+    let packCode: string | null = null;
 
     if (personalData.referralCode?.trim()) {
       const upper = personalData.referralCode.trim().toUpperCase();
@@ -86,11 +88,26 @@ export async function POST(req: NextRequest) {
         if (withinDates && withinLimit) {
           validCode = codeRow as CodeRow;
         }
+      } else {
+        // Not a referral code — maybe a paid class-pack code with uses remaining.
+        const { data: packRow } = await supabase
+          .from('pack_purchases')
+          .select('status, classes_total, classes_used')
+          .eq('code', upper)
+          .single();
+        if (
+          packRow &&
+          packRow.status === 'paid' &&
+          packRow.classes_used < packRow.classes_total
+        ) {
+          packCode = upper;
+        }
       }
     }
 
     // ── 4. Calculate total ────────────────────────────────────────────────────
-    let total = Number(clase.price_dropin_usd);
+    const classPrice = Number(clase.price_dropin_usd);
+    let upsellsTotal = 0;
 
     if (upsellIds.length > 0) {
       const { data: upsellRows } = await supabase
@@ -98,11 +115,14 @@ export async function POST(req: NextRequest) {
         .select('price_usd')
         .in('id', upsellIds);
       if (upsellRows) {
-        total += upsellRows.reduce((acc, u) => acc + Number(u.price_usd), 0);
+        upsellsTotal = upsellRows.reduce((acc, u) => acc + Number(u.price_usd), 0);
       }
     }
 
-    if (validCode) {
+    // A pack code waives the class fee entirely (upsells still charged).
+    let total = packCode ? upsellsTotal : classPrice + upsellsTotal;
+
+    if (!packCode && validCode) {
       if (validCode.benefit_type === 'percentage' && validCode.discount_percent != null) {
         total = total - total * (validCode.discount_percent / 100);
       } else if (validCode.benefit_type === 'fixed' && validCode.discount_fixed != null) {
@@ -163,12 +183,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'database_error' }, { status: 500 });
     }
 
-    // ── 8. Increment referral code usage ──────────────────────────────────────
+    // ── 8. Consume the code (referral usage or pack redemption) ────────────────
     if (validCode) {
       await supabase
         .from('referral_codes')
         .update({ usage_count: validCode.usage_count + 1 })
         .eq('id', validCode.id);
+    } else if (packCode) {
+      // Atomically consume one class from the pack. If it fails (e.g. a race
+      // exhausted it), the booking still stands — surfaced in admin for review.
+      const { data: redeemResult } = await supabase.rpc('redeem_pack_code', {
+        p_code: packCode,
+      });
+      const redeem = redeemResult as { success: boolean; error?: string } | null;
+      if (!redeem?.success) {
+        console.error('[create booking] pack redeem failed:', redeem?.error, packCode);
+      }
     }
 
     return NextResponse.json({

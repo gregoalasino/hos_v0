@@ -168,6 +168,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      pack_purchases: {
+        Row: {
+          id: string;
+          pack_id: string | null;
+          first_name: string;
+          last_name: string;
+          email: string;
+          phone: string | null;
+          code: string | null;
+          classes_total: number;
+          classes_used: number;
+          status: string;
+          amount_usd: number | null;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          pack_id?: string | null;
+          first_name: string;
+          last_name: string;
+          email: string;
+          phone?: string | null;
+          code?: string | null;
+          classes_total: number;
+          classes_used?: number;
+          status?: string;
+          amount_usd?: number | null;
+          created_at?: string;
+          paid_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          pack_id?: string | null;
+          first_name?: string;
+          last_name?: string;
+          email?: string;
+          phone?: string | null;
+          code?: string | null;
+          classes_total?: number;
+          classes_used?: number;
+          status?: string;
+          amount_usd?: number | null;
+          created_at?: string;
+          paid_at?: string | null;
+        };
+        Relationships: [];
+      };
       upsells: {
         Row: {
           id: string;
@@ -213,6 +261,8 @@ export interface Database {
           cloudbeds_ref: string | null;
           total_usd: number | null;
           notes: string | null;
+          pack_purchase_id: string | null;
+          tilopay_transaction: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -233,6 +283,8 @@ export interface Database {
           cloudbeds_ref?: string | null;
           total_usd?: number | null;
           notes?: string | null;
+          pack_purchase_id?: string | null;
+          tilopay_transaction?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -253,6 +305,8 @@ export interface Database {
           cloudbeds_ref?: string | null;
           total_usd?: number | null;
           notes?: string | null;
+          pack_purchase_id?: string | null;
+          tilopay_transaction?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -372,6 +426,14 @@ export interface Database {
       generate_week_classes: {
         Args: { p_week_start: string };
         Returns: number;
+      };
+      generate_pack_code: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      redeem_pack_code: {
+        Args: { p_code: string };
+        Returns: Json;
       };
       is_admin: {
         Args: Record<string, never>;
