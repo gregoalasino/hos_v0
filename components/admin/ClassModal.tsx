@@ -4,21 +4,32 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format } from 'date-fns';
-import type { YogaClass } from '@/types';
+import type { ClassTemplate, Instructor } from '@/types';
 import { Modal } from './Modal';
 import { Input } from './Input';
 import { Textarea } from './Textarea';
 import { Toggle } from './Toggle';
 import { Field } from './Field';
+import { NativeSelect } from './NativeSelect';
 import { Button } from './Button';
 
-// Schema is validation logic — kept verbatim, error messages translated to English.
-const classSchema = z.object({
+// Day-of-week options (0=Sun … 6=Sat, matching class_templates.day_of_week).
+export const DAY_OPTIONS = [
+  { value: '1', label: 'Monday' },
+  { value: '2', label: 'Tuesday' },
+  { value: '3', label: 'Wednesday' },
+  { value: '4', label: 'Thursday' },
+  { value: '5', label: 'Friday' },
+  { value: '6', label: 'Saturday' },
+  { value: '0', label: 'Sunday' },
+];
+
+const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
-  instructor: z.string().min(1, 'Instructor is required'),
-  startsAt: z.string().min(1, 'Start date and time are required'),
+  instructorId: z.string(), // '' means unassigned
+  dayOfWeek: z.coerce.number().min(0).max(6),
+  timeStart: z.string().min(1, 'Time is required'),
   durationMinutes: z.coerce.number().min(15, 'Minimum 15 minutes').max(480, 'Maximum 8 hours'),
   capacity: z.coerce.number().min(1, 'Capacity must be at least 1'),
   priceUsd: z.coerce.number().min(0, "Price can't be negative"),
@@ -26,25 +37,41 @@ const classSchema = z.object({
   isActive: z.boolean(),
 });
 
-type ClassFormValues = z.infer<typeof classSchema>;
+type TemplateFormValues = z.infer<typeof templateSchema>;
+
+export type TemplatePayload = {
+  name: string;
+  slug: string;
+  description: string | null;
+  instructor_id: string | null;
+  day_of_week: number;
+  time_start: string;
+  duration_minutes: number;
+  capacity: number;
+  price_dropin_usd: number;
+  location: string;
+  is_active: boolean;
+};
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<YogaClass, 'spotsRemaining'> & { spotsRemaining?: number }) => void;
-  classData?: YogaClass;
+  onSave: (data: TemplatePayload) => void;
+  template?: ClassTemplate;
+  instructors: Instructor[];
   loading?: boolean;
 };
 
-const DEFAULTS: ClassFormValues = {
+const DEFAULTS: TemplateFormValues = {
   name: '',
   description: '',
-  instructor: '',
-  startsAt: '',
-  durationMinutes: 60,
-  capacity: 12,
-  priceUsd: 25,
-  location: 'Open-air shala',
+  instructorId: '',
+  dayOfWeek: 1,
+  timeStart: '10:00',
+  durationMinutes: 90,
+  capacity: 20,
+  priceUsd: 20,
+  location: 'Open-Air Shala',
   isActive: true,
 };
 
@@ -52,10 +79,11 @@ export default function ClassModal({
   open,
   onOpenChange,
   onSave,
-  classData,
+  template,
+  instructors,
   loading,
 }: Props) {
-  const isEditing = !!classData;
+  const isEditing = !!template;
 
   const {
     register,
@@ -64,8 +92,8 @@ export default function ClassModal({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<ClassFormValues>({
-    resolver: zodResolver(classSchema),
+  } = useForm<TemplateFormValues>({
+    resolver: zodResolver(templateSchema),
     defaultValues: DEFAULTS,
   });
 
@@ -73,63 +101,66 @@ export default function ClassModal({
 
   useEffect(() => {
     if (!open) return;
-    if (classData) {
+    if (template) {
       reset({
-        name: classData.name,
-        description: classData.description ?? '',
-        instructor: classData.instructor,
-        startsAt: format(classData.startsAt, "yyyy-MM-dd'T'HH:mm"),
-        durationMinutes: classData.durationMinutes,
-        capacity: classData.capacity,
-        priceUsd: classData.priceUsd,
-        location: classData.location,
-        isActive: classData.isActive,
+        name: template.name,
+        description: template.description ?? '',
+        instructorId: template.instructor_id ?? '',
+        dayOfWeek: template.day_of_week,
+        timeStart: (template.time_start ?? '10:00').slice(0, 5),
+        durationMinutes: template.duration_minutes,
+        capacity: template.capacity,
+        priceUsd: template.price_dropin_usd,
+        location: template.location,
+        isActive: template.is_active,
       });
     } else {
       reset(DEFAULTS);
     }
-  }, [classData, open, reset]);
+  }, [template, open, reset]);
 
-  function onSubmit(values: ClassFormValues) {
-    const startsAt = new Date(values.startsAt);
+  function onSubmit(values: TemplateFormValues) {
     onSave({
-      id: classData?.id ?? `cls-${Date.now()}`,
+      name: values.name,
       slug:
-        classData?.slug ??
+        template?.slug ??
         values.name
           .toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^a-z0-9-]/g, ''),
-      name: values.name,
-      description: values.description ?? '',
-      instructor: values.instructor,
-      startsAt,
-      durationMinutes: values.durationMinutes,
+      description: values.description?.trim() ? values.description : null,
+      instructor_id: values.instructorId || null,
+      day_of_week: values.dayOfWeek,
+      time_start: values.timeStart,
+      duration_minutes: values.durationMinutes,
       capacity: values.capacity,
-      spotsRemaining: classData?.spotsRemaining ?? values.capacity,
-      priceUsd: values.priceUsd,
+      price_dropin_usd: values.priceUsd,
       location: values.location,
-      isActive: values.isActive,
+      is_active: values.isActive,
     });
   }
+
+  const instructorOptions = [
+    { value: '', label: 'Unassigned' },
+    ...instructors.map((i) => ({ value: i.id, label: i.name })),
+  ];
 
   return (
     <Modal
       isOpen={open}
       onClose={() => onOpenChange(false)}
-      title={isEditing ? 'Edit class' : 'New class'}
-      subtitle={isEditing ? undefined : 'A single class on a specific date and time.'}
+      title={isEditing ? 'Edit recurring class' : 'New recurring class'}
+      subtitle={
+        isEditing
+          ? undefined
+          : 'A class that repeats every week on the chosen day and time.'
+      }
       footer={
         <>
           <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            onClick={handleSubmit(onSubmit)}
-            loading={loading}
-          >
+          <Button variant="primary" type="submit" onClick={handleSubmit(onSubmit)} loading={loading}>
             {isEditing ? 'Save changes' : 'Create class'}
           </Button>
         </>
@@ -152,26 +183,34 @@ export default function ClassModal({
         />
 
         <div className="grid grid-cols-2 gap-6">
-          <Input
+          <NativeSelect
             label="Instructor"
-            placeholder="Name"
-            error={errors.instructor?.message}
-            {...register('instructor')}
+            options={instructorOptions}
+            error={errors.instructorId?.message}
+            {...register('instructorId')}
           />
           <Input
             label="Location"
-            placeholder="Open-air shala"
+            placeholder="Open-Air Shala"
             error={errors.location?.message}
             {...register('location')}
           />
         </div>
 
-        <Input
-          type="datetime-local"
-          label="Start date & time"
-          error={errors.startsAt?.message}
-          {...register('startsAt')}
-        />
+        <div className="grid grid-cols-2 gap-6">
+          <NativeSelect
+            label="Day of week"
+            options={DAY_OPTIONS}
+            error={errors.dayOfWeek?.message}
+            {...register('dayOfWeek')}
+          />
+          <Input
+            type="time"
+            label="Start time"
+            error={errors.timeStart?.message}
+            {...register('timeStart')}
+          />
+        </div>
 
         <div className="grid grid-cols-3 gap-6">
           <Input
@@ -199,11 +238,7 @@ export default function ClassModal({
           />
         </div>
 
-        {/* Active toggle */}
-        <Field
-          label="Status"
-          helper="Inactive classes don't appear on the public site."
-        >
+        <Field label="Status" helper="Inactive classes don't appear on the public site or generate new sessions.">
           <div className="flex items-center justify-between mt-2">
             <span className="font-body text-sm text-ink">
               {isActive ? 'Active' : 'Inactive'}
