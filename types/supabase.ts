@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          email: string | null;
           bio: string | null;
           photo_url: string | null;
           created_at: string;
@@ -20,6 +21,7 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
+          email?: string | null;
           bio?: string | null;
           photo_url?: string | null;
           created_at?: string;
@@ -27,6 +29,7 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
+          email?: string | null;
           bio?: string | null;
           photo_url?: string | null;
           created_at?: string;
@@ -44,6 +47,7 @@ export interface Database {
           time_start: string;
           duration_minutes: number;
           capacity: number;
+          price_dropin_usd: number;
           location: string;
           color: string | null;
           is_active: boolean;
@@ -59,6 +63,7 @@ export interface Database {
           time_start: string;
           duration_minutes?: number;
           capacity?: number;
+          price_dropin_usd?: number;
           location?: string;
           color?: string | null;
           is_active?: boolean;
@@ -74,6 +79,7 @@ export interface Database {
           time_start?: string;
           duration_minutes?: number;
           capacity?: number;
+          price_dropin_usd?: number;
           location?: string;
           color?: string | null;
           is_active?: boolean;

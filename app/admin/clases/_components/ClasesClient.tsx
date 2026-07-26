@@ -2,8 +2,6 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { enUS } from 'date-fns/locale';
 import {
   Plus,
   Pencil,
@@ -12,9 +10,11 @@ import {
   EyeOff,
   Search,
   BookOpen,
+  Users,
 } from 'lucide-react';
-import type { YogaClass } from '@/types';
-import ClassModal from '@/components/admin/ClassModal';
+import type { ClassTemplate, Instructor } from '@/types';
+import ClassModal, { type TemplatePayload } from '@/components/admin/ClassModal';
+import InstructorModal from '@/components/admin/InstructorModal';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Button } from '@/components/admin/Button';
 import { Badge } from '@/components/admin/Badge';
@@ -22,13 +22,11 @@ import { EmptyState } from '@/components/admin/EmptyState';
 import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
 import { NativeSelect } from '@/components/admin/NativeSelect';
 import {
-  toggleClassActive,
-  deleteClass,
-  createManualClass,
-  updateClassDetails,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+  toggleTemplateActive,
 } from '@/app/actions/classes';
-
-type SerializedClass = Omit<YogaClass, 'startsAt'> & { startsAt: string };
 
 // ─── Category palette — mirrors /yoga and /admin/calendario ────────────────
 const CATEGORY_STYLES: Record<string, { stripe: string; label: string }> = {
@@ -48,68 +46,74 @@ function getCategoryKey(name: string): string {
   return 'flow-vinyasa';
 }
 
+// day_of_week (0=Sun … 6=Sat) → "Every <Day>"
+const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'past', label: 'Past' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
 export default function ClasesClient({
-  initialClasses,
+  initialTemplates,
+  instructors,
 }: {
-  initialClasses: SerializedClass[];
+  initialTemplates: ClassTemplate[];
+  instructors: Instructor[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingClass, setEditingClass] = useState<YogaClass | undefined>();
-  const [deletingClass, setDeletingClass] = useState<YogaClass | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | undefined>();
+  const [deletingTemplate, setDeletingTemplate] = useState<ClassTemplate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [instructorModalOpen, setInstructorModalOpen] = useState(false);
 
   // Filters
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  // Convert serialized rows back to YogaClass for rendering.
-  const clases: YogaClass[] = useMemo(
-    () => initialClasses.map((c) => ({ ...c, startsAt: new Date(c.startsAt) })),
-    [initialClasses],
-  );
+  const templates = initialTemplates;
+
+  function instructorName(t: ClassTemplate): string {
+    return (
+      t.instructors?.name ??
+      instructors.find((i) => i.id === t.instructor_id)?.name ??
+      ''
+    );
+  }
 
   const categoryOptions = useMemo(() => {
-    const present = new Set(clases.map((c) => getCategoryKey(c.name)));
+    const present = new Set(templates.map((t) => getCategoryKey(t.name)));
     return [
       { value: 'all', label: 'All categories' },
       ...Object.entries(CATEGORY_STYLES)
         .filter(([k]) => present.has(k))
         .map(([key, val]) => ({ value: key, label: val.label })),
     ];
-  }, [clases]);
+  }, [templates]);
 
   const filtered = useMemo(() => {
-    const now = new Date();
-    return clases.filter((c) => {
+    return templates.filter((t) => {
       if (search) {
         const q = search.toLowerCase();
         if (
-          !c.name.toLowerCase().includes(q) &&
-          !c.slug.toLowerCase().includes(q) &&
-          !c.instructor.toLowerCase().includes(q)
+          !t.name.toLowerCase().includes(q) &&
+          !t.slug.toLowerCase().includes(q) &&
+          !instructorName(t).toLowerCase().includes(q)
         )
           return false;
       }
-      if (statusFilter === 'active' && !c.isActive) return false;
-      if (statusFilter === 'inactive' && c.isActive) return false;
-      if (statusFilter === 'upcoming' && c.startsAt < now) return false;
-      if (statusFilter === 'past' && c.startsAt >= now) return false;
-      if (categoryFilter !== 'all' && getCategoryKey(c.name) !== categoryFilter) return false;
+      if (statusFilter === 'active' && !t.is_active) return false;
+      if (statusFilter === 'inactive' && t.is_active) return false;
+      if (categoryFilter !== 'all' && getCategoryKey(t.name) !== categoryFilter) return false;
       return true;
     });
-  }, [clases, search, statusFilter, categoryFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templates, search, statusFilter, categoryFilter]);
 
   const filtersActive = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all';
 
@@ -121,89 +125,76 @@ export default function ClasesClient({
 
   function handleToggleActive(id: string) {
     startTransition(async () => {
-      await toggleClassActive(id);
+      await toggleTemplateActive(id);
       router.refresh();
     });
   }
 
   async function handleConfirmDelete() {
-    if (!deletingClass) return;
+    if (!deletingTemplate) return;
     setIsDeleting(true);
     try {
-      await deleteClass(deletingClass.id);
-      setDeletingClass(null);
+      await deleteTemplate(deletingTemplate.id);
+      setDeletingTemplate(null);
       router.refresh();
     } finally {
       setIsDeleting(false);
     }
   }
 
-  function handleSaveClass(
-    data: Omit<YogaClass, 'spotsRemaining'> & { spotsRemaining?: number },
-  ) {
+  function handleSaveTemplate(data: TemplatePayload) {
     startTransition(async () => {
-      if (editingClass) {
-        await updateClassDetails(data.id, {
-          name: data.name,
-          slug: data.slug,
-          description: data.description || null,
-          starts_at: data.startsAt.toISOString(),
-          duration_minutes: data.durationMinutes,
-          capacity: data.capacity,
-          price_dropin_usd: data.priceUsd,
-          location: data.location,
-          is_active: data.isActive,
-        });
+      if (editingTemplate) {
+        await updateTemplate(editingTemplate.id, data);
       } else {
-        await createManualClass({
-          name: data.name,
-          slug: data.slug,
-          description: data.description || null,
-          starts_at: data.startsAt.toISOString(),
-          duration_minutes: data.durationMinutes,
-          capacity: data.capacity,
-          spots_remaining: data.capacity,
-          price_dropin_usd: data.priceUsd,
-          location: data.location,
-          is_active: data.isActive,
-        });
+        await createTemplate(data);
       }
       setModalOpen(false);
       router.refresh();
     });
   }
 
-  function openNewClass() {
-    setEditingClass(undefined);
-    setModalOpen(true);
-  }
-
   return (
     <div className="px-6 lg:px-10 py-8 lg:py-10 max-w-7xl mx-auto">
       <PageHeader
         heading="Classes"
-        description={`${clases.length} ${clases.length === 1 ? 'class' : 'classes'} total`}
+        description={`Weekly recurring schedule · ${templates.length} ${templates.length === 1 ? 'class' : 'classes'}`}
         actions={
-          <Button
-            variant="primary"
-            icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-            onClick={openNewClass}
-          >
-            New class
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              icon={<Users width={16} height={16} strokeWidth={1.5} />}
+              onClick={() => setInstructorModalOpen(true)}
+            >
+              Manage instructors
+            </Button>
+            <Button
+              variant="primary"
+              icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+              onClick={() => {
+                setEditingTemplate(undefined);
+                setModalOpen(true);
+              }}
+            >
+              New class
+            </Button>
+          </>
         }
       />
 
-      {clases.length === 0 ? (
+      {templates.length === 0 ? (
         <EmptyState
           icon={<BookOpen strokeWidth={1} />}
           heading="No classes yet"
-          description="Classes appear automatically from the weekly schedule. You can also add a one-off class manually."
+          description="Create your first recurring class to build the weekly schedule."
           action={
             <Button
               variant="primary"
               icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-              onClick={openNewClass}
+              onClick={() => {
+                setEditingTemplate(undefined);
+                setModalOpen(true);
+              }}
             >
               New class
             </Button>
@@ -252,21 +243,24 @@ export default function ClasesClient({
               heading="No classes match your filters"
               description="Try clearing the filters or creating a new class."
               action={
-                <Button variant="tertiary" onClick={clearFilters}>
-                  Clear filters
-                </Button>
+                filtersActive ? (
+                  <Button variant="tertiary" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : undefined
               }
             />
           ) : (
-            <ClassesTable
-              clases={filtered}
+            <TemplatesTable
+              templates={filtered}
+              instructorName={instructorName}
               isPending={isPending}
               onToggleActive={handleToggleActive}
-              onEdit={(c) => {
-                setEditingClass(c);
+              onEdit={(t) => {
+                setEditingTemplate(t);
                 setModalOpen(true);
               }}
-              onDelete={setDeletingClass}
+              onDelete={setDeletingTemplate}
             />
           )}
         </>
@@ -275,17 +269,25 @@ export default function ClasesClient({
       <ClassModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onSave={handleSaveClass}
-        classData={editingClass}
+        onSave={handleSaveTemplate}
+        template={editingTemplate}
+        instructors={instructors}
         loading={isPending}
       />
 
+      <InstructorModal
+        open={instructorModalOpen}
+        onOpenChange={setInstructorModalOpen}
+        instructors={instructors}
+        onChanged={() => router.refresh()}
+      />
+
       <DeleteConfirmation
-        isOpen={!!deletingClass}
-        onClose={() => setDeletingClass(null)}
+        isOpen={!!deletingTemplate}
+        onClose={() => setDeletingTemplate(null)}
         onConfirm={handleConfirmDelete}
         title="Delete class?"
-        description="This will permanently delete this class and all its associated bookings. This action cannot be undone."
+        description="This removes the recurring class and its upcoming sessions. Past sessions and their bookings are kept. This action cannot be undone."
         confirmLabel="Delete class"
         loading={isDeleting}
       />
@@ -296,31 +298,31 @@ export default function ClasesClient({
 // ═══════════════════════════════════════════════════════════════════════════
 // Table
 // ═══════════════════════════════════════════════════════════════════════════
-function ClassesTable({
-  clases,
+function TemplatesTable({
+  templates,
+  instructorName,
   isPending,
   onToggleActive,
   onEdit,
   onDelete,
 }: {
-  clases: YogaClass[];
+  templates: ClassTemplate[];
+  instructorName: (t: ClassTemplate) => string;
   isPending: boolean;
   onToggleActive: (id: string) => void;
-  onEdit: (c: YogaClass) => void;
-  onDelete: (c: YogaClass) => void;
+  onEdit: (t: ClassTemplate) => void;
+  onDelete: (t: ClassTemplate) => void;
 }) {
   const headers = [
     { label: 'Class', className: '' },
     { label: 'Slug', className: 'hidden xl:table-cell' },
     { label: 'Instructor', className: 'hidden md:table-cell' },
-    { label: 'Date & time', className: '' },
+    { label: 'Schedule', className: '' },
     { label: 'Capacity', className: '' },
     { label: 'Price', className: 'hidden lg:table-cell' },
     { label: 'Status', className: '' },
     { label: '', className: '' },
   ];
-
-  const now = new Date();
 
   return (
     <div className="bg-white border border-ink/10 overflow-hidden">
@@ -339,33 +341,14 @@ function ClassesTable({
             </tr>
           </thead>
           <tbody>
-            {clases.map((c) => {
-              const cat = CATEGORY_STYLES[getCategoryKey(c.name)];
-              const booked = c.capacity - c.spotsRemaining;
-              const isPast = c.startsAt < now;
-              const isFull = c.spotsRemaining === 0;
-              const nearlyFull = !isFull && c.spotsRemaining / c.capacity < 0.1;
-
-              const statusVariant: 'active' | 'warning' | 'destructive' | 'neutral' = !c.isActive
-                ? 'neutral'
-                : isPast
-                ? 'neutral'
-                : isFull
-                ? 'destructive'
-                : nearlyFull
-                ? 'warning'
-                : 'active';
-              const statusLabel = !c.isActive
-                ? 'Inactive'
-                : isPast
-                ? 'Past'
-                : isFull
-                ? 'Sold out'
-                : 'Active';
+            {templates.map((t) => {
+              const cat = CATEGORY_STYLES[getCategoryKey(t.name)];
+              const name = instructorName(t);
+              const time = (t.time_start ?? '').slice(0, 5);
 
               return (
                 <tr
-                  key={c.id}
+                  key={t.id}
                   className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200"
                 >
                   <td className="px-4 py-4">
@@ -377,70 +360,73 @@ function ClassesTable({
                       />
                       <div className="min-w-0">
                         <p className="font-body text-sm font-medium text-ink truncate">
-                          {c.name}
+                          {t.name}
                         </p>
                         <p className="font-body text-xs text-ink/50 mt-0.5 truncate">
-                          {c.location}
+                          {t.location}
                         </p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-4 hidden xl:table-cell">
                     <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
-                      {c.slug}
+                      {t.slug}
                     </span>
                   </td>
                   <td className="px-4 py-4 hidden md:table-cell">
-                    {c.instructor ? (
-                      <span className="font-body text-sm text-ink/80">{c.instructor}</span>
+                    {name ? (
+                      <span className="font-body text-sm text-ink/80">{name}</span>
                     ) : (
-                      <span className="font-body text-sm text-ink/30">—</span>
+                      <span className="font-body text-sm text-ink/30">Unassigned</span>
                     )}
                   </td>
                   <td className="px-4 py-4">
                     <p className="font-body text-sm text-ink">
-                      {format(c.startsAt, 'MMM d, yyyy', { locale: enUS })}
+                      Every {DAY_NAMES[t.day_of_week]} · {time}
                     </p>
                     <p className="font-body text-xs text-ink/50 mt-0.5">
-                      {format(c.startsAt, 'HH:mm')} · {c.durationMinutes} min
+                      {t.duration_minutes} min
                     </p>
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-body text-sm font-medium text-ink">
-                      {booked}
-                      <span className="text-ink/60">/{c.capacity}</span>
+                      {t.capacity}
+                      <span className="text-ink/60"> seats</span>
                     </span>
                   </td>
                   <td className="px-4 py-4 hidden lg:table-cell">
                     <span className="font-body text-sm font-medium text-ink">
-                      {c.priceUsd === 0 ? 'Free' : `$${c.priceUsd}`}
+                      {t.price_dropin_usd == null
+                        ? '—'
+                        : t.price_dropin_usd === 0
+                        ? 'Free'
+                        : `$${t.price_dropin_usd}`}
                     </span>
                   </td>
                   <td className="px-4 py-4">
-                    <Badge variant={statusVariant}>{statusLabel}</Badge>
+                    <Badge variant={t.is_active ? 'active' : 'neutral'}>
+                      {t.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <RowIconButton
-                        ariaLabel={c.isActive ? 'Hide class' : 'Show class'}
-                        onClick={() => onToggleActive(c.id)}
+                        ariaLabel={t.is_active ? 'Deactivate class' : 'Activate class'}
+                        onClick={() => onToggleActive(t.id)}
                         disabled={isPending}
                       >
-                        {c.isActive ? (
+                        {t.is_active ? (
                           <Eye width={16} height={16} strokeWidth={1.5} />
                         ) : (
                           <EyeOff width={16} height={16} strokeWidth={1.5} />
                         )}
                       </RowIconButton>
-                      <RowIconButton
-                        ariaLabel="Edit class"
-                        onClick={() => onEdit(c)}
-                      >
+                      <RowIconButton ariaLabel="Edit class" onClick={() => onEdit(t)}>
                         <Pencil width={16} height={16} strokeWidth={1.5} />
                       </RowIconButton>
                       <RowIconButton
                         ariaLabel="Delete class"
-                        onClick={() => onDelete(c)}
+                        onClick={() => onDelete(t)}
                         hoverDestructive
                       >
                         <Trash2 width={16} height={16} strokeWidth={1.5} />
