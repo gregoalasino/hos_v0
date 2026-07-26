@@ -2,6 +2,7 @@ import { Navigation } from "@/components/landing/navigation";
 import { Hero } from "@/components/landing/hero";
 import { Introduction } from "@/components/landing/introduction";
 import { Pillars } from "@/components/landing/pillars";
+import { ShaktiExperienceTeaser } from "@/components/landing/shakti-experience-teaser";
 import { SeasonalExperiences } from "@/components/landing/seasonal-experiences";
 import { Gallery } from "@/components/landing/gallery";
 // TODO: Testimonials section removed from home — file preserved
@@ -17,6 +18,7 @@ export default function Home() {
       <Introduction />
       <SeasonalExperiences />
       <Pillars />
+      <ShaktiExperienceTeaser />
       <HostYourRetreat />
       <Gallery />
       {/* <Testimonials /> — removed from render, kept in repo */}
