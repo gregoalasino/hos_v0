@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createServiceClient } from '@/lib/supabase/server';
 import { sendPackCodeEmail } from '@/lib/email';
+import { createPayment } from '@/lib/tilopay';
 
 export type PackPurchaseInput = {
   packId: string;
@@ -52,6 +53,46 @@ export async function createPackPurchase(
 
   revalidatePath('/admin/paquetes');
   return { ok: true, id: data.id };
+}
+
+// ── Start checkout — create the purchase + a Tilopay hosted payment session ───
+// Returns the URL to redirect the customer to. The purchase id is used as the
+// Tilopay orderNumber so the callback can map the result back to it.
+export async function startPackCheckout(
+  input: PackPurchaseInput,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const created = await createPackPurchase(input);
+  if (!created.ok) return created;
+
+  const supabase = await createServiceClient();
+  const { data: purchase } = await supabase
+    .from('pack_purchases')
+    .select('id, amount_usd, first_name, last_name, email, phone')
+    .eq('id', created.id)
+    .single();
+
+  if (!purchase) return { ok: false, error: 'purchase_not_found' };
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+  try {
+    const url = await createPayment({
+      amount: Number(purchase.amount_usd ?? 0).toFixed(2),
+      currency: 'USD',
+      orderNumber: purchase.id,
+      redirect: `${siteUrl}/api/tilopay/callback`,
+      billToFirstName: purchase.first_name,
+      billToLastName: purchase.last_name,
+      billToEmail: purchase.email,
+      billToTelephone: purchase.phone ?? '',
+      billToCountry: 'CR',
+      capture: '1',
+    });
+    return { ok: true, url };
+  } catch (err) {
+    console.error('[startPackCheckout] tilopay', err);
+    return { ok: false, error: 'payment_init_failed' };
+  }
 }
 
 // ── Step 2 — payment confirmed → generate code + email it ─────────────────────

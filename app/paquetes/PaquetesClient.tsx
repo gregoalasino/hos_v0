@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
-import { createPackPurchase } from '@/app/actions/packs';
+import { startPackCheckout } from '@/app/actions/packs';
 import type { ClassPack } from '@/lib/queries/packs';
 import { Check } from 'lucide-react';
 
-type Status = 'idle' | 'submitting' | 'done' | 'error';
+type Status = 'idle' | 'submitting' | 'error';
 
 export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
   const [selected, setSelected] = useState<string>(packs[0]?.id ?? '');
@@ -31,7 +31,7 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
     }
     setStatus('submitting');
     setError('');
-    const res = await createPackPurchase({
+    const res = await startPackCheckout({
       packId: selectedPack.id,
       firstName: form.firstName,
       lastName: form.lastName,
@@ -39,9 +39,14 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
       phone: form.phone || undefined,
     });
     if (res.ok) {
-      setStatus('done');
+      // Hand off to Tilopay's secure hosted payment page.
+      window.location.href = res.url;
     } else {
-      setError('Something went wrong. Please try again.');
+      setError(
+        res.error === 'payment_init_failed'
+          ? 'We could not start the payment. Please try again in a moment.'
+          : 'Something went wrong. Please try again.',
+      );
       setStatus('error');
     }
   }
@@ -62,9 +67,7 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
             send you a personal code to redeem, one class at a time.
           </p>
 
-          {status === 'done' ? (
-            <PurchaseConfirmation pack={selectedPack!} email={form.email} />
-          ) : (
+          {(
             <div className="mt-14 grid md:grid-cols-2 gap-12 lg:gap-20">
               {/* Pack selection */}
               <div>
@@ -162,8 +165,8 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
                     : 'Continue'}
                 </button>
                 <p className="font-body text-xs text-ink/40 mt-4 leading-relaxed">
-                  We&apos;ll confirm your payment and email your class code. Payment by Tilopay is
-                  coming soon — for now our team will reach out to complete it.
+                  You&apos;ll be taken to Tilopay&apos;s secure page to pay by card. Once your payment
+                  is confirmed, we&apos;ll email your personal class code.
                 </p>
               </form>
             </div>
@@ -172,22 +175,6 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
       </main>
       <Footer />
     </>
-  );
-}
-
-function PurchaseConfirmation({ pack, email }: { pack: ClassPack; email: string }) {
-  return (
-    <div className="mt-14 max-w-xl border border-ink/15 bg-white p-10">
-      <div className="w-12 h-12 rounded-full bg-cream flex items-center justify-center">
-        <Check width={22} height={22} className="text-ink" strokeWidth={1.5} />
-      </div>
-      <h2 className="font-display text-2xl font-light text-ink mt-6">Request received</h2>
-      <p className="font-body text-sm text-ink/70 mt-3 leading-relaxed">
-        Thank you — we&apos;ve registered your <strong>{pack.name}</strong> ({pack.classesCount}{' '}
-        classes). Once your payment is confirmed, we&apos;ll email your personal class code to{' '}
-        <strong>{email}</strong>. You&apos;ll use it at checkout to book each class for free.
-      </p>
-    </div>
   );
 }
 

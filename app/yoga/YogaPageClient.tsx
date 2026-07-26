@@ -186,16 +186,18 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
   const router = useRouter();
   const catKey = getCategoryKey(clase.name);
   const cat = CATEGORY_STYLES[catKey];
+  const past = new Date(clase.startsAt).getTime() <= Date.now();
   const sold = clase.spotsRemaining === 0;
-  const fewLeft = !sold && clase.spotsRemaining > 0 && clase.spotsRemaining < clase.capacity * 0.5;
+  const disabled = sold || past;
+  const fewLeft = !disabled && clase.spotsRemaining > 0 && clase.spotsRemaining < clase.capacity * 0.5;
 
   return (
     <article
-      onClick={sold ? undefined : () => router.push(`/booking/${clase.id}`)}
+      onClick={disabled ? undefined : () => router.push(`/booking/${clase.id}`)}
       className={`
         group relative border border-ink/10 bg-warm-white
         transition-[transform,border-color,box-shadow] duration-300 ease-out
-        ${sold
+        ${disabled
           ? 'opacity-40 pointer-events-none'
           : 'cursor-pointer hover:-translate-y-[2px] hover:border-ink/30 hover:shadow-[0_6px_16px_-4px_rgba(49,49,49,0.08)]'}
       `}
@@ -220,7 +222,11 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
           <span className="font-body text-[10px] text-ink">
             {clase.durationMinutes} min
           </span>
-          {sold ? (
+          {past ? (
+            <span className="font-body text-[10px] text-ink/50">
+              Past
+            </span>
+          ) : sold ? (
             <span className="font-body text-[10px] text-ink">
               Fully booked
             </span>
@@ -398,6 +404,24 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
             );
           })}
         </div>
+
+        {/* Class packs entry point — practice often, save with a pack */}
+        <Link
+          href="/paquetes"
+          className="group mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-ink/15 bg-cream/30 px-6 py-5 hover:border-ink/40 transition-colors duration-200"
+        >
+          <div>
+            <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
+              Practice often?
+            </p>
+            <p className="font-body text-sm text-ink mt-1">
+              Save with a class pack of 5, 10 or 20 — book any class for free with your code.
+            </p>
+          </div>
+          <span className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] whitespace-nowrap group-hover:opacity-70 transition-opacity">
+            View class packs →
+          </span>
+        </Link>
       </div>
     </section>
   );
