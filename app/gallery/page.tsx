@@ -1,162 +1,144 @@
-"use client";
+// /gallery — editorial visual essay. Six themed sections framed as the
+// "rhythms" of the sanctuary, bookended by a cinematic hero and a dark closing
+// CTA. No filters, no lightbox, no category tabs — by design.
+//
+// Content lives in this file (page-level data); reusable layout primitives
+// live in components/gallery/*.
+import type { Metadata } from 'next';
+import { Navigation } from '@/components/landing/navigation';
+import { Footer } from '@/components/landing/footer';
+import { GalleryHero } from '@/components/gallery/GalleryHero';
+import {
+  GalleryThemedSection,
+  type GalleryImage,
+} from '@/components/gallery/GalleryThemedSection';
+import { GalleryFinalCTA } from '@/components/gallery/GalleryFinalCTA';
 
-import { motion, Variants } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useRef } from "react";
-import Link from "next/link";
-
-// Estructura de datos para las fotos (apuntando a tu carpeta public/images)
-const gallerySections = [
-  {
-    id: "sanctuary",
-    title: "The Sanctuary",
-    description: "Our carefully designed spaces blending luxury with deep tranquility.",
-    images: [
-      "/images/sanctuary/p1.jpg",
-      "/images/sanctuary/p2.jpg",
-      "/images/sanctuary/p3.jpg",
-      "/images/sanctuary/p4.jpg",
-    ],
-  },
-  {
-    id: "beach",
-    title: "The Beach",
-    description: "Just steps away from the healing waters of Santa Teresa.",
-    images: [
-      "/images/gallery-beach.jpg",
-      "/images/retreat-puravida.jpg",
-      "/images/gallery-meditation.png",
-      "/images/gallery-garden.jpg",
-    ],
-  },
-  {
-    id: "nature",
-    title: "Accommodations",
-    description: "Immerse yourself in our luxury place.",
-    images: [
-      "/images/accommodation-hero.jpg",
-      "/images/room-soul-2.jpg",
-      "/images/room-sea-3.jpg",
-      "/images/sauna.jpg",
-    ],
-  },
-];
-
-const fadeInUp: Variants= {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+export const metadata: Metadata = {
+  title: 'The world of House of Shakti — Gallery',
+  description:
+    'A slow walk through the rhythms of the sanctuary — mornings, the shala, the jungle, the shore, gatherings, and quiet hours.',
 };
 
+// ─── Section content ────────────────────────────────────────────────────────
+// Each entry maps 1:1 to a <GalleryThemedSection /> render below.
+// `aspect` values follow the layout-variant suggestions documented in the
+// component (Variant A: 1 lead aspect-[4/5] + 4 small alternating square/4-5;
+// Variant B: varied for masonry; Variant C: 2 top + 3 bottom).
+
+// TODO: replace with morning-themed photos (solo practice, early light, kitchen).
+// Variant A uses 3 images: 1 lead + 2 side stack. Aspect-[4/5] across so the
+// right column's stacked height matches the lead's height naturally.
+const morningsImages: GalleryImage[] = [
+  { src: '/images/yoga/IMG_7491%201.webp',              aspect: 'aspect-[4/5]', alt: 'Morning practice in soft light' },
+  { src: '/images/sanctuary/271A0676_websize%201.webp', aspect: 'aspect-[4/5]', alt: 'The sanctuary in early light' },
+  { src: '/images/yoga/NE8A7702%201.webp',              aspect: 'aspect-[4/5]', alt: 'A figure mid-practice' },
+];
+
+// TODO: replace with shala-specific photos (interior, practice, props, details).
+const shalaImages: GalleryImage[] = [
+  { src: '/images/yoga/IMG_8669%201.webp',              aspect: 'aspect-[3/4]', alt: 'A wider moment of practice' },
+  { src: '/images/yoga/IMG_8420%201.webp',              aspect: 'aspect-[4/3]', alt: 'Inside the open-air shala' },
+  { src: '/images/yoga/IMG_7526%201.webp',              aspect: 'aspect-[4/5]', alt: 'Practice in progress' },
+  { src: '/images/yoga/NE8A7854%201.webp',              aspect: 'aspect-[3/4]', alt: 'A still pose held in light' },
+  { src: '/images/yoga/IMG_8664%201.webp',              aspect: 'aspect-square', alt: 'Detail of the practice' },
+];
+
+// TODO: replace with jungle / nature-specific photos.
+const jungleImages: GalleryImage[] = [
+  { src: '/images/sanctuary/271A0870_websize%201.webp', aspect: 'aspect-[4/5]', alt: 'Organic texture of the canopy' },
+  { src: '/images/sanctuary/271A0883_websize%201.webp', aspect: 'aspect-[4/5]', alt: 'The land at golden hour' },
+  { src: '/images/sanctuary/271A0704_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'A wide reading of the grounds' },
+  { src: '/images/sanctuary/271A0879_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'The jungle dissolving into evening' },
+  { src: '/images/sanctuary/271A0840_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'Materials from where you stand' },
+];
+
+// TODO: replace with beach / shore-specific photos — CRITICAL section.
+// Nancy specifically requested beach imagery and no dedicated shore photos
+// exist in the pool yet. All five images below are fallbacks: the widest,
+// most horizon-leaning sanctuary frames available. Replace as a priority
+// when Pacific / Playa Hermosa photography is delivered.
+const shoreImages: GalleryImage[] = [
+  { src: '/images/sanctuary/271A0782_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'The horizon at the edge of the property (placeholder)' },
+  { src: '/images/sanctuary/271A0788_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'A wide view toward the coast (placeholder)' },
+  { src: '/images/sanctuary/271A0794_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'Light moving across an open frame (placeholder)' },
+  { src: '/images/sanctuary/271A0803_websize%201.webp', aspect: 'aspect-square', alt: 'A quiet open moment (placeholder)' },
+  { src: '/images/sanctuary/271A0845_websize%201.webp', aspect: 'aspect-[4/3]', alt: 'Toward the Pacific (placeholder)' },
+];
+
+// TODO: replace with gathering / community-themed photos (meals, fire, groups).
+// Variant A uses 3 images: 1 lead + 2 side stack (see morningsImages comment).
+const gatheringsImages: GalleryImage[] = [
+  { src: '/images/yoga/IMG_8683%201.webp',              aspect: 'aspect-[4/5]', alt: 'A shared moment of practice' },
+  { src: '/images/sanctuary/271A0759_websize%201.webp', aspect: 'aspect-[4/5]', alt: 'A communal corner of the sanctuary' },
+  { src: '/images/yoga/IMG_7539%201.webp',              aspect: 'aspect-[4/5]', alt: 'Held together in stillness' },
+];
+
+// TODO: replace with quiet / restful-themed photos (decks, pool, hammock, ritual).
+const quietHoursImages: GalleryImage[] = [
+  { src: '/images/sanctuary/271A0719_websize%201.webp',         aspect: 'aspect-[3/4]', alt: 'A quiet corner of the sanctuary' },
+  { src: '/images/contrast_therapy/IMG_7067%201.webp',          aspect: 'aspect-square', alt: 'The ritual of contrast' },
+  { src: '/images/sanctuary/271A0800_websize%201.webp',         aspect: 'aspect-[4/5]', alt: 'An interior at rest' },
+  { src: '/images/sanctuary/271A0828_websize%201.webp',         aspect: 'aspect-[4/3]', alt: 'A deck in the afternoon' },
+  { src: '/images/contrast_therapy/IMG_7498%201.webp',          aspect: 'aspect-[3/4]', alt: 'The pause between practices' },
+];
+
 export default function GalleryPage() {
-  // Función para manejar el scroll horizontal con botones
-  const scroll = (id: string, direction: "left" | "right") => {
-    const container = document.getElementById(`carousel-${id}`);
-    if (container) {
-      const scrollAmount = direction === "left" ? -400 : 400;
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
   return (
-    <main className="bg-cream min-h-screen pt-32 pb-24">
-        <div className="fixed top-6 left-6 z-50 md:top-10 md:left-10">
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 text-sm font-medium text-dark/70 hover:text-dark transition-colors bg-white/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-dark/5 shadow-sm hover:shadow-md"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Link>
-      </div>
-      {/* Hero de la Galería */}
-      <div className="max-w-7xl mx-auto px-6 mb-20 text-center">
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="uppercase tracking-widest text-sm text-dark/50 mb-4 block"
-        >
-          Visual Journey
-        </motion.span>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="font-serif text-5xl md:text-7xl text-dark"
-        >
-          What your eyes will see
-        </motion.h1>
-      </div>
+    <main className="bg-warm-white overflow-hidden">
+      <Navigation />
+      <GalleryHero />
 
-      {/* Secciones de Carruseles */}
-      <div className="space-y-32">
-        {gallerySections.map((section, index) => (
-          <motion.section
-            key={section.id}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-            className="w-full"
-          >
-            {/* Cabecera de cada sección */}
-            <div className="max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <h2 className="font-serif text-3xl md:text-4xl text-dark mb-2">
-                  {section.title}
-                </h2>
-                <p className="text-dark/70">{section.description}</p>
-              </div>
-              
-              {/* Controles del carrusel */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => scroll(section.id, "left")}
-                  className="p-3 rounded-full border border-dark/20 hover:bg-dark hover:text-cream transition-colors"
-                  aria-label="Scroll left"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => scroll(section.id, "right")}
-                  className="p-3 rounded-full border border-dark/20 hover:bg-dark hover:text-cream transition-colors"
-                  aria-label="Scroll right"
-                >
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+      <GalleryThemedSection
+        heading="The day opens slowly."
+        body="Light filters through the canopy before anyone speaks. The shala is already warm. The kitchen is already moving. Mornings here begin before they begin."
+        images={morningsImages}
+        layoutVariant="A"
+        background="warm-white"
+      />
 
-            {/* Contenedor del Carrusel (Scroll Horizontal) */}
-            <div
-              id={`carousel-${section.id}`}
-              className="flex overflow-x-auto gap-6 px-6 pb-8 snap-x snap-mandatory hide-scrollbar"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              {/* Margen inicial para alinear con el contenedor max-w-7xl */}
-              <div className="min-w-[calc((100vw-80rem)/2)] shrink-0 hidden xl:block" />
+      <GalleryThemedSection
+        heading="Where the practice lives."
+        body="Wooden floors, open walls, jungle on three sides. The shala is built for breath — slow, full, present. It is the heart of the rhythm we hold."
+        images={shalaImages}
+        layoutVariant="B"
+        background="cream"
+      />
 
-              {section.images.map((img, i) => (
-                <div
-                    key={i}
-                    className="relative w-[75vw] sm:w-[350px] md:w-[400px] aspect-[4/3] shrink-0 snap-center rounded-xl overflow-hidden"
-                >
-                  {/* Imagen (Asegúrate de tener estas imágenes en public/images) */}
-                  <img
-                    src={img}
-                    alt={`${section.title} - Image ${i + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-dark/10 hover:bg-transparent transition-colors duration-500" />
-                </div>
-              ))}
-              
-              {/* Margen final */}
-              <div className="min-w-[6rem] shrink-0" />
-            </div>
-          </motion.section>
-        ))}
-      </div>
+      <GalleryThemedSection
+        heading="The jungle, the loudest voice in the room."
+        body="The architecture steps back. The materials come from where you stand. What remains is the canopy, the wind, and a soundtrack that has been playing for thousands of years."
+        images={jungleImages}
+        layoutVariant="C"
+        background="warm-white"
+      />
+
+      <GalleryThemedSection
+        heading="Five minutes to the Pacific."
+        body="Playa Hermosa lives a short walk away. Sunsets that color the whole sky. Waves that hold their own kind of practice. The shore is the sanctuary's other room."
+        images={shoreImages}
+        layoutVariant="C"
+        background="cream"
+      />
+
+      <GalleryThemedSection
+        heading="What happens around the fire."
+        body="Shared meals, slow conversations, evenings that stretch longer than expected. Gatherings here are not events. They are what fills the space between practice and rest."
+        images={gatheringsImages}
+        layoutVariant="A"
+        background="warm-white"
+      />
+
+      <GalleryThemedSection
+        heading="The quiet hours in between."
+        body="Afternoons that stretch. Reading on the deck. A nap in the hammock. The pool at three. These hours are not waiting for anything — they are the offering itself."
+        images={quietHoursImages}
+        layoutVariant="B"
+        background="cream"
+      />
+
+      <GalleryFinalCTA />
+      <Footer />
     </main>
   );
 }

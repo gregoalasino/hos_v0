@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import type { DbClass, YogaClass } from '@/types';
 import { dbClassToYogaClass } from '@/types';
 
@@ -9,6 +9,41 @@ const CLASS_WITH_INSTRUCTOR = `
     name
   )
 ` as const;
+
+// How many weeks ahead we auto-materialize occurrences for. Prevents unbounded
+// row creation from paging far into the future.
+const MAX_WEEKS_AHEAD = 16;
+
+// Returns the Monday (UTC) of the week containing `d`, as a `YYYY-MM-DD` string.
+function mondayOf(d: Date): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dow = date.getUTCDay(); // 0=Sun … 6=Sat
+  const offset = dow === 0 ? -6 : 1 - dow; // shift back to Monday
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+
+// Materializes the recurring class_templates into concrete `classes` rows for the
+// week containing `weekStart` (idempotent — the RPC only inserts what's missing).
+// This replaces the former manual "Generate week" admin action: the calendar
+// fills itself from the recurring schedule whenever a week is viewed.
+export async function ensureWeekMaterialized(weekStart: Date): Promise<void> {
+  const monday = mondayOf(weekStart);
+
+  // Skip past weeks (nothing bookable) and weeks beyond the cap.
+  const currentMonday = new Date(`${mondayOf(new Date())}T00:00:00Z`).getTime();
+  const targetMonday = new Date(`${monday}T00:00:00Z`).getTime();
+  const weeksAhead = Math.round((targetMonday - currentMonday) / (7 * 24 * 60 * 60 * 1000));
+  if (weeksAhead < 0 || weeksAhead > MAX_WEEKS_AHEAD) return;
+
+  try {
+    const service = await createServiceClient();
+    await service.rpc('generate_week_classes', { p_week_start: monday });
+  } catch (err) {
+    // Non-fatal: fall through and let callers read whatever already exists.
+    console.error('[ensureWeekMaterialized]', err);
+  }
+}
 
 export async function getActiveClasses(): Promise<YogaClass[]> {
   try {
@@ -95,9 +130,90 @@ export async function getClassTemplates() {
   }
 }
 
-export async function getAllClasses(): Promise<YogaClass[]> {
+// Admin-facing shape for a recurring schedule row.
+export type AdminTemplate = {
+  id: string;
+  name: string;
+  description: string | null;
+  instructorId: string | null;
+  instructorName: string;
+  dayOfWeek: number;
+  timeStart: string;
+  durationMinutes: number;
+  capacity: number;
+  location: string;
+  isActive: boolean;
+};
+
+type TemplateRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  instructor_id: string | null;
+  day_of_week: number;
+  time_start: string;
+  duration_minutes: number;
+  capacity: number;
+  location: string;
+  is_active: boolean;
+  instructors: { id: string; name: string } | null;
+};
+
+// Returns ALL templates (including inactive) for the admin schedule manager.
+export async function getAllTemplatesAdmin(): Promise<AdminTemplate[]> {
+  try {
+    const supabase = await createServiceClient();
+    const { data, error } = await supabase
+      .from('class_templates')
+      .select('*, instructors(id, name)')
+      .order('day_of_week', { ascending: true })
+      .order('time_start', { ascending: true });
+
+    if (error) {
+      console.error('[getAllTemplatesAdmin]', error.message);
+      return [];
+    }
+    return (data as unknown as TemplateRow[]).map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      instructorId: t.instructor_id,
+      instructorName: t.instructors?.name ?? '',
+      dayOfWeek: t.day_of_week,
+      timeStart: t.time_start?.slice(0, 5) ?? '',
+      durationMinutes: t.duration_minutes,
+      capacity: t.capacity,
+      location: t.location,
+      isActive: t.is_active,
+    }));
+  } catch (err) {
+    console.error('[getAllTemplatesAdmin] unexpected:', err);
+    return [];
+  }
+}
+
+export async function getInstructors(): Promise<{ id: string; name: string }[]> {
   try {
     const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('instructors')
+      .select('id, name')
+      .order('name', { ascending: true });
+    if (error) {
+      console.error('[getInstructors]', error.message);
+      return [];
+    }
+    return data ?? [];
+  } catch (err) {
+    console.error('[getInstructors] unexpected:', err);
+    return [];
+  }
+}
+
+export async function getAllClasses(): Promise<YogaClass[]> {
+  try {
+    // Usar serviceClient para saltear RLS y ver clases inactivas también en el admin
+    const supabase = await createServiceClient();
     const { data, error } = await supabase
       .from('classes')
       .select(CLASS_WITH_INSTRUCTOR)

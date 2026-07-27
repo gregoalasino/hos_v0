@@ -1,30 +1,33 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 import { format } from 'date-fns';
-import { es as esLocale } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, ArrowRight, Clock, MapPin, Users, Check,
-  Calendar, Tag, CheckCircle, XCircle, Loader2,
+  Tag, Check, CheckCircle, XCircle, Loader2, CreditCard, Banknote, Smartphone,
 } from 'lucide-react';
 import type { Upsell, ReferralCode } from '@/types';
+import { startBookingCheckout } from '@/app/actions/checkout';
+import type { PaymentMethod } from '@/lib/payment-methods';
 import { downloadICS } from '@/lib/ics';
-import BookingStep from '@/components/booking/BookingStep';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
+import { BookingHeader } from '@/components/booking/BookingHeader';
+import { BookingSummary } from '@/components/booking/BookingSummary';
+import { BookingMobileSummary } from '@/components/booking/BookingMobileSummary';
+import { BookingNavigation } from '@/components/booking/BookingNavigation';
+import { BookingConfirmation } from '@/components/booking/BookingConfirmation';
+import { VenmoModal } from '@/components/booking/VenmoModal';
 
-// ── Class photo mapping ────────────────────────────────────────────────────────
+// ── Class photo mapping ──────────────────────────────────────────────────────
 const CLASS_PHOTOS: Record<string, string> = {
   'Sunrise Vinyasa':        '/images/yoga/NE8A7702%201.webp',
   'Power Flow':             '/images/yoga/IMG_8420%201.webp',
@@ -72,18 +75,19 @@ const personalSchema = z.object({
 
 type PersonalData = z.infer<typeof personalSchema>;
 
-const stepVariants = {
-  enter: { opacity: 0, x: 24 },
-  center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -24 },
-};
+type PackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
 
-type PackType = 'dropin' | 'pack5' | 'pack10';
+const PAYMENT_METHODS: { id: PaymentMethod; name: string; hint: string; Icon: typeof CreditCard }[] = [
+  { id: 'card',  name: 'Card',  hint: 'Pay securely online now', Icon: CreditCard },
+  { id: 'venmo', name: 'Venmo', hint: 'Send payment via Venmo',  Icon: Smartphone },
+  { id: 'cash',  name: 'Cash',  hint: 'Pay in person at the studio', Icon: Banknote },
+];
 
-const PACKS: { id: PackType; name: string; nameEs: string; classes: number; price: number; saving?: number; savingEs?: string; savingEn?: string }[] = [
-  { id: 'dropin', name: 'Drop-in', nameEs: 'Drop-in', classes: 1, price: 20 },
-  { id: 'pack5', name: 'Pack x5', nameEs: 'Pack x5', classes: 5, price: 75, savingEs: 'Ahorrás $25', savingEn: 'Save $25' },
-  { id: 'pack10', name: 'Pack x10', nameEs: 'Pack x10', classes: 10, price: 130, savingEs: 'Ahorrás $70', savingEn: 'Save $70' },
+const PACKS: { id: PackType; name: string; classes: number; price: number; saving?: string }[] = [
+  { id: 'dropin', name: 'Drop-in',    classes: 1,  price: 20 },
+  { id: 'pack5',  name: 'Pack of 5',  classes: 5,  price: 75,  saving: 'Save $25' },
+  { id: 'pack10', name: 'Pack of 10', classes: 10, price: 130, saving: 'Save $70' },
+  { id: 'pack20', name: 'Pack of 20', classes: 20, price: 240, saving: 'Save $160' },
 ];
 
 type BookingError = 'no_spots' | 'too_late' | 'generic' | null;
@@ -91,6 +95,7 @@ type BookingError = 'no_spots' | 'too_late' | 'generic' | null;
 async function validateReferralCodeFromDB(
   code: string,
   subtotal: number,
+  classPrice: number,
 ): Promise<{ valid: boolean; code?: ReferralCode; error?: string }> {
   try {
     const res = await fetch('/api/referral-codes/validate', {
@@ -101,7 +106,24 @@ async function validateReferralCodeFromDB(
     const data = await res.json();
     if (!data.valid) return { valid: false, error: data.error };
 
-    // Map API response to ReferralCode type
+    // A class-pack code waives the class fee. Model it as a fixed discount equal
+    // to the class price so the existing discount math leaves upsells charged.
+    if (data.kind === 'pack') {
+      const packCode: ReferralCode = {
+        id: code,
+        code: code.toUpperCase(),
+        partnerName: 'Class pack',
+        description: data.description ?? 'Class pack applied',
+        benefitType: 'fixed',
+        discountFixed: classPrice,
+        isActive: true,
+        usageCount: 0,
+        minPurchaseUsd: 0,
+        createdAt: new Date(),
+      };
+      return { valid: true, code: packCode };
+    }
+
     const rc: ReferralCode = {
       id: code,
       code: code.toUpperCase(),
@@ -137,16 +159,65 @@ function computeDiscount(code: ReferralCode, subtotal: number, upsells: Upsell[]
   return 0;
 }
 
+// ─── Step headings ────────────────────────────────────────────────────────────
+const STEP_HEADINGS: Record<number, string> = {
+  1: 'Your class',
+  2: 'Add to your practice',
+  3: 'Your details',
+  4: 'Payment',
+};
+
+// ─── Category derivation (mirrors /yoga's CATEGORY_STYLES; kept local for now) ─
+function getCategoryLabel(name: string): string {
+  if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement', 'Vinyasa Flow', 'Vinyasa Krama', 'Detox Yoga'].includes(name)) return 'Vinyasa';
+  if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga', 'Deep Stretch & Breath'].includes(name)) return 'Yin & Restorative';
+  if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'Hatha';
+  if (['Ashtanga Primary'].includes(name)) return 'Ashtanga';
+  if (['Pranayama & Meditación', 'Meditation', 'Tantra Vinyasa'].includes(name)) return 'Meditation';
+  return 'Yoga';
+}
+
+// ─── Editorial input style (border-bottom only, no bg, no rounded) ───────────
+// Used in Step 3. `!` modifiers override the shadcn Input defaults reliably.
+const editorialInput = [
+  '!rounded-none !border-0 !border-b !border-ink/30',
+  '!bg-transparent !px-0 !py-3 !shadow-none !h-auto',
+  'focus-visible:!ring-0 focus-visible:!ring-offset-0',
+  'focus-visible:!border-ink',
+  '!transition-colors',
+].join(' ');
+
+// ─── Demo mode ────────────────────────────────────────────────────────────────
+// When NEXT_PUBLIC_BOOKING_DEMO_MODE === 'true', the booking flow does NOT hit
+// /api/bookings/create. Instead, it generates a mock reference client-side and
+// jumps straight to the confirmation screen. Used for previewing the success
+// state in demos when the Supabase backend isn't fully wired up.
+//
+// Default: off. Set to 'true' in .env.local to enable. Always leave OFF in prod.
+const DEMO_MODE = process.env.NEXT_PUBLIC_BOOKING_DEMO_MODE === 'true';
+
+function mockBookingReference(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const code = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `HOS-${y}${m}${day}-${code}`;
+}
+
 export default function BookingFlow({
   classId, className, instructor, startsAt,
   durationMinutes, capacity, spotsRemaining,
   priceUsd, location, description, color, upsells,
 }: Props) {
-  const { lang, toggleLang } = useLanguage();
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<Set<string>>(new Set());
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [packType, setPackType] = useState<PackType>('dropin');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [pendingMethod, setPendingMethod] = useState<'cash' | 'venmo' | null>(null);
+  const [venmoModalOpen, setVenmoModalOpen] = useState(false);
   const [bookingRef, setBookingRef] = useState('');
   const [appliedCode, setAppliedCode] = useState<ReferralCode | null>(null);
   const [codeStatus, setCodeStatus] = useState<'idle' | 'success' | 'error' | 'loading'>('idle');
@@ -166,14 +237,23 @@ export default function BookingFlow({
   const subtotalUpsells = selectedUpsellsList.reduce((acc, u) => acc + u.priceUsd, 0);
   const subtotal = priceUsd + subtotalUpsells;
   const discountAmount = appliedCode ? computeDiscount(appliedCode, subtotal, upsells) : 0;
-  const total = Math.max(0, subtotal - discountAmount);
+
+  // Amount actually charged depends on the selected option: a drop-in charges the
+  // class (a code may discount it); a pack charges the pack price (codes don't
+  // apply to pack purchases). Upsells are always added.
+  const packDef = PACKS.find((p) => p.id === packType)!;
+  const isPack = packType !== 'dropin';
+  const basePrice = isPack ? packDef.price : priceUsd;
+  const priceLabel = isPack ? packDef.name : 'Class';
+  const payDiscount = isPack ? 0 : discountAmount;
+  const total = Math.max(0, basePrice + subtotalUpsells - payDiscount);
   const isTotalFree = total === 0;
 
   async function handleApplyCode() {
     const codeStr = form.getValues('referralCode') ?? '';
     if (!codeStr.trim()) return;
     setCodeStatus('loading');
-    const result = await validateReferralCodeFromDB(codeStr, subtotal);
+    const result = await validateReferralCodeFromDB(codeStr, subtotal, priceUsd);
     if (result.valid && result.code) {
       setAppliedCode(result.code);
       setCodeStatus('success');
@@ -186,16 +266,16 @@ export default function BookingFlow({
   }
 
   function codeErrorMsg(key: string): string {
-    const msgs: Record<string, [string, string]> = {
-      invalid:       ['Código no encontrado.', 'Code not found.'],
-      not_found:     ['Código no encontrado.', 'Code not found.'],
-      inactive:      ['Este código no está activo.', 'This code is not active.'],
-      expired:       ['Este código ya venció.', 'This code has expired.'],
-      not_started:   ['Este código aún no está vigente.', 'This code is not valid yet.'],
-      limit_reached: ['Este código alcanzó su límite de usos.', 'This code has reached its usage limit.'],
-      min_purchase:  ['Compra mínima no alcanzada.', 'Minimum purchase amount not reached.'],
+    const msgs: Record<string, string> = {
+      invalid:       'Code not found.',
+      not_found:     'Code not found.',
+      inactive:      'This code is not active.',
+      expired:       'This code has expired.',
+      not_started:   'This code is not valid yet.',
+      limit_reached: 'This code has reached its usage limit.',
+      min_purchase:  'Minimum purchase amount not reached.',
     };
-    return tr(lang, msgs[key]?.[0] ?? 'Código inválido.', msgs[key]?.[1] ?? 'Invalid code.');
+    return msgs[key] ?? 'Invalid code.';
   }
 
   function toggleUpsell(id: string) {
@@ -220,48 +300,85 @@ export default function BookingFlow({
 
   function handlePersonalSubmit(values: PersonalData) {
     setPersonalData(values);
-    setStep(4);
+    goToStep(4);
+  }
+
+  // Step 4 "confirm" click. Venmo opens the payment modal first; card/cash run
+  // the checkout directly.
+  function handleStep4() {
+    if (paymentMethod === 'venmo' && !DEMO_MODE) {
+      setBookingError(null);
+      setVenmoModalOpen(true);
+      return;
+    }
+    handleConfirm();
+  }
+
+  // Customer tapped "I've paid" in the Venmo modal: only now do we create the
+  // (pending) booking. On success the modal unmounts as we move to step 5; on
+  // error we close it so the message on step 4 is visible.
+  async function handleVenmoPaid() {
+    await handleConfirm();
+    setVenmoModalOpen(false);
   }
 
   async function handleConfirm() {
     if (!personalData) return;
     setIsLoading(true);
     setBookingError(null);
+
+    // ── DEMO MODE — bypass the API and jump to the confirmation screen ──────
+    if (DEMO_MODE) {
+      await new Promise((r) => setTimeout(r, 600)); // short delay for realism
+      setPendingMethod(paymentMethod === 'card' ? null : paymentMethod);
+      setBookingRef(mockBookingReference());
+      goToStep(5);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('/api/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          classId,
-          upsellIds: Array.from(selectedUpsellIds),
-          personalData: {
-            firstName: personalData.firstName,
-            lastName: personalData.lastName,
-            email: personalData.email,
-            phone: personalData.phone,
-            referralCode: personalData.referralCode,
-            isHotelGuest: personalData.isHotelGuest,
-            cloudbedsRef: personalData.cloudbedsRef,
-          },
-          packType,
-        }),
+      const res = await startBookingCheckout({
+        classId,
+        upsellIds: Array.from(selectedUpsellIds),
+        personalData: {
+          firstName: personalData.firstName,
+          lastName: personalData.lastName,
+          email: personalData.email,
+          phone: personalData.phone,
+          referralCode: personalData.referralCode,
+          isHotelGuest: personalData.isHotelGuest,
+          cloudbedsRef: personalData.cloudbedsRef,
+        },
+        packType,
+        paymentMethod,
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        if (data.error === 'no_spots_available') {
-          setBookingError('no_spots');
-        } else if (data.error === 'booking_too_late') {
-          setBookingError('too_late');
-        } else {
-          setBookingError('generic');
-        }
+        if (res.error === 'no_spots_available') setBookingError('no_spots');
+        else if (res.error === 'booking_too_late') setBookingError('too_late');
+        else setBookingError('generic');
         return;
       }
 
-      setBookingRef(data.bookingReference);
-      setStep(5);
+      if (res.status === 'free') {
+        // Fully covered (pack code / discount) — no payment needed.
+        setPendingMethod(null);
+        setBookingRef(res.bookingReference);
+        goToStep(5);
+        return;
+      }
+
+      if (res.status === 'offline') {
+        // Cash/Venmo — spot held, payment collected in person.
+        setPendingMethod(res.paymentMethod);
+        setBookingRef(res.bookingReference);
+        goToStep(5);
+        return;
+      }
+
+      // Hand off to Tilopay's secure hosted payment page.
+      window.location.href = res.url;
     } catch {
       setBookingError('generic');
     } finally {
@@ -273,10 +390,7 @@ export default function BookingFlow({
     downloadICS({
       uid: bookingRef,
       title: className,
-      description: tr(lang,
-        `Clase de yoga con ${instructor} en House of Shakti. Ref: ${bookingRef}`,
-        `Yoga class with ${instructor} at House of Shakti. Ref: ${bookingRef}`
-      ),
+      description: `Yoga class with ${instructor} at House of Shakti. Ref: ${bookingRef}`,
       location: `${location}, House of Shakti, Costa Rica`,
       startsAt: classDate,
       durationMinutes,
@@ -285,579 +399,604 @@ export default function BookingFlow({
   }
 
   function bookingErrorMsg(): string {
-    if (bookingError === 'no_spots') return tr(lang, 'Lo sentimos, la clase ya no tiene lugares disponibles.', 'Sorry, this class is now fully booked.');
-    if (bookingError === 'too_late') return tr(lang, 'Las reservas cierran 1 hora antes de la clase.', 'Bookings close 1 hour before class.');
-    return tr(lang, 'Ocurrió un error. Por favor intentá de nuevo.', 'Something went wrong. Please try again.');
+    if (bookingError === 'no_spots') return 'Sorry, this class is now fully booked.';
+    if (bookingError === 'too_late') return 'Bookings close 1 hour before class.';
+    return 'Something went wrong. Please try again.';
   }
+
+  // ── Step transitions (direction-aware) ─────────────────────────────────────
+  function goToStep(target: number) {
+    setDirection(target > step ? 'forward' : 'backward');
+    setStep(target);
+  }
+  function handleBack() {
+    if (step > 1) goToStep(step - 1);
+  }
+  function handleContinue() {
+    if (step === 1) goToStep(2);
+    else if (step === 2) goToStep(3);
+    else if (step === 3) form.handleSubmit(handlePersonalSubmit)();
+    else if (step === 4) handleStep4();
+  }
+
+  // Step 1 is the only step where Continue can be hard-disabled (no spots).
+  // Validation on step 3 happens via form.handleSubmit and shows errors inline.
+  const canContinue =
+    step === 1 ? spotsRemaining > 0 :
+    true;
+
+  const stepVariants = useMemo(
+    () => (direction === 'forward'
+      ? { enter: { opacity: 0, x: 24 }, center: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -24 } }
+      : { enter: { opacity: 0, x: -24 }, center: { opacity: 1, x: 0 }, exit: { opacity: 0, x: 24 } }
+    ),
+    [direction],
+  );
+
+  const isConfirmation = step === 5;
+  const classImage = getClassPhoto(className);
+
+  // Props bundle for BookingSummary (used in two places: desktop sidebar + mobile drawer).
+  // The class image is intentionally NOT included — it lives only in Step 1's main content.
+  const summaryProps = {
+    className,
+    instructor,
+    classDate,
+    durationMinutes,
+    priceUsd: basePrice,
+    priceLabel,
+    selectedUpsells: selectedUpsellsList,
+    appliedCode: isPack ? null : appliedCode,
+    discountAmount: payDiscount,
+    total,
+    isFree: isTotalFree,
+  };
 
   return (
     <div className="min-h-screen bg-warm-white">
-      {/* Header */}
-      <header className="bg-dark text-cream px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/yoga" className="flex items-center gap-2 text-cream/60 hover:text-cream transition-colors text-sm">
-            <ArrowLeft className="w-4 h-4" />
-            {tr(lang, 'Clases', 'Classes')}
-          </Link>
-          <span className="font-serif text-base font-light">House of Shakti</span>
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border border-cream/20 hover:border-cream/40 transition-colors text-cream/60"
-          >
-            <span style={{ opacity: lang === 'es' ? 1 : 0.4 }}>ES</span>
-            <span className="opacity-30">·</span>
-            <span style={{ opacity: lang === 'en' ? 1 : 0.4 }}>EN</span>
-          </button>
-        </div>
-      </header>
+      <BookingHeader
+        step={step}
+        totalSteps={4}
+        isConfirmation={isConfirmation}
+      />
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {step < 5 && (
-          <div className="mb-8">
-            <BookingStep current={step} />
-          </div>
-        )}
+      {/* Mobile drawer — only on actionable steps */}
+      {!isConfirmation && (
+        <BookingMobileSummary
+          className={className}
+          total={total}
+          isFree={isTotalFree}
+        >
+          <BookingSummary {...summaryProps} bare />
+        </BookingMobileSummary>
+      )}
 
-        <AnimatePresence mode="wait">
-          {/* ── STEP 1: Class details ── */}
-          {step === 1 && (
-            <motion.div key="step1" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <div
-                className="relative h-56 rounded-2xl overflow-hidden mb-5"
-                style={{ background: color ? `${color}22` : '#F2EBDA' }}
-              >
-                <img src={getClassPhoto(className)} alt={className} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark/65 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {color && <span className="w-2 h-2 rounded-full" style={{ background: color }} />}
-                    <span className="text-xs text-cream/80 uppercase tracking-widest">{instructor}</span>
-                  </div>
-                  <h2 className="font-serif text-2xl text-cream font-light">{className}</h2>
-                </div>
-              </div>
+      {isConfirmation ? (
+        <BookingConfirmation
+          bookingRef={bookingRef}
+          onDownloadICS={handleDownloadICS}
+          className={className}
+          instructor={instructor}
+          classDate={classDate}
+          durationMinutes={durationMinutes}
+          location={location}
+          priceUsd={priceUsd}
+          isFree={isFree}
+          selectedUpsells={selectedUpsellsList}
+          appliedCode={appliedCode}
+          discountAmount={discountAmount}
+          total={total}
+          email={personalData?.email}
+          pendingMethod={pendingMethod}
+        />
+      ) : (
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
+          <div className="grid lg:grid-cols-[1fr_38%] gap-12 lg:gap-16">
+            {/* ── MAIN COLUMN ── */}
+            <div>
+              <div className="max-w-2xl">
+                {/* Step eyebrow + heading */}
+                <motion.div
+                  key={`heading-${step}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                >
+                  <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
+                    STEP 0{step}
+                  </p>
+                  <h1 className="font-display font-light text-ink text-3xl lg:text-4xl leading-tight mt-2">
+                    {STEP_HEADINGS[step]}
+                  </h1>
+                </motion.div>
 
-              <div className="bg-cream rounded-2xl p-4 mb-5 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-dark/70">
-                  <Clock className="w-4 h-4 text-burgundy flex-shrink-0" />
-                  <span>
-                    {lang === 'es'
-                      ? format(classDate, "EEEE d 'de' MMMM 'de' yyyy", { locale: esLocale })
-                      : format(classDate, 'EEEE, MMMM d, yyyy')
-                    } · {format(classDate, 'h:mm a')} ({durationMinutes} min)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-dark/70">
-                  <MapPin className="w-4 h-4 text-burgundy flex-shrink-0" />
-                  {location}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-dark/70">
-                  <Users className="w-4 h-4 text-burgundy flex-shrink-0" />
-                  {spotsRemaining} {tr(lang, `de ${capacity} lugares disponibles`, `of ${capacity} spots remaining`)}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 bg-cream rounded-2xl p-4 mb-5">
-                <div className="w-10 h-10 rounded-full bg-dark/10 flex items-center justify-center flex-shrink-0">
-                  <span className="font-serif text-sm font-semibold text-dark">
-                    {instructor.slice(0, 2).toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-dark">{instructor}</p>
-                  <p className="text-xs text-dark/50">{tr(lang, 'Profesora certificada 200hr', '200hr Certified Teacher')}</p>
-                </div>
-              </div>
-
-              {description && (
-                <p className="text-dark/60 text-sm leading-relaxed mb-5">{description}</p>
-              )}
-
-              <div className="text-center py-5 mb-5 border-y border-dark/8">
-                {isFree ? (
-                  <p className="font-serif text-3xl font-light" style={{ color: '#4a7c59' }}>{tr(lang, 'Gratis', 'Free')}</p>
-                ) : (
-                  <>
-                    <p className="font-serif text-3xl font-light text-dark">${priceUsd}</p>
-                    <p className="text-xs text-dark/40 font-sans mt-1">{tr(lang, 'por persona · pago en el estudio', 'per person · pay at studio')}</p>
-                  </>
-                )}
-              </div>
-
-              <Button
-                onClick={() => setStep(2)}
-                className="w-full bg-dark hover:bg-burgundy text-cream h-12 text-base"
-                disabled={spotsRemaining === 0}
-              >
-                {tr(lang, 'Reservar esta clase', 'Book this class')} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </motion.div>
-          )}
-
-          {/* ── STEP 2: Add-ons ── */}
-          {step === 2 && (
-            <motion.div key="step2" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Extras', 'Add extras')}</h2>
-              <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Opcional — mejora tu experiencia en clase.', 'Optional — enhance your class experience.')}</p>
-
-              {activeUpsells.length > 0 ? (
-                <div className="bg-cream rounded-2xl divide-y divide-dark/5 mb-5 overflow-hidden">
-                  {activeUpsells.map((u) => {
-                    const checked = selectedUpsellIds.has(u.id);
-                    return (
-                      <label key={u.id} className="flex items-start gap-4 p-4 cursor-pointer hover:bg-dark/2 transition-colors">
-                        <Checkbox checked={checked} onCheckedChange={() => toggleUpsell(u.id)} className="mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-dark">{u.name}</p>
-                          <p className="text-xs text-dark/50 mt-0.5 leading-relaxed">{u.description}</p>
-                        </div>
-                        <span className="text-sm font-semibold text-dark flex-shrink-0">
-                          {u.priceUsd === 0 ? tr(lang, 'Incluido', 'Included') : `+$${u.priceUsd}`}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-sm text-dark/40 italic mb-5">{tr(lang, 'No hay extras disponibles por ahora.', 'No add-ons available at this time.')}</p>
-              )}
-
-              <div className="border border-dark/10 rounded-2xl p-4 mb-6 space-y-2">
-                <div className="flex justify-between text-sm text-dark/70">
-                  <span>{tr(lang, 'Clase', 'Class')}</span>
-                  <span>{isFree ? tr(lang, 'Gratis', 'Free') : `$${priceUsd}`}</span>
-                </div>
-                {selectedUpsellsList.map(u => (
-                  <div key={u.id} className="flex justify-between text-sm text-dark/70">
-                    <span>{u.name}</span>
-                    <span>{u.priceUsd === 0 ? tr(lang, '+Incluido', '+Included') : `+$${u.priceUsd}`}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between font-semibold text-dark pt-2 border-t border-dark/10">
-                  <span>Subtotal</span>
-                  <span className={subtotal === 0 ? 'text-emerald-600' : ''}>
-                    {subtotal === 0 ? tr(lang, 'Gratis', 'Free') : `$${subtotal} USD`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 h-11">
-                  <ArrowLeft className="w-4 h-4 mr-2" /> {tr(lang, 'Atrás', 'Back')}
-                </Button>
-                <Button onClick={() => setStep(3)} className="flex-1 bg-dark hover:bg-burgundy text-cream h-11">
-                  {tr(lang, 'Continuar', 'Continue')} <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 3: Your details ── */}
-          {step === 3 && (
-            <motion.div key="step3" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Tus datos', 'Your details')}</h2>
-              <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Los usaremos para confirmar tu reserva.', 'We\'ll use this to confirm your booking.')}</p>
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handlePersonalSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField control={form.control} name="firstName" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{tr(lang, 'Nombre', 'First name')}</FormLabel>
-                        <FormControl><Input placeholder="Ana" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="lastName" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{tr(lang, 'Apellido', 'Last name')}</FormLabel>
-                        <FormControl><Input placeholder="García" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-
-                  <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl><Input type="email" placeholder="ana@email.com" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="phone" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {tr(lang, 'Teléfono', 'Phone')}{' '}
-                        <span className="text-dark/40 font-normal">({tr(lang, 'opcional', 'optional')})</span>
-                      </FormLabel>
-                      <FormControl><Input placeholder="+1 555-0100" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  {/* Referral code */}
-                  <FormField control={form.control} name="referralCode" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Tag className="w-3.5 h-3.5 text-dark/50" />
-                        {tr(lang, 'Código de referido', 'Referral code')}{' '}
-                        <span className="text-dark/40 font-normal">({tr(lang, 'opcional', 'optional')})</span>
-                      </FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
-                            placeholder={tr(lang, 'ej. SURF-CAMP', 'e.g. SURF-CAMP')}
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setCodeStatus('idle');
-                              setAppliedCode(null);
-                            }}
-                            className="uppercase font-mono"
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleApplyCode}
-                          disabled={!field.value?.trim() || codeStatus === 'loading'}
-                          className="flex-shrink-0 px-4"
+                {/* Step content */}
+                <div className="mt-12 lg:mt-16">
+                  <AnimatePresence mode="wait" custom={direction}>
+                    {/* ── STEP 1: Class review ── */}
+                    {step === 1 && (
+                      <motion.div
+                        key="step1"
+                        variants={stepVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      >
+                        {/* Image */}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 1.04 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 1.4, ease: 'easeOut' }}
+                          className="relative aspect-[16/9] overflow-hidden"
                         >
-                          {codeStatus === 'loading'
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : tr(lang, 'Aplicar', 'Apply')}
-                        </Button>
-                      </div>
-                      <FormMessage />
-                      {codeStatus === 'success' && appliedCode && (
-                        <div className="flex items-start gap-2 mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                          <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          <img
+                            src={classImage}
+                            alt={className}
+                            className="w-full h-full object-cover"
+                          />
+                        </motion.div>
+
+                        {/* Eyebrow row: category + duration */}
+                        <div className="flex justify-between items-center mt-8">
+                          <span className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
+                            {getCategoryLabel(className)}
+                          </span>
+                          <span className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
+                            {durationMinutes} minutes
+                          </span>
+                        </div>
+
+                        {/* Class title */}
+                        <h2 className="font-display font-light text-ink text-3xl lg:text-4xl leading-tight mt-4">
+                          {className}
+                        </h2>
+
+                        {/* Description (fallback if empty) */}
+                        <p className="font-body text-base text-ink leading-relaxed mt-6">
+                          {description?.trim() || 'A grounded practice paced to the rhythm of the body.'}
+                        </p>
+
+                        {/* Instructor row */}
+                        <div className="mt-12 pt-8 border-t border-ink/10 flex items-center gap-4">
                           <div>
-                            <p className="text-xs font-semibold text-emerald-800">
-                              {appliedCode.partnerName} — {
-                                appliedCode.benefitType === 'percentage'
-                                  ? `${appliedCode.discountPercent}% ${tr(lang, 'de descuento', 'off')}`
-                                  : appliedCode.benefitType === 'fixed'
-                                    ? `$${appliedCode.discountFixed} ${tr(lang, 'de descuento', 'off')}`
-                                    : `${tr(lang, 'Regalo incluido', 'Free gift included')}`
-                              }
+                            <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                              Instructor
                             </p>
-                            <p className="text-[11px] text-emerald-600 mt-0.5">{appliedCode.description}</p>
+                            <p className="font-body text-sm text-ink mt-1">{instructor}</p>
+                            <p className="font-body text-xs text-ink mt-1">
+                              200hr Certified Teacher
+                            </p>
                           </div>
                         </div>
-                      )}
-                      {codeStatus === 'error' && (
-                        <div className="flex items-center gap-2 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-                          <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                          <p className="text-xs text-red-700">{codeErrorMsg(codeErrorKey)}</p>
-                        </div>
-                      )}
-                    </FormItem>
-                  )} />
 
-                  {/* Hotel guest */}
-                  <FormField control={form.control} name="isHotelGuest" render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-start gap-3 bg-cream rounded-xl p-4">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} className="mt-0.5" />
-                        </FormControl>
-                        <div>
-                          <FormLabel className="text-sm font-medium text-dark cursor-pointer">
-                            {tr(lang, 'Soy huésped del hotel', 'I\'m a hotel guest')}
-                          </FormLabel>
-                          <p className="text-xs text-dark/50 mt-0.5">
-                            {tr(lang, 'Los huéspedes pueden acceder a tarifas especiales.', 'Hotel guests may access special rates.')}
+                        {/* Schedule micro-grid */}
+                        <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-6">
+                          <ScheduleCell
+                            label="Date"
+                            value={format(classDate, 'EEE d MMM yyyy', { locale: enUS })}
+                          />
+                          <ScheduleCell
+                            label="Time"
+                            value={`${format(classDate, 'HH:mm')} — ${format(new Date(classDate.getTime() + durationMinutes * 60000), 'HH:mm')}`}
+                          />
+                          <ScheduleCell
+                            label="Availability"
+                            value={
+                              spotsRemaining === 0
+                                ? 'Fully booked'
+                                : `${spotsRemaining} of ${capacity} spots`
+                            }
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* ── STEP 2: Extras ── */}
+                    {step === 2 && (
+                      <motion.div
+                        key="step2"
+                        variants={stepVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      >
+                        <p className="font-body text-sm text-ink max-w-md">
+                          Optional additions to make your class more complete. Select any you&apos;d like.
+                        </p>
+
+                        {activeUpsells.length > 0 ? (
+                          <div className="mt-12 space-y-4">
+                            {activeUpsells.map((u) => {
+                              const checked = selectedUpsellIds.has(u.id);
+                              return (
+                                <button
+                                  key={u.id}
+                                  type="button"
+                                  onClick={() => toggleUpsell(u.id)}
+                                  className={`
+                                    group w-full text-left
+                                    flex justify-between items-start gap-6 p-6
+                                    border transition-all duration-300 ease-out cursor-pointer
+                                    ${checked
+                                      ? 'border-ink bg-cream/60'
+                                      : 'border-ink/10 hover:border-ink/30 hover:bg-cream/30'}
+                                  `}
+                                  aria-pressed={checked}
+                                >
+                                  {/* LEFT */}
+                                  <div className="flex-1 min-w-0">
+                                    {u.priceUsd === 0 && (
+                                      <span className="inline-block font-body text-[10px] tracking-[0.2em] uppercase text-burgundy border border-burgundy/30 px-2 py-[2px]">
+                                        Included
+                                      </span>
+                                    )}
+                                    <h3 className={`font-display font-light text-ink text-lg lg:text-xl leading-tight ${u.priceUsd === 0 ? 'mt-3' : ''}`}>
+                                      {u.name}
+                                    </h3>
+                                    {u.description && (
+                                      <p className="font-body text-sm text-ink leading-relaxed mt-2">
+                                        {u.description}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* RIGHT: price + checkbox indicator */}
+                                  <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                                    <span className="font-display font-light text-ink text-xl lg:text-2xl">
+                                      {u.priceUsd === 0 ? '—' : `+$${u.priceUsd}`}
+                                    </span>
+                                    <span
+                                      aria-hidden
+                                      className={`
+                                        w-5 h-5 inline-flex items-center justify-center
+                                        border transition-colors duration-300
+                                        ${checked ? 'border-ink bg-ink' : 'border-ink/30'}
+                                      `}
+                                    >
+                                      {checked && <Check className="w-3 h-3 text-cream" strokeWidth={2} />}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="font-body text-sm text-ink italic mt-12">
+                            No add-ons available at this time.
                           </p>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* ── STEP 3: Your details ── */}
+                    {step === 3 && (
+                      <motion.div
+                        key="step3"
+                        variants={stepVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      >
+                        <p className="font-body text-sm text-ink max-w-md">
+                          We&apos;ll send your booking confirmation here.
+                        </p>
+
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(handlePersonalSubmit)} className="space-y-8 mt-12">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
+                              <FormField control={form.control} name="firstName" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">First name</FormLabel>
+                                  <FormControl><Input placeholder="Ana" className={editorialInput} {...field} /></FormControl>
+                                  <FormMessage className="text-xs text-burgundy mt-1" />
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="lastName" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">Last name</FormLabel>
+                                  <FormControl><Input placeholder="García" className={editorialInput} {...field} /></FormControl>
+                                  <FormMessage className="text-xs text-burgundy mt-1" />
+                                </FormItem>
+                              )} />
+                            </div>
+
+                            <FormField control={form.control} name="email" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">Email</FormLabel>
+                                <FormControl><Input type="email" placeholder="ana@email.com" className={editorialInput} {...field} /></FormControl>
+                                <FormMessage className="text-xs text-burgundy mt-1" />
+                              </FormItem>
+                            )} />
+
+                            <FormField control={form.control} name="phone" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                                  Phone <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                </FormLabel>
+                                <FormControl><Input placeholder="+1 555-0100" className={editorialInput} {...field} /></FormControl>
+                                <FormMessage className="text-xs text-burgundy mt-1" />
+                              </FormItem>
+                            )} />
+
+                            {/* Referral code */}
+                            <FormField control={form.control} name="referralCode" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-1.5 font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                                  <Tag className="w-3 h-3 text-ink" strokeWidth={1.5} />
+                                  Referral code <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                </FormLabel>
+                                <div className="flex items-end gap-3">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="e.g. SURF-CAMP"
+                                      {...field}
+                                      onChange={(e) => {
+                                        field.onChange(e);
+                                        setCodeStatus('idle');
+                                        setAppliedCode(null);
+                                      }}
+                                      className={`${editorialInput} uppercase tracking-[0.15em]`}
+                                    />
+                                  </FormControl>
+                                  <button
+                                    type="button"
+                                    onClick={handleApplyCode}
+                                    disabled={!field.value?.trim() || codeStatus === 'loading'}
+                                    className="flex-shrink-0 font-body text-xs tracking-[0.25em] uppercase text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer pb-3"
+                                  >
+                                    {codeStatus === 'loading'
+                                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={1.5} />
+                                      : 'Apply'}
+                                  </button>
+                                </div>
+                                <FormMessage className="text-xs text-burgundy mt-1" />
+                                {codeStatus === 'success' && appliedCode && (
+                                  <div className="flex items-start gap-2 mt-3 py-3 border-l-2 border-burgundy pl-3">
+                                    <CheckCircle className="w-4 h-4 text-burgundy flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                                    <div>
+                                      <p className="font-body text-xs font-medium text-ink">
+                                        {appliedCode.partnerName} — {
+                                          appliedCode.benefitType === 'percentage'
+                                            ? `${appliedCode.discountPercent}% off`
+                                            : appliedCode.benefitType === 'fixed'
+                                              ? `$${appliedCode.discountFixed} off`
+                                              : 'Free gift included'
+                                        }
+                                      </p>
+                                      <p className="font-body text-[11px] text-ink mt-0.5">{appliedCode.description}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                {codeStatus === 'error' && (
+                                  <div className="flex items-center gap-2 mt-3 py-2 border-l-2 border-burgundy pl-3">
+                                    <XCircle className="w-4 h-4 text-burgundy flex-shrink-0" strokeWidth={1.5} />
+                                    <p className="font-body text-xs text-burgundy">{codeErrorMsg(codeErrorKey)}</p>
+                                  </div>
+                                )}
+                              </FormItem>
+                            )} />
+
+                            {/* Hotel guest — simple inline row, no card */}
+                            <FormField control={form.control} name="isHotelGuest" render={({ field }) => (
+                              <FormItem className="pt-4 border-t border-ink/10">
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      className="mt-1 cursor-pointer"
+                                    />
+                                  </FormControl>
+                                  <div>
+                                    <FormLabel className="font-body text-sm font-medium text-ink cursor-pointer">
+                                      I&apos;m a guest at the hotel
+                                    </FormLabel>
+                                    <p className="font-body text-xs text-ink mt-1">
+                                      Class is included in your stay.
+                                    </p>
+                                  </div>
+                                </label>
+                              </FormItem>
+                            )} />
+
+                            {watchGuest && (
+                              <FormField control={form.control} name="cloudbedsRef" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                                    Cloudbeds reservation number <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g. CB-123456" className={editorialInput} {...field} />
+                                  </FormControl>
+                                  <FormMessage className="text-xs text-burgundy mt-1" />
+                                </FormItem>
+                              )} />
+                            )}
+                          </form>
+                        </Form>
+                      </motion.div>
+                    )}
+
+                    {/* ── STEP 4: Payment / Confirm ── */}
+                    {step === 4 && personalData && (
+                      <motion.div
+                        key="step4"
+                        variants={stepVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      >
+                        <p className="font-body text-sm text-ink max-w-md">
+                          Pay securely by card. Choose a single class or save with a pack — a pack
+                          also covers this class and sends you a code for future ones.
+                        </p>
+
+                        {/* Pack type selector — editorial flat cards, no radius */}
+                        <div className="mt-12 border-y border-ink/10 divide-y divide-ink/10">
+                          {PACKS.map((pack) => {
+                            const active = packType === pack.id;
+                            // Drop-in shows this class's real price; packs are fixed.
+                            const displayPrice = pack.id === 'dropin' ? priceUsd : pack.price;
+                            return (
+                              <button
+                                key={pack.id}
+                                type="button"
+                                onClick={() => setPackType(pack.id)}
+                                className={`
+                                  group relative w-full flex items-center justify-between
+                                  py-5 pl-8 pr-2 text-left
+                                  cursor-pointer transition-colors duration-300
+                                  ${active ? '' : 'hover:bg-ink/[0.02]'}
+                                `}
+                              >
+                                {/* Burgundy active marker on the left */}
+                                <span
+                                  aria-hidden
+                                  className={`
+                                    absolute left-0 top-1/2 -translate-y-1/2 h-10 w-[2px]
+                                    transition-opacity duration-300
+                                    ${active ? 'bg-burgundy opacity-100' : 'opacity-0'}
+                                  `}
+                                />
+                                <div className="flex items-center gap-4">
+                                  <div className={`
+                                    w-4 h-4 rounded-full border flex-shrink-0
+                                    flex items-center justify-center transition-colors duration-300
+                                    ${active ? 'border-ink' : 'border-ink/40'}
+                                  `}>
+                                    {active && <div className="w-1.5 h-1.5 rounded-full bg-ink" />}
+                                  </div>
+                                  <div>
+                                    <p className="font-body text-sm font-medium text-ink">
+                                      {pack.name}
+                                    </p>
+                                    {pack.saving && (
+                                      <p className="font-body text-xs text-burgundy mt-1">
+                                        {pack.saving}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <span className="font-body text-sm text-ink">${displayPrice} USD</span>
+                              </button>
+                            );
+                          })}
                         </div>
-                      </div>
-                    </FormItem>
-                  )} />
 
-                  {watchGuest && (
-                    <FormField control={form.control} name="cloudbedsRef" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {tr(lang, 'Número de reserva Cloudbeds', 'Cloudbeds reservation number')}{' '}
-                          <span className="text-dark/40 font-normal">({tr(lang, 'opcional', 'optional')})</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. CB-123456" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  )}
-
-                  <div className="flex gap-3 pt-2">
-                    <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1 h-11">
-                      <ArrowLeft className="w-4 h-4 mr-2" /> {tr(lang, 'Atrás', 'Back')}
-                    </Button>
-                    <Button type="submit" className="flex-1 bg-dark hover:bg-burgundy text-cream h-11">
-                      {tr(lang, 'Continuar', 'Continue')} <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </motion.div>
-          )}
-
-          {/* ── STEP 4: Confirm ── */}
-          {step === 4 && personalData && (
-            <motion.div key="step4" variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <ClassReminder className={className} instructor={instructor} color={color} classDate={classDate} lang={lang} />
-              <h2 className="font-serif text-2xl font-light text-dark mb-1">{tr(lang, 'Confirmar reserva', 'Confirm booking')}</h2>
-              <p className="text-sm text-dark/50 mb-6">{tr(lang, 'Revisá tu reserva antes de confirmar.', 'Review your booking before confirming.')}</p>
-
-              {/* Booking summary */}
-              <div className="bg-cream rounded-2xl p-4 mb-4">
-                <p className="text-[10px] uppercase tracking-widest text-dark/40 mb-3">{tr(lang, 'Resumen de reserva', 'Booking summary')}</p>
-                <div className="space-y-1.5">
-                  <SummaryRow label={tr(lang, 'Clase', 'Class')} value={className} />
-                  <SummaryRow
-                    label={tr(lang, 'Fecha', 'Date')}
-                    value={lang === 'es'
-                      ? `${format(classDate, "EEEE d 'de' MMMM", { locale: esLocale })} · ${format(classDate, 'h:mm a')}`
-                      : `${format(classDate, 'EEEE, MMMM d')} · ${format(classDate, 'h:mm a')}`}
-                  />
-                  <SummaryRow label={tr(lang, 'Instructor', 'Instructor')} value={instructor} />
-                  {selectedUpsellsList.length > 0 && (
-                    <SummaryRow
-                      label={tr(lang, 'Extras', 'Extras')}
-                      value={selectedUpsellsList.map(u => u.name).join(', ')}
-                    />
-                  )}
-                  {appliedCode && discountAmount > 0 && (
-                    <>
-                      <div className="flex justify-between text-sm py-1 border-b border-dark/5">
-                        <span className="text-dark/50">{tr(lang, 'Subtotal', 'Subtotal')}</span>
-                        <span className="text-dark">${subtotal} USD</span>
-                      </div>
-                      <div className="flex justify-between text-sm py-1 border-b border-dark/5">
-                        <span className="text-emerald-700 font-medium flex items-center gap-1.5">
-                          <Tag className="w-3.5 h-3.5" />
-                          {appliedCode.code}
-                        </span>
-                        <span className="text-emerald-700 font-medium">-${discountAmount} USD</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="flex justify-between pt-2 border-t border-dark/10 font-semibold text-sm">
-                    <span className="text-dark">Total</span>
-                    <span className={isTotalFree ? 'text-emerald-600' : 'text-dark'}>
-                      {isTotalFree ? tr(lang, 'Gratis', 'Free') : `$${total} USD`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pack type selector */}
-              <div className="mb-4">
-                <p className="text-[10px] uppercase tracking-widest text-dark/40 mb-3">
-                  {tr(lang, '¿Cómo vas a pagar?', 'How will you pay?')}
-                </p>
-                <div className="space-y-2">
-                  {PACKS.map((pack) => (
-                    <button
-                      key={pack.id}
-                      type="button"
-                      onClick={() => setPackType(pack.id)}
-                      className={`w-full flex items-center justify-between p-4 rounded-xl border text-left transition-colors ${
-                        packType === pack.id
-                          ? 'border-dark bg-dark/5'
-                          : 'border-dark/15 bg-cream hover:border-dark/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          packType === pack.id ? 'border-dark' : 'border-dark/30'
-                        }`}>
-                          {packType === pack.id && (
-                            <div className="w-2 h-2 rounded-full bg-dark" />
+                        {/* Payment method selector */}
+                        <div className="mt-10">
+                          <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                            Payment method
+                          </p>
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {PAYMENT_METHODS.map(({ id, name, hint, Icon }) => {
+                              const active = paymentMethod === id;
+                              return (
+                                <button
+                                  key={id}
+                                  type="button"
+                                  onClick={() => setPaymentMethod(id)}
+                                  aria-pressed={active}
+                                  className={`
+                                    group flex flex-col items-start gap-2 p-4 text-left
+                                    border transition-all duration-300 ease-out cursor-pointer
+                                    ${active
+                                      ? 'border-ink bg-cream/60'
+                                      : 'border-ink/10 hover:border-ink/30 hover:bg-cream/30'}
+                                  `}
+                                >
+                                  <Icon className="w-5 h-5 text-ink" strokeWidth={1.5} />
+                                  <span className="font-body text-sm font-medium text-ink">{name}</span>
+                                  <span className="font-body text-xs text-ink/60 leading-snug">{hint}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {paymentMethod === 'venmo' && (
+                            <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
+                              We&apos;ll show the Venmo details to complete your payment. Your spot
+                              stays pending until we verify it.
+                            </p>
+                          )}
+                          {paymentMethod === 'cash' && (
+                            <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
+                              We&apos;ll hold your spot — just pay in cash at the studio reception
+                              before your class.
+                            </p>
                           )}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-dark">{lang === 'es' ? pack.nameEs : pack.name}</p>
-                          {(pack.savingEs || pack.savingEn) && (
-                            <p className="text-xs text-emerald-600">{lang === 'es' ? pack.savingEs : pack.savingEn}</p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-sm font-semibold text-dark">${pack.price} USD</span>
-                    </button>
-                  ))}
+
+                        {/* Cancellation note */}
+                        <p className="font-body text-xs text-ink mt-6">
+                          ✓ Free cancellation up to 2 hours before class.
+                        </p>
+
+                        {/* Error message */}
+                        {bookingError && (
+                          <div className="mt-4 flex items-start gap-2 py-3 border-l-2 border-burgundy pl-3">
+                            <XCircle className="w-4 h-4 text-burgundy flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                            <p className="font-body text-xs text-burgundy">{bookingErrorMsg()}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <p className="text-xs text-dark/40 mt-3 text-center">
-                  {tr(lang, 'El pago se realiza en el estudio.', 'Payment is collected at the studio.')}
-                </p>
+
+                <BookingNavigation
+                  step={step}
+                  isLoading={isLoading}
+                  canContinue={canContinue}
+                  onBack={handleBack}
+                  onContinue={handleContinue}
+                  payLabel={
+                    paymentMethod === 'card'
+                      ? 'Confirm and pay'
+                      : paymentMethod === 'venmo'
+                        ? 'Pay with Venmo'
+                        : 'Reserve'
+                  }
+                />
               </div>
+            </div>
 
-              {/* Cancellation note */}
-              <p className="text-xs text-dark/40 text-center mb-5">
-                ✓ {tr(lang, 'Cancelación gratuita hasta 2 horas antes de la clase.', 'Free cancellation up to 2 hours before class.')}
-              </p>
-
-              {/* Error message */}
-              {bookingError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  <p className="text-xs text-red-700">{bookingErrorMsg()}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => setStep(3)} className="flex-1 h-11" disabled={isLoading}>
-                  <ArrowLeft className="w-4 h-4 mr-2" /> {tr(lang, 'Atrás', 'Back')}
-                </Button>
-                <Button onClick={handleConfirm} disabled={isLoading} className="flex-1 bg-dark hover:bg-burgundy text-cream h-11">
-                  {isLoading
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : tr(lang, 'Confirmar reserva', 'Confirm booking')}
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 5: Confirmed ── */}
-          {step === 5 && (
-            <motion.div
-              key="step5"
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              className="text-center"
-            >
+            {/* ── DESKTOP SIDEBAR ── */}
+            <aside className="hidden lg:block">
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.15, type: 'spring', stiffness: 200, damping: 14 }}
-                className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5"
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="sticky top-24"
               >
-                <Check className="w-10 h-10 text-emerald-600" />
+                <BookingSummary {...summaryProps} />
               </motion.div>
-
-              <h2 className="font-serif text-3xl font-light text-dark mb-2">{tr(lang, '¡Reserva confirmada!', 'Booking confirmed!')}</h2>
-              <p className="text-dark/50 text-sm mb-3">
-                {tr(lang, 'Tu lugar está reservado. Presentate 10 minutos antes de la clase.', 'Your spot is reserved. Please arrive 10 minutes before class.')}
-              </p>
-              <p className="text-dark/40 text-xs mb-7">
-                {tr(lang, 'El pago se realiza en el estudio.', 'Payment is collected at the studio.')}
-              </p>
-
-              <div className="inline-block mb-6 bg-cream px-5 py-2 rounded-full border border-dark/10">
-                <p className="font-mono text-base font-bold text-dark tracking-wider">{bookingRef}</p>
-              </div>
-
-              <div className="bg-cream rounded-2xl p-5 mb-6 text-left">
-                <div className="space-y-0">
-                  <ConfirmRow label={tr(lang, 'Clase', 'Class')} value={className} />
-                  <ConfirmRow label={tr(lang, 'Instructor', 'Instructor')} value={instructor} />
-                  <ConfirmRow
-                    label={tr(lang, 'Fecha', 'Date')}
-                    value={lang === 'es'
-                      ? format(classDate, "d 'de' MMMM 'de' yyyy · h:mm a", { locale: esLocale })
-                      : format(classDate, "MMMM d, yyyy · h:mm a")}
-                  />
-                  <ConfirmRow label={tr(lang, 'Lugar', 'Location')} value={location} />
-                  {selectedUpsellsList.length > 0 && (
-                    <ConfirmRow
-                      label={tr(lang, 'Extras', 'Extras')}
-                      value={selectedUpsellsList.map(u => u.name).join(', ')}
-                    />
-                  )}
-                  {personalData && (
-                    <ConfirmRow label={tr(lang, 'Nombre', 'Name')} value={`${personalData.firstName} ${personalData.lastName}`} />
-                  )}
-                  {appliedCode && discountAmount > 0 && (
-                    <>
-                      <ConfirmRow label={tr(lang, 'Subtotal', 'Subtotal')} value={`$${subtotal} USD`} />
-                      <ConfirmRow
-                        label={`${tr(lang, 'Código', 'Code')} ${appliedCode.code}`}
-                        value={`-$${discountAmount} USD`}
-                        highlight
-                      />
-                    </>
-                  )}
-                  <div className="flex justify-between pt-2 border-t border-dark/10 font-semibold text-sm">
-                    <span className="text-dark">Total</span>
-                    <span className={isTotalFree ? 'text-emerald-600' : 'text-dark'}>
-                      {isTotalFree ? tr(lang, 'Gratis', 'Free') : `$${total} USD`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Button onClick={handleDownloadICS} variant="outline" className="w-full h-11 gap-2">
-                  <Calendar className="w-4 h-4" />
-                  {tr(lang, 'Agregar al calendario (.ics)', 'Add to calendar (.ics)')}
-                </Button>
-                <Link href="/yoga" className="block">
-                  <Button variant="outline" className="w-full h-11">
-                    {tr(lang, 'Ver más clases', 'See more classes')}
-                  </Button>
-                </Link>
-              </div>
-
-              <p className="text-xs text-dark/40 mt-5">
-                📧 {tr(lang, 'Confirmación enviada a', 'Confirmation sent to')} {personalData?.email}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-// ── Mini class reminder shown at the top of steps 2-4 ──────────────────────
-function ClassReminder({
-  className, instructor, color, classDate, lang,
-}: {
-  className: string; instructor: string; color?: string;
-  classDate: Date; lang: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 bg-cream rounded-2xl p-3 mb-6 overflow-hidden">
-      <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-        <img src={getClassPhoto(className)} alt={className} className="w-full h-full object-cover" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] uppercase tracking-widest text-dark/40 mb-0.5">{instructor}</p>
-        <p className="font-serif text-sm font-light text-dark truncate">{className}</p>
-        <p className="text-[11px] text-dark/50 mt-0.5">
-          {format(classDate, lang === 'es' ? "EEE d MMM · h:mm a" : "EEE MMM d · h:mm a")}
-        </p>
-      </div>
-      {color && (
-        <div className="w-1 h-10 rounded-full flex-shrink-0" style={{ background: color }} />
+            </aside>
+          </div>
+        </div>
       )}
+
+      <VenmoModal
+        open={venmoModalOpen}
+        amount={total}
+        note={personalData ? `${personalData.firstName} ${personalData.lastName}` : ''}
+        isLoading={isLoading}
+        onPaid={handleVenmoPaid}
+        onCancel={() => setVenmoModalOpen(false)}
+      />
     </div>
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+// ── Schedule micro-grid cell used in Step 1 (label on top, value below) ─────
+function ScheduleCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 text-sm py-1 border-b border-dark/5 last:border-0">
-      <span className="text-dark/50 flex-shrink-0">{label}</span>
-      <span className="text-dark text-right">{value}</span>
-    </div>
-  );
-}
-
-function ConfirmRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="flex justify-between gap-4 text-sm py-1 border-b border-dark/5 last:border-0">
-      <span className="text-dark/50 flex-shrink-0">{label}</span>
-      <span
-        className="text-right"
-        style={{ color: highlight ? '#c4a030' : '#340000', fontWeight: highlight ? 600 : 400 }}
-      >
-        {value}
-      </span>
+    <div>
+      <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">{label}</p>
+      <p className="font-body text-sm text-ink mt-1">{value}</p>
     </div>
   );
 }

@@ -5,26 +5,26 @@
 
 :root {
   /* House of Shakti - Luxury Wellness Palette */
-  /* Emphasis: #8D0000 (burgundy), #F2EBDA (warm cream), #000000 (black) */
-  /* Base: #FFFDF7 (warm white), #340000 (dark burgundy) */
-  --background: #FFFDF7;
+  /* Emphasis: #8D0000 (burgundy), #f2ebe7 (PANTONE 9285 C — unified neutral), #000000 (black) */
+  /* Base: #f2ebe7 (PANTONE 9285 C — main background), #340000 (dark burgundy) */
+  --background: #f2ebe7;
   --foreground: #340000;
-  --card: #FFFDF7;
+  --card: #f2ebe7;
   --card-foreground: #340000;
-  --popover: #FFFDF7;
+  --popover: #f2ebe7;
   --popover-foreground: #340000;
   --primary: #340000;
-  --primary-foreground: #F2EBDA;
+  --primary-foreground: #f2ebe7;
   --secondary: #8D0000;
-  --secondary-foreground: #F2EBDA;
-  --muted: #F2EBDA;
+  --secondary-foreground: #f2ebe7;
+  --muted: #f2ebe7;
   --muted-foreground: #5C4040;
   --accent: #8D0000;
-  --accent-foreground: #F2EBDA;
+  --accent-foreground: #f2ebe7;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: #E0D5C5;
-  --input: #F2EBDA;
+  --input: #f2ebe7;
   --ring: #8D0000;
   --chart-1: #340000;
   --chart-2: #8D0000;
@@ -34,19 +34,22 @@
   --radius: 0.5rem;
   
   /* Custom colors */
-  --cream: #F2EBDA;
+  --cream: #f2ebe7;
   --burgundy: #8D0000;
   --burgundy-light: #A63030;
   --burgundy-dark: #6B1010;
   --dark: #340000;
   --dark-light: #4A1515;
   --black: #000000;
-  --warm-white: #FFFDF7;
+  --warm-white: #f2ebe7;
+  /* Type color — neutral graphite, optimized for on-screen legibility */
+  --ink: #313131;
 }
 
 @theme inline {
-  --font-sans: var(--font-sans), 'Inter', system-ui, sans-serif;
-  --font-serif: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+  /* Custom self-hosted faces — Krylon (display) and Chalet Paris Nineteen Sixty (body) */
+  --font-display: var(--font-display), Georgia, 'Times New Roman', serif;
+  --font-body: var(--font-body), -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'Geist Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -78,14 +81,15 @@
   --radius-xl: calc(var(--radius) + 4px);
   
   /* Custom theme colors - House of Shakti */
-  --color-cream: #F2EBDA;
+  --color-cream: #f2ebe7;
   --color-burgundy: #8D0000;
   --color-burgundy-light: #A63030;
   --color-burgundy-dark: #6B1010;
   --color-dark: #340000;
   --color-dark-light: #4A1515;
   --color-black: #000000;
-  --color-warm-white: #FFFDF7;
+  --color-warm-white: #f2ebe7;
+  --color-ink: #313131;
 }
 
 @layer base {
@@ -94,6 +98,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
   }
   
   /* Smooth scrolling */

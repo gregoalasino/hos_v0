@@ -1,82 +1,87 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+// Placeholder YouTube IDs — swap for self-hosted .mp4 when available.
+// IMPORTANT: `loop=1` only works on YouTube embeds when `playlist=<same_id>` is set.
+const VIDEO_ID_DESKTOP = "90FhvO1AvT8";
+const VIDEO_ID_MOBILE = "90FhvO1AvT8"; // TODO: replace with a portrait/9:16 video ID
+
+const youtubeEmbedUrl = (id: string) =>
+  `https://www.youtube.com/embed/${id}` +
+  `?autoplay=1` +
+  `&mute=1` +
+  `&loop=1` +
+  `&playlist=${id}` +
+  `&controls=0` +
+  `&showinfo=0` +
+  `&modestbranding=1` +
+  `&rel=0` +
+  `&playsinline=1` +
+  `&disablekb=1` +
+  `&iv_load_policy=3` +
+  `&fs=0`;
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cream">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src="/images/yoga/NE8A7702%201.webp"
-          alt="Peaceful yoga practice at House of Shakti"
-          className="w-full h-full object-cover opacity-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-cream/55 via-cream/35 to-cream" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-sm tracking-[0.3em] uppercase text-dark/70 mb-6"
+    <section className="bg-warm-white">
+      {/*
+        Hero + navbar together fill 100vh on any device.
+        Navbar is h-16 (mobile) / h-20 (md+), so hero takes the remainder.
+        Mobile: edge-to-edge.
+        Desktop: container with side padding, matching Aman's framing.
+      */}
+      {/*
+        Width rules: mobile = full-bleed (sección marcada como full-width),
+                     desktop = 80% del viewport.
+        `mt-*` desplaza el contenido por debajo del navbar fijo, para que hero + nav = 100vh.
+      */}
+      <div className="w-full md:w-[80%] mx-auto mt-16 md:mt-20">
+        <div
+          className="
+            relative overflow-hidden bg-dark
+            h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
+          "
         >
-          A Sanctuary for the Soul
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-          className="font-serif text-5xl md:text-7xl lg:text-8xl font-light text-dark leading-tight mb-8 text-balance"
-        >
-          House of Shakti
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          className="text-lg md:text-xl text-dark/80 max-w-2xl mx-auto mb-12 leading-relaxed text-pretty"
-        >
-          Where ancient wisdom meets modern luxury. Immerse yourself in 
-          transformative yoga, serene accommodations, and soul-nourishing retreats.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <div className="hidden md:block cloudbeds-btn-container">
-              <cb-book-now-button 
-                property-code='zE6Wy8' 
-              ></cb-book-now-button>
+          {/* Desktop / landscape — 16:9 source */}
+          <div className="absolute inset-0 hidden md:block">
+            <iframe
+              src={youtubeEmbedUrl(VIDEO_ID_DESKTOP)}
+              title="House of Shakti — sanctuary"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
+              tabIndex={-1}
+              className="
+                absolute top-1/2 left-1/2
+                -translate-x-1/2 -translate-y-1/2
+                pointer-events-none
+                w-[max(100%,177.78vh)]
+                h-[max(100%,56.25vw)]
+                aspect-video
+                border-0
+              "
+            />
           </div>
-          <Link
-            href="#pillars"
-            className="group flex items-center gap-3 border border-dark/30 text-dark px-8 py-4 rounded-md text-sm tracking-wide uppercase hover:bg-dark/5 transition-colors duration-300"
-          >
-            Explore Yoga
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </motion.div>
-      </div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-px h-16 bg-gradient-to-b from-dark/50 to-transparent" />
-      </motion.div>
+          {/* Mobile / portrait — placeholder uses same ID; swap when 9:16 asset exists */}
+          <div className="absolute inset-0 md:hidden">
+            <iframe
+              src={youtubeEmbedUrl(VIDEO_ID_MOBILE)}
+              title="House of Shakti — sanctuary"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
+              tabIndex={-1}
+              className="
+                absolute top-1/2 left-1/2
+                -translate-x-1/2 -translate-y-1/2
+                pointer-events-none
+                w-[max(100%,177.78vh)]
+                h-[max(100%,56.25vw)]
+                aspect-video
+                border-0
+              "
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,258 +1,566 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useRef } from 'react';
+import Script from 'next/script';
+import { motion, Variants, useInView } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Navigation } from '@/components/landing/navigation';
+import { Footer } from '@/components/landing/footer';
+import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
+import { AccommodationsFAQ } from '@/components/accommodations/AccommodationsFAQ';
 
-const rooms = [
-  {
-    id: "soul",
-    name: "Soul Suite",
-    size: "45 m²",
-    capacity: 2,
-    price: 299,
-    description:
-      "A sanctuary of stillness and light. The Soul Suite features floor-to-ceiling windows that frame the jungle canopy, a handcrafted king bed with organic linens, and a private terrace for morning meditation. The en-suite bathroom includes a rainfall shower surrounded by tropical plants.",
-    images: [
-      "/images/sanctuary/271A0766_websize%201.webp",
-      "/images/sanctuary/271A0778_websize%201.webp",
-      "/images/sanctuary/271A0785_websize%201.webp",
-    ],
-  },
-  {
-    id: "sea",
-    name: "Sea Villa",
-    size: "65 m²",
-    capacity: 2,
-    price: 449,
-    description:
-      "Where ocean whispers meet tropical breeze. The Sea Villa offers panoramic views of the coastline, a spacious living area with artisanal furnishings, and a private plunge pool. Wake to the rhythm of waves and fall asleep under a canopy of stars from your outdoor daybed.",
-    images: [
-      "/images/sanctuary/271A0800_websize%201.webp",
-      "/images/sanctuary/271A0822_websize%201.webp",
-      "/images/sanctuary/271A0828_websize%201.webp",
-    ],
-  },
-  {
-    id: "beach",
-    name: "Beach House",
-    size: "120 m²",
-    capacity: 4,
-    price: 799,
-    description:
-      "The ultimate expression of barefoot luxury. This two-bedroom residence features a full kitchen, expansive indoor-outdoor living spaces, and direct beach access. Perfect for families or groups seeking privacy and space while remaining connected to the sanctuary community.",
-    images: [
-      "/images/sanctuary/271A0840_websize%201.webp",
-      "/images/sanctuary/271A0851_websize%201.webp",
-      "/images/sanctuary/271A0856_websize%201.webp",
-    ],
-  },
-];
+// ─── Cloudbeds immersive widget ──────────────────────────────────────────────
+// Public property embed (same IDs used on the client's current WIX site).
+// `zE6Wy8` is the public property/widget id — not a credential. The immersive
+// loader script binds a click handler to any element carrying `data-be-url`,
+// opening the booking engine as an overlay instead of navigating away.
+const CLOUDBEDS_PROPERTY_CODE = 'zE6Wy8';
+const CLOUDBEDS_URL = `https://us2.cloudbeds.com/reservation/${CLOUDBEDS_PROPERTY_CODE}`;
+const CLOUDBEDS_IMMERSIVE_SRC = `https://us2.cloudbeds.com/widget/load/${CLOUDBEDS_PROPERTY_CODE}/immersive`;
 
-function ImageCarousel({ images, name }: { images: string[]; name: string }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+// ─── YouTube placeholder (same as home & yoga heroes) ────────────────────────
+const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
+const VIDEO_ID_MOBILE = '90FhvO1AvT8'; // TODO: swap when accommodations-specific portrait video lands
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
+const youtubeEmbedUrl = (id: string) =>
+  `https://www.youtube.com/embed/${id}` +
+  `?autoplay=1&mute=1&loop=1&playlist=${id}` +
+  `&controls=0&showinfo=0&modestbranding=1&rel=0` +
+  `&playsinline=1&disablekb=1&iv_load_policy=3&fs=0`;
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+// ─── Word-by-word reveal variants (same easing as home Introduction) ─────────
+const headlineContainer: Variants = {
+  hidden: { opacity: 1 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.18, delayChildren: 0.1 } },
+};
+const headlineWord: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] } },
+};
+
+// ─── Reusable word-reveal component ──────────────────────────────────────────
+function WordRevealHeading({
+  text,
+  className,
+  as: As = 'h2',
+  inView,
+}: {
+  text: string;
+  className: string;
+  as?: 'h1' | 'h2' | 'h3';
+  inView: boolean;
+}) {
+  const words = text.split(' ');
+  return (
+    <motion.div
+      variants={headlineContainer}
+      initial="hidden"
+      animate={inView ? 'visible' : 'hidden'}
+      className={className}
+    >
+      <As className="font-display font-light leading-[1.1] tracking-[-0.01em]" aria-label={text}>
+        {words.map((word, i) => (
+          <span
+            key={`${word}-${i}`}
+            aria-hidden
+            className="inline-block overflow-hidden align-baseline"
+          >
+            <motion.span
+              variants={headlineWord}
+              className="inline-block will-change-transform"
+            >
+              {word}
+              {/* non-breaking space — regular ASCII space gets collapsed by inline-block */}
+              {i < words.length - 1 ? ' ' : ''}
+            </motion.span>
+          </span>
+        ))}
+      </As>
+    </motion.div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// HERO — editorial video, same pattern as home & yoga
+// ═════════════════════════════════════════════════════════════════════════════
+function AccommodationsHero() {
+  return (
+    <section className="bg-warm-white">
+      {/*
+        Hero + navbar together fill exactly 100vh.
+        Mobile: full-bleed. Desktop: 80% container with margins.
+        mt-* offsets the fixed navbar so the hero sits *below* it.
+      */}
+      <div className="w-full md:w-[80%] mx-auto mt-16 md:mt-20">
+        <div
+          className="
+            relative overflow-hidden bg-dark
+            h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
+          "
+        >
+          {/* Desktop / landscape */}
+          <div className="absolute inset-0 hidden md:block">
+            <iframe
+              src={youtubeEmbedUrl(VIDEO_ID_DESKTOP)}
+              title="Suites & casita at House of Shakti"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
+              tabIndex={-1}
+              className="
+                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                pointer-events-none
+                w-[max(100%,177.78vh)] h-[max(100%,56.25vw)] aspect-video border-0
+              "
+            />
+          </div>
+
+          {/* Mobile / portrait — same placeholder until a 9:16 asset lands */}
+          <div className="absolute inset-0 md:hidden">
+            <iframe
+              src={youtubeEmbedUrl(VIDEO_ID_MOBILE)}
+              title="Suites & casita at House of Shakti"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
+              tabIndex={-1}
+              className="
+                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                pointer-events-none
+                w-[max(100%,177.78vh)] h-[max(100%,56.25vw)] aspect-video border-0
+              "
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INTRO — short, scannable orientation (no image)
+// Sets the expectation that there are two distinct dwelling types
+// before the two cards below.
+// ═════════════════════════════════════════════════════════════════════════════
+const INTRO_HEADLINE = 'Two ways to stay.';
+
+function AccommodationsIntro() {
+  const textRef = useRef<HTMLDivElement | null>(null);
+  const textInView = useInView(textRef, { once: true, margin: '-100px' });
 
   return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-md group">
-      <motion.img
-        key={currentIndex}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        src={images[currentIndex]}
-        alt={`${name} - Image ${currentIndex + 1}`}
-        className="w-full h-full object-cover"
-      />
-      
-      {/* Navigation Arrows */}
-      <button
-        onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-cream/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-cream"
-        aria-label="Previous image"
-      >
-        <ChevronLeft className="w-5 h-5 text-dark" />
-      </button>
-      <button
-        onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-cream/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-cream"
-        aria-label="Next image"
-      >
-        <ChevronRight className="w-5 h-5 text-dark" />
-      </button>
+    <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
+      <div ref={textRef} className="w-[90%] md:w-[80%] mx-auto">
+        <div className="max-w-3xl">
+          <WordRevealHeading
+            text={INTRO_HEADLINE}
+            inView={textInView}
+            className="text-ink text-4xl md:text-5xl lg:text-6xl"
+          />
 
-      {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? "bg-cream w-6" : "bg-cream/50"
-            }`}
-            aria-label={`Go to image ${index + 1}`}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
+            className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
+          >
+            Four suites circle a saltwater pool at the heart of the property. La
+            Casita rests alone in the jungle — a private one-bedroom retreat, a few
+            steps further in. Five rooms in total.
+          </motion.p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// IMAGE CAROUSEL — Aman Amanjena style: arrows right-aligned, fade between
+// images. No dots, no progress bar, no captions.
+// `aspect` is overridable so the same component serves the compact grid
+// cards (4/5) and the Casita feature row (3/4 or whatever fits).
+// ═════════════════════════════════════════════════════════════════════════════
+function SuiteCarousel({
+  images,
+  alt,
+  aspect = 'aspect-[4/5]',
+}: {
+  images: string[];
+  alt: string;
+  aspect?: string;
+}) {
+  const [current, setCurrent] = useState(0);
+  const total = images.length;
+
+  const goPrev = () => setCurrent((c) => (c - 1 + total) % total);
+  const goNext = () => setCurrent((c) => (c + 1) % total);
+
+  return (
+    <div>
+      {/* Image stack with crossfade */}
+      <div className={`relative ${aspect} overflow-hidden bg-ink/5`}>
+        {images.map((src, i) => (
+          <motion.img
+            key={src}
+            src={src}
+            alt={`${alt} — view ${i + 1}`}
+            initial={false}
+            animate={{ opacity: i === current ? 1 : 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ))}
       </div>
+
+      {/* Arrows aligned right (Amanjena-style) */}
+      {total > 1 && (
+        <div className="flex justify-end items-center gap-6 mt-3">
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label={`Previous image of ${alt}`}
+            className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5" strokeWidth={1} />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label={`Next image of ${alt}`}
+            className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" strokeWidth={1} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: "easeOut" },
-  },
-};
-
-export default function AccommodationsPage() {
-  const heroRef = useRef(null);
-  const heroInView = useInView(heroRef, { once: true });
+// ═════════════════════════════════════════════════════════════════════════════
+// REUSABLE: shared Cloudbeds CTA — editorial underline-link style
+// ═════════════════════════════════════════════════════════════════════════════
+function CheckAvailabilityLink({ label = 'Check availability', className = 'mt-6' }: { label?: string; className?: string }) {
+  // CLOUDBEDS_BOOK_NOW_TRIGGER — the immersive loader script (mounted once in
+  // AccommodationsPage) exposes `window.openImmersiveExperiencePopup`, which
+  // opens the booking engine as an overlay on top of the page. We keep the
+  // anchor's `href` as a graceful fallback: if the widget script hasn't loaded
+  // (blocked / offline), the click just follows the link to the reservation
+  // page. Middle-click / cmd-click also still open the reservation in a new tab.
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Let the browser handle modified clicks (new tab, etc.) via the href.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const openPopup = window.openImmersiveExperiencePopup;
+    if (typeof openPopup === 'function') {
+      e.preventDefault();
+      openPopup({ propertyCode: CLOUDBEDS_PROPERTY_CODE });
+    }
+    // else: fall through to the href (new-tab reservation page).
+  };
 
   return (
-    <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-warm-white"
+    <a
+      href={CLOUDBEDS_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleClick}
+      className={`inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer ${className}`}
     >
-      {/* Back Navigation */}
-      <div className="fixed top-6 left-6 z-50">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-sm text-cream/90 hover:text-cream transition-colors bg-dark/50 backdrop-blur-sm px-4 py-2 rounded-full"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Link>
-      </div>
-
-      {/* Hero Section */}
-      <section ref={heroRef} className="relative h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="/images/sanctuary/271A0642_websize%201.webp"
-            alt="House of Shakti sanctuary overview"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-dark/40" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 text-center px-6"
-        >
-          <span className="text-sm tracking-[0.3em] uppercase text-cream/80 mb-4 block">
-            Rest & Restore
-          </span>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light text-cream text-balance">
-            Boutique Accommodation
-          </h1>
-        </motion.div>
-      </section>
-
-      {/* Room Sections */}
-      {rooms.map((room, index) => (
-        <RoomSection key={room.id} room={room} index={index} />
-      ))}
-
-      {/* Footer CTA */}
-      <section className="py-20 bg-dark text-cream text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <h3 className="font-serif text-3xl md:text-4xl mb-6">
-            Find your perfect sanctuary
-          </h3>
-          <p className="text-cream/70 mb-8">
-            Each space has been thoughtfully designed for your comfort and renewal.
-          </p>
-          <div className="hidden md:flex justify-center items-center cloudbeds-btn-container">
-              <cb-book-now-button 
-                property-code='zE6Wy8' 
-              ></cb-book-now-button>
-          </div>
-        </div>
-      </section>
-    </motion.main>
+      {label}
+    </a>
   );
 }
 
-function RoomSection({ room, index }: { room: typeof rooms[0]; index: number }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const isEven = index % 2 === 0;
+// ═════════════════════════════════════════════════════════════════════════════
+// SUITE CARD — compact card used inside the 2×2 grid
+// ═════════════════════════════════════════════════════════════════════════════
+type SuiteData = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  images: string[];
+};
+
+function SuiteCard({ eyebrow, title, description, images }: SuiteData) {
+  return (
+    <article>
+      <SuiteCarousel images={images} alt={title} aspect="aspect-[4/5]" />
+
+      {/* Typography matched to home Pillars (compact card pattern) */}
+      <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
+        {eyebrow}
+      </p>
+      <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mt-3 lg:mt-4">
+        {title}
+      </h3>
+      <p className="font-body text-sm text-ink leading-relaxed mt-3 lg:mt-4">
+        {description}
+      </p>
+
+      <CheckAvailabilityLink className="mt-6 lg:mt-8" />
+    </article>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SUITES GRID — 2×2 desktop, single column mobile
+// ═════════════════════════════════════════════════════════════════════════════
+const SUITES: SuiteData[] = [
+  {
+    eyebrow: 'Suite',
+    title: 'The Pool Suite',
+    description:
+      'A king bed and pool-facing windows. Mornings open to the saltwater pool and the slow rhythm of the gardens beyond.',
+    // TODO: replace with curated photos of this specific suite
+    images: [
+      '/images/sanctuary/271A0822_websize%201.webp',
+      '/images/sanctuary/271A0828_websize%201.webp',
+      '/images/sanctuary/271A0829_websize%201.webp',
+      '/images/sanctuary/271A0800_websize%201.webp',
+    ],
+  },
+  {
+    eyebrow: 'Suite',
+    title: 'The Garden Suite',
+    description:
+      'Twin beds with garden views and dappled morning light. A few steps from the shared kitchen and the fire feature.',
+    // TODO: replace with curated photos of this specific suite
+    images: [
+      '/images/sanctuary/271A0660_websize%201.webp',
+      '/images/sanctuary/271A0668_websize%201.webp',
+      '/images/sanctuary/271A0692_websize%201.webp',
+      '/images/sanctuary/271A0676_websize%201.webp',
+    ],
+  },
+  {
+    eyebrow: 'Suite',
+    title: 'The Canopy Suite',
+    description:
+      'King bed, bay window nook. Suspended at canopy level — the jungle wakes up just outside the glass.',
+    // TODO: replace with curated photos of this specific suite
+    images: [
+      '/images/sanctuary/271A0698_websize%201.webp',
+      '/images/sanctuary/271A0704_websize%201.webp',
+      '/images/sanctuary/271A0719_websize%201.webp',
+      '/images/sanctuary/271A0722_websize%201.webp',
+    ],
+  },
+  {
+    eyebrow: 'Suite',
+    title: 'The Sunset Suite',
+    description:
+      'Twin beds with late light. Soft afternoon sun crosses the bay window, long shadows reach the deck.',
+    // TODO: replace with curated photos of this specific suite
+    images: [
+      '/images/sanctuary/271A0766_websize%201.webp',
+      '/images/sanctuary/271A0778_websize%201.webp',
+      '/images/sanctuary/271A0785_websize%201.webp',
+      '/images/sanctuary/271A0794_websize%201.webp',
+    ],
+  },
+];
+
+function SuitesGrid() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section
-      ref={ref}
-      className={`py-24 lg:py-32 ${isEven ? "bg-cream" : "bg-warm-white"}`}
-    >
-      <div className="max-w-7xl mx-auto px-6">
-        <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${isEven ? "" : "lg:grid-flow-dense"}`}>
-          {/* Image Carousel */}
-          <motion.div
-            initial={{ opacity: 0, x: isEven ? -40 : 40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: isEven ? -40 : 40 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className={isEven ? "" : "lg:col-start-2"}
-          >
-            <ImageCarousel images={room.images} name={room.name} />
-          </motion.div>
-
-          {/* Room Info */}
-          <motion.div
-            initial={{ opacity: 0, x: isEven ? 40 : -40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: isEven ? 40 : -40 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-            className={isEven ? "" : "lg:col-start-1 lg:row-start-1"}
-          >
-            <span className="text-sm tracking-[0.3em] uppercase text-burgundy mb-4 block">
-              {room.size}
-            </span>
-            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-dark mb-6">
-              {room.name}
-            </h2>
-
-            <div className="flex items-center gap-6 mb-8">
-              <div className="flex items-center gap-2 text-dark/60">
-                <Users className="w-5 h-5" />
-                <span>Up to {room.capacity} guests</span>
-              </div>
-            </div>
-
-            <p className="text-dark/70 leading-relaxed mb-8">
-              {room.description}
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              <div>
-                <span className="text-sm text-dark/50 block">Starting at</span>
-                <span className="font-serif text-3xl text-dark">
-                  ${room.price}
-                  <span className="text-lg text-dark/60">/night</span>
-                </span>
-              </div>
-              <button className="group flex items-center gap-2 border border-dark/30 text-dark px-6 py-3 rounded-md hover:bg-dark hover:text-cream transition-all">
-                Book a Stay
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-          </motion.div>
-        </div>
+    <section className="bg-warm-white py-20 lg:py-28">
+      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          transition={{ duration: 1.0, ease: 'easeOut' }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
+        >
+          {SUITES.map((suite) => (
+            <SuiteCard key={suite.title} {...suite} />
+          ))}
+        </motion.div>
       </div>
     </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CASITA FEATURE — full-width asymmetric row, distinct from the 4 suites
+// Image LEFT (5/12), text RIGHT (7/12) on desktop. Stacked on mobile.
+// ═════════════════════════════════════════════════════════════════════════════
+const CASITA: SuiteData = {
+  eyebrow: 'Casita',
+  title: 'La Casita',
+  description:
+    "A standalone one-bedroom retreat tucked deeper into the jungle. Queen bed, full kitchen, and a private deck where monkeys and tropical birds keep their own schedule. La Casita asks for more solitude — and rewards it.",
+  // TODO: replace with curated casita-specific photos when available
+  images: [
+    '/images/sanctuary/271A0840_websize%201.webp',
+    '/images/sanctuary/271A0851_websize%201.webp',
+    '/images/sanctuary/271A0870_websize%201.webp',
+    '/images/sanctuary/271A0873_websize%201.webp',
+    '/images/sanctuary/271A0883_websize%201.webp',
+  ],
+};
+
+function CasitaFeature() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  return (
+    <section className="bg-warm-white pb-20 lg:pb-28">
+      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
+        <motion.article
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          transition={{ duration: 1.0, ease: 'easeOut' }}
+          className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-center"
+        >
+          {/* Image — LEFT */}
+          <div>
+            <SuiteCarousel
+              images={CASITA.images}
+              alt={CASITA.title}
+              aspect="aspect-[4/5]"
+            />
+          </div>
+
+          {/* Text — RIGHT (typography matched to home HostYourRetreat) */}
+          <div className="lg:pl-4">
+            <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink">
+              {CASITA.eyebrow}
+            </p>
+            <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
+              {CASITA.title}
+            </h3>
+            <p className="font-body text-sm text-ink leading-relaxed mt-4 max-w-xl">
+              {CASITA.description}
+            </p>
+
+            <CheckAvailabilityLink className="mt-6" />
+          </div>
+        </motion.article>
+      </div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALL STAYS INCLUDE
+// ═════════════════════════════════════════════════════════════════════════════
+const STAY_INCLUDES = [
+  'Access to the saltwater pool',
+  'Daily yoga at the shala',
+  'Shared kitchen and dining',
+  'Fire feature and chill area',
+  'WiFi throughout the property',
+  'Workspace in every room',
+];
+
+const STAY_EXTRAS = [
+  '8-person sauna over the jungle',
+  'Cold plunge',
+  'Private yoga sessions',
+];
+
+function AllStaysInclude() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  return (
+    <section className="bg-cream py-20 lg:py-28">
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 24 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: 1.0, ease: 'easeOut' }}
+        className="w-[90%] md:w-[80%] max-w-5xl mx-auto"
+      >
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mb-16 lg:mb-20">
+          All stays include
+        </h2>
+
+        {/* Included list */}
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+          {STAY_INCLUDES.map((item) => (
+            <li key={item} className="flex items-baseline gap-3">
+              <span aria-hidden className="font-body text-sm text-ink select-none">—</span>
+              <span className="font-body text-sm text-ink leading-relaxed">{item}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Extras */}
+        <div className="mt-16">
+          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink mb-6">
+            Available at extra cost
+          </p>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+            {STAY_EXTRAS.map((item) => (
+              <li key={item} className="flex items-baseline gap-3">
+                <span aria-hidden className="font-body text-sm text-ink select-none">—</span>
+                <span className="font-body text-sm text-ink leading-relaxed">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CLOSING NARRATIVE — REMOVED in favor of <SeasonalExperiences /> reused from
+// the home. The "An ode to the jungle." text + image lived here previously;
+// the assets remain in /public so we can revive the block on another page
+// if needed.
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════════════════════════════════════════════════════
+// FINAL CTA
+// ═════════════════════════════════════════════════════════════════════════════
+function FinalCTA() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  return (
+    <section className="bg-warm-white py-20 lg:py-28">
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={{ duration: 1.0, ease: 'easeOut' }}
+        className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
+      >
+        <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
+          Reserve your stay
+        </p>
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mt-6">
+          When would you like to arrive?
+        </h2>
+
+        <CheckAvailabilityLink className="mt-10" />
+      </motion.div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PAGE
+// ═════════════════════════════════════════════════════════════════════════════
+export default function AccommodationsPage() {
+  return (
+    <main className="bg-warm-white overflow-hidden">
+      {/* Cloudbeds immersive booking widget — loads once and exposes
+          window.openImmersiveExperiencePopup, which every CheckAvailabilityLink
+          calls on click to open the booking engine as an overlay. */}
+      <Script src={CLOUDBEDS_IMMERSIVE_SRC} strategy="afterInteractive" />
+      <Navigation />
+      <AccommodationsHero />
+      <AccommodationsIntro />
+      <SuitesGrid />
+      <CasitaFeature />
+      <AllStaysInclude />
+      <SeasonalExperiences />
+      <AccommodationsFAQ />
+      <FinalCTA />
+      <Footer />
+    </main>
   );
 }

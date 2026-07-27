@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { ensureWeekMaterialized } from '@/lib/queries/classes';
 import type { DbClass } from '@/types';
 import { dbClassToYogaClass } from '@/types';
+
+// Always run fresh: the endpoint materializes the week's occurrences and must
+// reflect the live schedule (no static/route caching).
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,6 +24,9 @@ export async function GET(req: NextRequest) {
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json({ error: 'invalid_dates' }, { status: 400 });
     }
+
+    // Auto-create the week's occurrences from the recurring schedule before reading.
+    await ensureWeekMaterialized(startDate);
 
     const supabase = await createClient();
     const { data, error } = await supabase

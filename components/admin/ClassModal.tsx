@@ -4,278 +4,253 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format } from 'date-fns';
-import type { YogaClass } from '@/types';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import type { ClassTemplate, Instructor } from '@/types';
+import { Modal } from './Modal';
+import { Input } from './Input';
+import { Textarea } from './Textarea';
+import { Toggle } from './Toggle';
+import { Field } from './Field';
+import { NativeSelect } from './NativeSelect';
+import { Button } from './Button';
 
-const classSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
+// Day-of-week options (0=Sun … 6=Sat, matching class_templates.day_of_week).
+export const DAY_OPTIONS = [
+  { value: '1', label: 'Monday' },
+  { value: '2', label: 'Tuesday' },
+  { value: '3', label: 'Wednesday' },
+  { value: '4', label: 'Thursday' },
+  { value: '5', label: 'Friday' },
+  { value: '6', label: 'Saturday' },
+  { value: '0', label: 'Sunday' },
+];
+
+const templateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
-  instructor: z.string().min(1, 'El instructor es requerido'),
-  startsAt: z.string().min(1, 'La fecha y hora son requeridas'),
-  durationMinutes: z.coerce.number().min(15, 'Mínimo 15 minutos').max(480, 'Máximo 8 horas'),
-  capacity: z.coerce.number().min(1, 'La capacidad debe ser al menos 1'),
-  priceUsd: z.coerce.number().min(0, 'El precio no puede ser negativo'),
-  location: z.string().min(1, 'La ubicación es requerida'),
+  instructorId: z.string(), // '' means unassigned
+  dayOfWeek: z.coerce.number().min(0).max(6),
+  timeStart: z.string().min(1, 'Time is required'),
+  durationMinutes: z.coerce.number().min(15, 'Minimum 15 minutes').max(480, 'Maximum 8 hours'),
+  capacity: z.coerce.number().min(1, 'Capacity must be at least 1'),
+  priceUsd: z.coerce.number().min(0, "Price can't be negative"),
+  location: z.string().min(1, 'Location is required'),
   isActive: z.boolean(),
 });
 
-type ClassFormValues = z.infer<typeof classSchema>;
+type TemplateFormValues = z.infer<typeof templateSchema>;
+
+export type TemplatePayload = {
+  name: string;
+  slug: string;
+  description: string | null;
+  instructor_id: string | null;
+  day_of_week: number;
+  time_start: string;
+  duration_minutes: number;
+  capacity: number;
+  price_dropin_usd: number;
+  location: string;
+  is_active: boolean;
+};
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<YogaClass, 'spotsRemaining'> & { spotsRemaining?: number }) => void;
-  classData?: YogaClass;
+  onSave: (data: TemplatePayload) => void;
+  template?: ClassTemplate;
+  instructors: Instructor[];
+  loading?: boolean;
 };
 
-export default function ClassModal({ open, onOpenChange, onSave, classData }: Props) {
-  const isEditing = !!classData;
+const DEFAULTS: TemplateFormValues = {
+  name: '',
+  description: '',
+  instructorId: '',
+  dayOfWeek: 1,
+  timeStart: '10:00',
+  durationMinutes: 90,
+  capacity: 20,
+  priceUsd: 20,
+  location: 'Open-Air Shala',
+  isActive: true,
+};
 
-  const form = useForm<ClassFormValues>({
-    resolver: zodResolver(classSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      instructor: '',
-      startsAt: '',
-      durationMinutes: 60,
-      capacity: 12,
-      priceUsd: 25,
-      location: 'Open-Air Shala',
-      isActive: true,
-    },
+export default function ClassModal({
+  open,
+  onOpenChange,
+  onSave,
+  template,
+  instructors,
+  loading,
+}: Props) {
+  const isEditing = !!template;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<TemplateFormValues>({
+    resolver: zodResolver(templateSchema),
+    defaultValues: DEFAULTS,
   });
 
+  const isActive = watch('isActive');
+
   useEffect(() => {
-    if (classData) {
-      form.reset({
-        name: classData.name,
-        description: classData.description ?? '',
-        instructor: classData.instructor,
-        startsAt: format(classData.startsAt, "yyyy-MM-dd'T'HH:mm"),
-        durationMinutes: classData.durationMinutes,
-        capacity: classData.capacity,
-        priceUsd: classData.priceUsd,
-        location: classData.location,
-        isActive: classData.isActive,
+    if (!open) return;
+    if (template) {
+      reset({
+        name: template.name,
+        description: template.description ?? '',
+        instructorId: template.instructor_id ?? '',
+        dayOfWeek: template.day_of_week,
+        timeStart: (template.time_start ?? '10:00').slice(0, 5),
+        durationMinutes: template.duration_minutes,
+        capacity: template.capacity,
+        priceUsd: template.price_dropin_usd,
+        location: template.location,
+        isActive: template.is_active,
       });
     } else {
-      form.reset({
-        name: '',
-        description: '',
-        instructor: '',
-        startsAt: '',
-        durationMinutes: 60,
-        capacity: 12,
-        priceUsd: 25,
-        location: 'Open-Air Shala',
-        isActive: true,
-      });
+      reset(DEFAULTS);
     }
-  }, [classData, open, form]);
+  }, [template, open, reset]);
 
-  function onSubmit(values: ClassFormValues) {
-    const startsAt = new Date(values.startsAt);
+  function onSubmit(values: TemplateFormValues) {
     onSave({
-      id: classData?.id ?? `cls-${Date.now()}`,
-      slug: classData?.slug ?? values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       name: values.name,
-      description: values.description ?? '',
-      instructor: values.instructor,
-      startsAt,
-      durationMinutes: values.durationMinutes,
+      slug:
+        template?.slug ??
+        values.name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, ''),
+      description: values.description?.trim() ? values.description : null,
+      instructor_id: values.instructorId || null,
+      day_of_week: values.dayOfWeek,
+      time_start: values.timeStart,
+      duration_minutes: values.durationMinutes,
       capacity: values.capacity,
-      spotsRemaining: classData?.spotsRemaining ?? values.capacity,
-      priceUsd: values.priceUsd,
+      price_dropin_usd: values.priceUsd,
       location: values.location,
-      isActive: values.isActive,
+      is_active: values.isActive,
     });
-    onOpenChange(false);
   }
 
+  const instructorOptions = [
+    { value: '', label: 'Unassigned' },
+    ...instructors.map((i) => ({ value: i.id, label: i.name })),
+  ];
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-serif text-xl font-light text-dark">
-            {isEditing ? 'Editar clase' : 'Nueva clase'}
-          </DialogTitle>
-        </DialogHeader>
+    <Modal
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      title={isEditing ? 'Edit recurring class' : 'New recurring class'}
+      subtitle={
+        isEditing
+          ? undefined
+          : 'A class that repeats every week on the chosen day and time.'
+      }
+      footer={
+        <>
+          <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit" onClick={handleSubmit(onSubmit)} loading={loading}>
+            {isEditing ? 'Save changes' : 'Create class'}
+          </Button>
+        </>
+      }
+    >
+      <form id="class-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Input
+          label="Class name"
+          placeholder="Ex: Sunrise Vinyasa"
+          error={errors.name?.message}
+          {...register('name')}
+        />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre de la clase</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Sunrise Vinyasa" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <Textarea
+          label="Description"
+          placeholder="Short description of the class..."
+          rows={3}
+          error={errors.description?.message}
+          {...register('description')}
+        />
+
+        <div className="grid grid-cols-2 gap-6">
+          <NativeSelect
+            label="Instructor"
+            options={instructorOptions}
+            error={errors.instructorId?.message}
+            {...register('instructorId')}
+          />
+          <Input
+            label="Location"
+            placeholder="Open-Air Shala"
+            error={errors.location?.message}
+            {...register('location')}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <NativeSelect
+            label="Day of week"
+            options={DAY_OPTIONS}
+            error={errors.dayOfWeek?.message}
+            {...register('dayOfWeek')}
+          />
+          <Input
+            type="time"
+            label="Start time"
+            error={errors.timeStart?.message}
+            {...register('timeStart')}
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-6">
+          <Input
+            type="number"
+            label="Duration (min)"
+            min={15}
+            max={480}
+            error={errors.durationMinutes?.message}
+            {...register('durationMinutes')}
+          />
+          <Input
+            type="number"
+            label="Capacity"
+            min={1}
+            error={errors.capacity?.message}
+            {...register('capacity')}
+          />
+          <Input
+            type="number"
+            label="Price (USD)"
+            min={0}
+            step={5}
+            error={errors.priceUsd?.message}
+            {...register('priceUsd')}
+          />
+        </div>
+
+        <Field label="Status" helper="Inactive classes don't appear on the public site or generate new sessions.">
+          <div className="flex items-center justify-between mt-2">
+            <span className="font-body text-sm text-ink">
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+            <Toggle
+              checked={isActive}
+              onChange={(v) => setValue('isActive', v, { shouldDirty: true })}
+              ariaLabel="Toggle active status"
             />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Descripción breve de la clase..."
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="instructor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Instructor</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ubicación</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Open-Air Shala" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="startsAt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fecha y hora de inicio</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="durationMinutes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duración (min)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={15} max={480} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="capacity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Capacidad</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="priceUsd"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Precio (USD)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} step={5} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border border-border p-4">
-                  <div>
-                    <FormLabel className="text-sm font-medium">Clase activa</FormLabel>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Las clases inactivas no aparecen en el sitio público
-                    </p>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter className="gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" className="text-white" style={{ backgroundColor: '#c4622d' }}>
-                {isEditing ? 'Guardar cambios' : 'Crear clase'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </Field>
+      </form>
+    </Modal>
   );
 }

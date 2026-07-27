@@ -5,60 +5,82 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
 import type { Upsell } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { Card } from '@/components/admin/Card';
+import { Button } from '@/components/admin/Button';
+import { Badge } from '@/components/admin/Badge';
+import { EmptyState } from '@/components/admin/EmptyState';
+import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
+import { Modal } from '@/components/admin/Modal';
+import { Input } from '@/components/admin/Input';
+import { Textarea } from '@/components/admin/Textarea';
+import { Toggle } from '@/components/admin/Toggle';
+import { Field } from '@/components/admin/Field';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
-} from '@/components/ui/form';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
-import { createUpsell, updateUpsell, toggleUpsellActive, deleteUpsell } from '@/app/actions/upsells';
+  createUpsell,
+  updateUpsell,
+  toggleUpsellActive,
+  deleteUpsell,
+} from '@/app/actions/upsells';
 
 const upsellSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  priceUsd: z.coerce.number().min(0),
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().min(1, 'Description is required'),
+  priceUsd: z.coerce.number().min(0, "Price can't be negative"),
   isActive: z.boolean(),
 });
 type UpsellForm = z.infer<typeof upsellSchema>;
 
-const TERRA = '#c4622d';
+const DEFAULTS: UpsellForm = {
+  name: '',
+  description: '',
+  priceUsd: 0,
+  isActive: true,
+};
 
-export default function UpsellsClient({ initialUpsells }: { initialUpsells: Upsell[] }) {
-  const { lang } = useLanguage();
+// ═══════════════════════════════════════════════════════════════════════════
+export default function UpsellsClient({
+  initialUpsells,
+}: {
+  initialUpsells: Upsell[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Upsell | undefined>();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<Upsell | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const form = useForm<UpsellForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<UpsellForm>({
     resolver: zodResolver(upsellSchema),
-    defaultValues: { name: '', description: '', priceUsd: 0, isActive: true },
+    defaultValues: DEFAULTS,
   });
+
+  const isActive = watch('isActive');
 
   function openCreate() {
     setEditing(undefined);
-    form.reset({ name: '', description: '', priceUsd: 0, isActive: true });
+    reset(DEFAULTS);
     setModalOpen(true);
   }
 
   function openEdit(u: Upsell) {
     setEditing(u);
-    form.reset({ name: u.name, description: u.description, priceUsd: u.priceUsd, isActive: u.isActive });
+    reset({
+      name: u.name,
+      description: u.description,
+      priceUsd: u.priceUsd,
+      isActive: u.isActive,
+    });
     setModalOpen(true);
   }
 
@@ -81,147 +103,195 @@ export default function UpsellsClient({ initialUpsells }: { initialUpsells: Upse
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      await deleteUpsell(id);
-      setDeletingId(null);
+  async function handleConfirmDelete() {
+    if (!deleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteUpsell(deleting.id);
+      setDeleting(null);
       router.refresh();
-    });
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   return (
-    <div className="p-5 lg:p-7 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">Upsells</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {tr(lang, 'Productos y servicios adicionales disponibles al reservar', 'Additional products and services available at booking')}
-          </p>
-        </div>
-        <Button onClick={openCreate} className="gap-1.5 text-xs text-white" style={{ backgroundColor: TERRA }}>
-          <Plus className="w-3.5 h-3.5" />
-          {tr(lang, 'Nuevo upsell', 'New upsell')}
-        </Button>
-      </div>
+    <div className="px-6 lg:px-10 py-8 lg:py-10 max-w-5xl mx-auto">
+      <PageHeader
+        heading="Upsells"
+        description="Additional products and services available at booking."
+        actions={
+          <Button
+            variant="primary"
+            icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+            onClick={openCreate}
+          >
+            New upsell
+          </Button>
+        }
+      />
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        {initialUpsells.map((u) => (
-          <div key={u.id} className="bg-white rounded-xl border border-gray-100 p-5 flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-slate-800 text-sm">{u.name}</h3>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] ${u.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}
-                  >
-                    {u.isActive ? tr(lang, 'Activo', 'Active') : tr(lang, 'Inactivo', 'Inactive')}
-                  </Badge>
+      {initialUpsells.length === 0 && (
+        <EmptyState
+          icon={<Tag strokeWidth={1} />}
+          heading="No upsells configured"
+          description="Create your first upsell to offer extras during booking."
+          action={
+            <Button
+              variant="primary"
+              icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+              onClick={openCreate}
+            >
+              New upsell
+            </Button>
+          }
+        />
+      )}
+
+      {initialUpsells.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {initialUpsells.map((u) => (
+            <Card key={u.id}>
+              <div className="flex justify-between items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="font-body text-base font-medium text-ink leading-tight">
+                      {u.name}
+                    </h3>
+                    <Badge variant={u.isActive ? 'active' : 'inactive'}>
+                      {u.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">{u.description}</p>
-              </div>
-              <span className="text-lg font-bold text-slate-800 flex-shrink-0">${u.priceUsd}</span>
-            </div>
-            <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={u.isActive}
-                  onCheckedChange={() => handleToggle(u.id)}
-                  disabled={isPending}
-                  className="scale-75 origin-left"
-                />
-                <span className="text-xs text-slate-400">
-                  {u.isActive ? tr(lang, 'Visible', 'Visible') : tr(lang, 'Oculto', 'Hidden')}
+                <span className="font-body text-base font-medium text-ink flex-shrink-0">
+                  ${u.priceUsd}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="w-7 h-7 text-slate-400 hover:text-slate-700" onClick={() => openEdit(u)}>
-                  <Pencil className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="w-7 h-7 text-slate-400 hover:text-red-500" onClick={() => setDeletingId(u.id)}>
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
+
+              <p className="font-body text-sm text-ink/60 leading-normal mt-2 line-clamp-2">
+                {u.description}
+              </p>
+
+              <div className="mt-6 pt-4 border-t border-ink/10 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Toggle
+                    checked={u.isActive}
+                    onChange={() => handleToggle(u.id)}
+                    disabled={isPending}
+                    ariaLabel={u.isActive ? 'Hide upsell' : 'Show upsell'}
+                  />
+                  <span className="font-body text-xs text-ink/60">
+                    {u.isActive ? 'Visible' : 'Hidden'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openEdit(u)}
+                    aria-label="Edit upsell"
+                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-ink transition-colors duration-200 cursor-pointer"
+                  >
+                    <Pencil width={16} height={16} strokeWidth={1.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleting(u)}
+                    aria-label="Delete upsell"
+                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-burgundy transition-colors duration-200 cursor-pointer"
+                  >
+                    <Trash2 width={16} height={16} strokeWidth={1.5} />
+                  </button>
+                </div>
               </div>
+            </Card>
+          ))}
+
+          {/* Add card — empty placeholder. Doubles as the EmptyState CTA. */}
+          <button
+            type="button"
+            onClick={openCreate}
+            className="border-2 border-dashed border-ink/15 p-6 flex flex-col items-center justify-center min-h-[180px] hover:border-ink/30 transition-colors duration-200 cursor-pointer text-ink/40 hover:text-ink/60"
+          >
+            <Plus width={24} height={24} strokeWidth={1} />
+            <span className="font-body text-sm mt-3">Add upsell</span>
+          </button>
+        </div>
+      )}
+
+      {/* ─── Modal ───────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editing ? 'Edit upsell' : 'New upsell'}
+        subtitle={editing ? undefined : 'A single add-on offered at booking.'}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setModalOpen(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmit(onSubmit)}
+              loading={isPending}
+            >
+              {editing ? 'Save changes' : 'Create upsell'}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <Input
+            label="Name"
+            placeholder="Premium yoga mat"
+            error={errors.name?.message}
+            {...register('name')}
+          />
+          <Textarea
+            label="Description"
+            placeholder="Short description shown at booking..."
+            rows={2}
+            error={errors.description?.message}
+            {...register('description')}
+          />
+          <Input
+            type="number"
+            label="Price (USD)"
+            min={0}
+            step={0.5}
+            error={errors.priceUsd?.message}
+            {...register('priceUsd')}
+          />
+          <Field
+            label="Visibility"
+            helper="Hidden upsells don't appear on the booking flow."
+          >
+            <div className="flex items-center justify-between mt-2">
+              <span className="font-body text-sm text-ink">
+                {isActive ? 'Visible at booking' : 'Hidden'}
+              </span>
+              <Toggle
+                checked={isActive}
+                onChange={(v) => setValue('isActive', v, { shouldDirty: true })}
+                ariaLabel="Toggle visibility"
+              />
             </div>
-          </div>
-        ))}
+          </Field>
+        </form>
+      </Modal>
 
-        <button
-          onClick={openCreate}
-          className="rounded-xl border-2 border-dashed border-gray-200 p-5 flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-gray-300 hover:text-slate-500 transition-colors min-h-[120px]"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="text-sm">{tr(lang, 'Agregar upsell', 'Add upsell')}</span>
-        </button>
-      </div>
-
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              {editing ? tr(lang, 'Editar upsell', 'Edit upsell') : tr(lang, 'Nuevo upsell', 'New upsell')}
-            </DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tr(lang, 'Nombre', 'Name')}</FormLabel>
-                  <FormControl><Input placeholder="Mat de Yoga Premium" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tr(lang, 'Descripción', 'Description')}</FormLabel>
-                  <FormControl><Textarea className="resize-none" rows={2} {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="priceUsd" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tr(lang, 'Precio (USD)', 'Price (USD)')}</FormLabel>
-                  <FormControl><Input type="number" min={0} step={0.5} {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="isActive" render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <FormLabel className="text-sm font-medium cursor-pointer">
-                    {tr(lang, 'Visible al reservar', 'Visible at booking')}
-                  </FormLabel>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )} />
-              <DialogFooter className="gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
-                  {tr(lang, 'Cancelar', 'Cancel')}
-                </Button>
-                <Button type="submit" size="sm" className="text-white" style={{ backgroundColor: TERRA }} disabled={isPending}>
-                  {editing ? tr(lang, 'Guardar', 'Save') : tr(lang, 'Crear', 'Create')}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{tr(lang, '¿Eliminar este upsell?', 'Delete this upsell?')}</AlertDialogTitle>
-            <AlertDialogDescription>{tr(lang, 'Esta acción no se puede deshacer.', 'This action cannot be undone.')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tr(lang, 'Cancelar', 'Cancel')}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-white" onClick={() => deletingId && handleDelete(deletingId)}>
-              {tr(lang, 'Eliminar', 'Delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmation
+        isOpen={!!deleting}
+        onClose={() => setDeleting(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete upsell?"
+        description="This will remove this upsell from future bookings."
+        confirmLabel="Delete upsell"
+        loading={isDeleting}
+      />
     </div>
   );
 }

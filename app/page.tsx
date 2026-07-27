@@ -2,8 +2,12 @@ import { Navigation } from "@/components/landing/navigation";
 import { Hero } from "@/components/landing/hero";
 import { Introduction } from "@/components/landing/introduction";
 import { Pillars } from "@/components/landing/pillars";
+import { ShaktiExperienceTeaser } from "@/components/landing/shakti-experience-teaser";
+import { SeasonalExperiences } from "@/components/landing/seasonal-experiences";
 import { Gallery } from "@/components/landing/gallery";
-import { Testimonials } from "@/components/landing/testimonials";
+// TODO: Testimonials section removed from home — file preserved
+// import { Testimonials } from "@/components/landing/testimonials";
+import { HostYourRetreat } from "@/components/landing/HostYourRetreat";
 import { Footer } from "@/components/landing/footer";
 
 export default function Home() {
@@ -12,9 +16,12 @@ export default function Home() {
       <Navigation />
       <Hero />
       <Introduction />
+      <SeasonalExperiences />
       <Pillars />
+      <ShaktiExperienceTeaser />
+      <HostYourRetreat />
       <Gallery />
-      <Testimonials />
+      {/* <Testimonials /> — removed from render, kept in repo */}
       <Footer />
     </main>
   );

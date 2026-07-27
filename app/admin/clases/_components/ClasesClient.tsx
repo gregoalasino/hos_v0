@@ -1,257 +1,477 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { es, enUS } from 'date-fns/locale';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, RefreshCw } from 'lucide-react';
-import type { YogaClass } from '@/types';
-import ClassModal from '@/components/admin/ClassModal';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toggleClassActive, deleteClass, generateWeekClasses, createManualClass, updateClassDetails } from '@/app/actions/classes';
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  EyeOff,
+  Search,
+  BookOpen,
+  Users,
+} from 'lucide-react';
+import type { ClassTemplate, Instructor } from '@/types';
+import ClassModal, { type TemplatePayload } from '@/components/admin/ClassModal';
+import InstructorModal from '@/components/admin/InstructorModal';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { Button } from '@/components/admin/Button';
+import { Badge } from '@/components/admin/Badge';
+import { EmptyState } from '@/components/admin/EmptyState';
+import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
+import { NativeSelect } from '@/components/admin/NativeSelect';
+import {
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+  toggleTemplateActive,
+} from '@/app/actions/classes';
 
-const TERRA = '#c4622d';
+// ─── Category palette — mirrors /yoga and /admin/calendario ────────────────
+const CATEGORY_STYLES: Record<string, { stripe: string; label: string }> = {
+  'flow-vinyasa':     { stripe: '#8B6F47', label: 'Vinyasa' },
+  'yin-restorative':  { stripe: '#6B7355', label: 'Yin & Restorative' },
+  'hatha-gentle':     { stripe: '#A6896D', label: 'Hatha' },
+  'ashtanga-intense': { stripe: '#5A3E2B', label: 'Ashtanga' },
+  'meditation':       { stripe: '#7A6B5D', label: 'Meditation' },
+};
 
-// YogaClass with startsAt as string (serialized from Server Component)
-type SerializedClass = Omit<YogaClass, 'startsAt'> & { startsAt: string };
+function getCategoryKey(name: string): string {
+  if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement', 'Vinyasa Flow', 'Vinyasa Krama', 'Detox Yoga'].includes(name)) return 'flow-vinyasa';
+  if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga', 'Deep Stretch & Breath'].includes(name)) return 'yin-restorative';
+  if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'hatha-gentle';
+  if (['Ashtanga Primary'].includes(name)) return 'ashtanga-intense';
+  if (['Pranayama & Meditación', 'Meditation', 'Tantra Vinyasa'].includes(name)) return 'meditation';
+  return 'flow-vinyasa';
+}
 
-export default function ClasesClient({ initialClasses }: { initialClasses: SerializedClass[] }) {
-  const { lang } = useLanguage();
+// day_of_week (0=Sun … 6=Sat) → "Every <Day>"
+const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+export default function ClasesClient({
+  initialTemplates,
+  instructors,
+}: {
+  initialTemplates: ClassTemplate[];
+  instructors: Instructor[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const dateFnsLocale = lang === 'es' ? es : enUS;
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingClass, setEditingClass] = useState<YogaClass | undefined>();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | undefined>();
+  const [deletingTemplate, setDeletingTemplate] = useState<ClassTemplate | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [instructorModalOpen, setInstructorModalOpen] = useState(false);
 
-  // Convert serialized classes back for display
-  const clases: YogaClass[] = initialClasses.map(c => ({ ...c, startsAt: new Date(c.startsAt) }));
+  // Filters
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const templates = initialTemplates;
+
+  function instructorName(t: ClassTemplate): string {
+    return (
+      t.instructors?.name ??
+      instructors.find((i) => i.id === t.instructor_id)?.name ??
+      ''
+    );
+  }
+
+  const categoryOptions = useMemo(() => {
+    const present = new Set(templates.map((t) => getCategoryKey(t.name)));
+    return [
+      { value: 'all', label: 'All categories' },
+      ...Object.entries(CATEGORY_STYLES)
+        .filter(([k]) => present.has(k))
+        .map(([key, val]) => ({ value: key, label: val.label })),
+    ];
+  }, [templates]);
+
+  const filtered = useMemo(() => {
+    return templates.filter((t) => {
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !t.name.toLowerCase().includes(q) &&
+          !t.slug.toLowerCase().includes(q) &&
+          !instructorName(t).toLowerCase().includes(q)
+        )
+          return false;
+      }
+      if (statusFilter === 'active' && !t.is_active) return false;
+      if (statusFilter === 'inactive' && t.is_active) return false;
+      if (categoryFilter !== 'all' && getCategoryKey(t.name) !== categoryFilter) return false;
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templates, search, statusFilter, categoryFilter]);
+
+  const filtersActive = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all';
+
+  function clearFilters() {
+    setSearch('');
+    setStatusFilter('all');
+    setCategoryFilter('all');
+  }
 
   function handleToggleActive(id: string) {
     startTransition(async () => {
-      await toggleClassActive(id);
+      await toggleTemplateActive(id);
       router.refresh();
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      await deleteClass(id);
-      setDeletingId(null);
+  async function handleConfirmDelete() {
+    if (!deletingTemplate) return;
+    setIsDeleting(true);
+    try {
+      await deleteTemplate(deletingTemplate.id);
+      setDeletingTemplate(null);
       router.refresh();
-    });
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
-  function handleSaveClass(data: Omit<YogaClass, 'spotsRemaining'> & { spotsRemaining?: number }) {
+  function handleSaveTemplate(data: TemplatePayload) {
     startTransition(async () => {
-      if (editingClass) {
-        await updateClassDetails(data.id, {
-          name: data.name,
-          slug: data.slug,
-          description: data.description || null,
-          starts_at: data.startsAt.toISOString(),
-          duration_minutes: data.durationMinutes,
-          capacity: data.capacity,
-          price_dropin_usd: data.priceUsd,
-          location: data.location,
-          is_active: data.isActive,
-        });
+      if (editingTemplate) {
+        await updateTemplate(editingTemplate.id, data);
       } else {
-        await createManualClass({
-          name: data.name,
-          slug: data.slug,
-          description: data.description || null,
-          starts_at: data.startsAt.toISOString(),
-          duration_minutes: data.durationMinutes,
-          capacity: data.capacity,
-          spots_remaining: data.capacity,
-          price_dropin_usd: data.priceUsd,
-          location: data.location,
-          is_active: data.isActive,
-        });
+        await createTemplate(data);
       }
       setModalOpen(false);
       router.refresh();
     });
   }
 
-  function handleGenerateWeek() {
-    const today = new Date();
-    const day = today.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    const weekStart = format(monday, 'yyyy-MM-dd');
-    startTransition(async () => {
-      await generateWeekClasses(weekStart);
-      router.refresh();
-    });
-  }
-
   return (
-    <div className="p-5 lg:p-7 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">{tr(lang, 'Clases', 'Classes')}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{clases.length} {tr(lang, 'clases en total', 'classes total')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={handleGenerateWeek}
-            disabled={isPending}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
-            {tr(lang, 'Generar semana', 'Generate week')}
-          </Button>
-          <Button
-            onClick={() => { setEditingClass(undefined); setModalOpen(true); }}
-            className="gap-1.5 text-xs text-white"
-            style={{ backgroundColor: TERRA }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {tr(lang, 'Nueva clase', 'New class')}
-          </Button>
-        </div>
-      </div>
+    <div className="px-6 lg:px-10 py-8 lg:py-10 max-w-7xl mx-auto">
+      <PageHeader
+        heading="Classes"
+        description={`Weekly recurring schedule · ${templates.length} ${templates.length === 1 ? 'class' : 'classes'}`}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={<Users width={16} height={16} strokeWidth={1.5} />}
+              onClick={() => setInstructorModalOpen(true)}
+            >
+              Manage instructors
+            </Button>
+            <Button
+              variant="primary"
+              icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+              onClick={() => {
+                setEditingTemplate(undefined);
+                setModalOpen(true);
+              }}
+            >
+              New class
+            </Button>
+          </>
+        }
+      />
 
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                {[
-                  { key: 'clase',      label: tr(lang, 'Clase', 'Class'),          cls: '' },
-                  { key: 'slug',       label: 'Slug',                               cls: 'hidden xl:table-cell' },
-                  { key: 'instructor', label: tr(lang, 'Instructor', 'Instructor'), cls: 'hidden md:table-cell' },
-                  { key: 'fecha',      label: tr(lang, 'Fecha y hora', 'Date & time'), cls: '' },
-                  { key: 'capacidad',  label: tr(lang, 'Capacidad', 'Capacity'),    cls: '' },
-                  { key: 'precio',     label: tr(lang, 'Precio', 'Price'),          cls: 'hidden lg:table-cell' },
-                  { key: 'estado',     label: tr(lang, 'Estado', 'Status'),         cls: '' },
-                  { key: 'acciones',   label: '',                                   cls: '' },
-                ].map(({ key, label, cls }) => (
-                  <th key={key} className={`text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide ${cls}`}>
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {clases.map((clase) => (
-                <tr key={clase.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: clase.color ?? '#94a3b8' }} />
-                      <div>
-                        <p className="font-medium text-slate-800">{clase.name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{clase.location}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden xl:table-cell">
-                    <span className="font-mono text-xs text-slate-400 bg-gray-100 px-2 py-0.5 rounded">{clase.slug}</span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{clase.instructor}</td>
-                  <td className="px-4 py-3">
-                    <p className="text-slate-700 capitalize">
-                      {format(clase.startsAt, lang === 'es' ? "d MMM yyyy" : "MMM d, yyyy", { locale: dateFnsLocale })}
-                    </p>
-                    <p className="text-xs text-slate-400">{format(clase.startsAt, "HH:mm")} · {clase.durationMinutes} min</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`font-medium text-sm ${clase.spotsRemaining === 0 ? 'text-red-500' : 'text-slate-700'}`}>
-                      {clase.spotsRemaining}/{clase.capacity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    {clase.priceUsd === 0 ? (
-                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">{tr(lang, 'Gratis', 'Free')}</Badge>
-                    ) : (
-                      <span className="text-slate-600">${clase.priceUsd}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${clase.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}
-                    >
-                      {clase.isActive ? tr(lang, 'Activa', 'Active') : tr(lang, 'Inactiva', 'Inactive')}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost" size="icon"
-                        className="w-7 h-7 text-slate-400 hover:text-slate-700"
-                        onClick={() => handleToggleActive(clase.id)}
-                        disabled={isPending}
-                        title={clase.isActive ? tr(lang, 'Desactivar', 'Deactivate') : tr(lang, 'Activar', 'Activate')}
-                      >
-                        {clase.isActive ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost" size="icon"
-                        className="w-7 h-7 text-slate-400 hover:text-slate-700"
-                        onClick={() => { setEditingClass(clase); setModalOpen(true); }}
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost" size="icon"
-                        className="w-7 h-7 text-slate-400 hover:text-red-500"
-                        onClick={() => setDeletingId(clase.id)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {clases.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400 text-sm">
-                    {tr(lang, 'Sin clases. Generá la semana o creá una manualmente.', 'No classes. Generate the week or create one manually.')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {templates.length === 0 ? (
+        <EmptyState
+          icon={<BookOpen strokeWidth={1} />}
+          heading="No classes yet"
+          description="Create your first recurring class to build the weekly schedule."
+          action={
+            <Button
+              variant="primary"
+              icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+              onClick={() => {
+                setEditingTemplate(undefined);
+                setModalOpen(true);
+              }}
+            >
+              New class
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          {/* ─── Filters bar ──────────────────────────────────────────── */}
+          <div className="mb-6 flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+            <div className="relative md:w-64">
+              <Search
+                aria-hidden
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-ink/40"
+                width={16}
+                height={16}
+                strokeWidth={1.5}
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, slug, or instructor..."
+                className="w-full pl-7 pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200 placeholder:text-ink/30 placeholder:italic"
+              />
+            </div>
+            <NativeSelect
+              filter
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              options={STATUS_OPTIONS}
+              aria-label="Filter by status"
+            />
+            <NativeSelect
+              filter
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              options={categoryOptions}
+              aria-label="Filter by category"
+            />
+          </div>
+
+          {/* ─── Table ────────────────────────────────────────────────── */}
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={<Search strokeWidth={1} />}
+              heading="No classes match your filters"
+              description="Try clearing the filters or creating a new class."
+              action={
+                filtersActive ? (
+                  <Button variant="tertiary" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <TemplatesTable
+              templates={filtered}
+              instructorName={instructorName}
+              isPending={isPending}
+              onToggleActive={handleToggleActive}
+              onEdit={(t) => {
+                setEditingTemplate(t);
+                setModalOpen(true);
+              }}
+              onDelete={setDeletingTemplate}
+            />
+          )}
+        </>
+      )}
 
       <ClassModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onSave={handleSaveClass}
-        classData={editingClass}
+        onSave={handleSaveTemplate}
+        template={editingTemplate}
+        instructors={instructors}
+        loading={isPending}
       />
 
-      <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{tr(lang, '¿Eliminar esta clase?', 'Delete this class?')}</AlertDialogTitle>
-            <AlertDialogDescription>{tr(lang, 'Esta acción no se puede deshacer.', 'This action cannot be undone.')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tr(lang, 'Cancelar', 'Cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-white"
-              onClick={() => deletingId && handleDelete(deletingId)}
-            >
-              {tr(lang, 'Eliminar', 'Delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <InstructorModal
+        open={instructorModalOpen}
+        onOpenChange={setInstructorModalOpen}
+        instructors={instructors}
+        onChanged={() => router.refresh()}
+      />
+
+      <DeleteConfirmation
+        isOpen={!!deletingTemplate}
+        onClose={() => setDeletingTemplate(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete class?"
+        description="This removes the recurring class and its upcoming sessions. Past sessions and their bookings are kept. This action cannot be undone."
+        confirmLabel="Delete class"
+        loading={isDeleting}
+      />
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Table
+// ═══════════════════════════════════════════════════════════════════════════
+function TemplatesTable({
+  templates,
+  instructorName,
+  isPending,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}: {
+  templates: ClassTemplate[];
+  instructorName: (t: ClassTemplate) => string;
+  isPending: boolean;
+  onToggleActive: (id: string) => void;
+  onEdit: (t: ClassTemplate) => void;
+  onDelete: (t: ClassTemplate) => void;
+}) {
+  const headers = [
+    { label: 'Class', className: '' },
+    { label: 'Slug', className: 'hidden xl:table-cell' },
+    { label: 'Instructor', className: 'hidden md:table-cell' },
+    { label: 'Schedule', className: '' },
+    { label: 'Capacity', className: '' },
+    { label: 'Price', className: 'hidden lg:table-cell' },
+    { label: 'Status', className: '' },
+    { label: '', className: '' },
+  ];
+
+  return (
+    <div className="bg-white border border-ink/10 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-warm-white border-b border-ink/10">
+              {headers.map((h, i) => (
+                <th
+                  key={i}
+                  className={`text-left px-4 py-3 font-body text-[10px] tracking-[0.2em] uppercase font-medium text-ink/50 ${h.className}`}
+                >
+                  {h.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {templates.map((t) => {
+              const cat = CATEGORY_STYLES[getCategoryKey(t.name)];
+              const name = instructorName(t);
+              const time = (t.time_start ?? '').slice(0, 5);
+
+              return (
+                <tr
+                  key={t.id}
+                  className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200"
+                >
+                  <td className="px-4 py-4">
+                    <div className="flex items-start gap-3">
+                      <span
+                        aria-hidden
+                        className="w-2 h-2 rounded-full flex-shrink-0 mt-2"
+                        style={{ background: cat.stripe }}
+                      />
+                      <div className="min-w-0">
+                        <p className="font-body text-sm font-medium text-ink truncate">
+                          {t.name}
+                        </p>
+                        <p className="font-body text-xs text-ink/50 mt-0.5 truncate">
+                          {t.location}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 hidden xl:table-cell">
+                    <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+                      {t.slug}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 hidden md:table-cell">
+                    {name ? (
+                      <span className="font-body text-sm text-ink/80">{name}</span>
+                    ) : (
+                      <span className="font-body text-sm text-ink/30">Unassigned</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4">
+                    <p className="font-body text-sm text-ink">
+                      Every {DAY_NAMES[t.day_of_week]} · {time}
+                    </p>
+                    <p className="font-body text-xs text-ink/50 mt-0.5">
+                      {t.duration_minutes} min
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="font-body text-sm font-medium text-ink">
+                      {t.capacity}
+                      <span className="text-ink/60"> seats</span>
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 hidden lg:table-cell">
+                    <span className="font-body text-sm font-medium text-ink">
+                      {t.price_dropin_usd == null
+                        ? '—'
+                        : t.price_dropin_usd === 0
+                        ? 'Free'
+                        : `$${t.price_dropin_usd}`}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Badge variant={t.is_active ? 'active' : 'neutral'}>
+                      {t.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center justify-end gap-1">
+                      <RowIconButton
+                        ariaLabel={t.is_active ? 'Deactivate class' : 'Activate class'}
+                        onClick={() => onToggleActive(t.id)}
+                        disabled={isPending}
+                      >
+                        {t.is_active ? (
+                          <Eye width={16} height={16} strokeWidth={1.5} />
+                        ) : (
+                          <EyeOff width={16} height={16} strokeWidth={1.5} />
+                        )}
+                      </RowIconButton>
+                      <RowIconButton ariaLabel="Edit class" onClick={() => onEdit(t)}>
+                        <Pencil width={16} height={16} strokeWidth={1.5} />
+                      </RowIconButton>
+                      <RowIconButton
+                        ariaLabel="Delete class"
+                        onClick={() => onDelete(t)}
+                        hoverDestructive
+                      >
+                        <Trash2 width={16} height={16} strokeWidth={1.5} />
+                      </RowIconButton>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Reusable row action button — consistent across all admin tables.
+export function RowIconButton({
+  children,
+  onClick,
+  ariaLabel,
+  disabled,
+  hoverDestructive = false,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  ariaLabel: string;
+  disabled?: boolean;
+  hoverDestructive?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      className={`
+        w-8 h-8 p-1.5 inline-flex items-center justify-center
+        text-ink/60 hover:bg-cream/40
+        ${hoverDestructive ? 'hover:text-burgundy' : 'hover:text-ink'}
+        transition-colors duration-200 cursor-pointer
+        ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
+      `}
+    >
+      {children}
+    </button>
   );
 }

@@ -34,6 +34,7 @@ export type Booking = {
   persons: number;
   upsells: string[];
   paymentStatus: 'pending' | 'paid' | 'free' | 'cancelled' | 'no-show';
+  paymentMethod: 'card' | 'cash' | 'venmo';
   bookingReference: string;
   referralCode?: string;
   createdAt: Date;
@@ -65,20 +66,32 @@ export type ReferralCode = {
   createdAt: Date;
 };
 
+export type Instructor = {
+  id: string;
+  name: string;
+  email: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  created_at: string;
+};
+
 export type ClassTemplate = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  instructor_id: string;
+  instructor_id: string | null;
   day_of_week: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   time_start: string;
   duration_minutes: number;
   capacity: number;
+  price_dropin_usd: number;
   location: string;
   color: string | null;
   is_active: boolean;
   created_at: string;
+  // Present when the row is fetched with the instructors join.
+  instructors?: { id: string; name: string } | null;
 };
 
 export type ClassPack = {

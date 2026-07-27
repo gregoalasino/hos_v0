@@ -14,7 +14,7 @@ export default function ConfirmacionPage({
           <Check className="w-10 h-10 text-emerald-600" />
         </div>
 
-        <h1 className="font-serif text-3xl font-light text-dark mb-3">
+        <h1 className="font-display text-3xl font-light text-dark mb-3">
           ¡Reserva confirmada!
         </h1>
         <p className="text-muted-foreground mb-8">
@@ -25,7 +25,7 @@ export default function ConfirmacionPage({
           <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
             Nos vemos en el shala
           </p>
-          <p className="font-serif text-xl text-dark">
+          <p className="font-display text-xl text-dark">
             House of Shakti · Costa Rica
           </p>
         </div>

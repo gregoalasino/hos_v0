@@ -24,6 +24,7 @@ function rowToBooking(row: BookingRow & { classes?: { name: string } | null }): 
     persons: row.persons,
     upsells: row.upsell_ids ?? [],
     paymentStatus: dbStatusToFrontend(row.payment_status),
+    paymentMethod: row.payment_method ?? 'card',
     bookingReference: row.booking_reference,
     referralCode: row.referral_code ?? undefined,
     createdAt: new Date(row.created_at),

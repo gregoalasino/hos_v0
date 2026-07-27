@@ -1,55 +1,77 @@
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, MapPin, User, Phone, CalendarDays, Tag, Check, X, DollarSign,
+  Search,
+  X,
+  Eye,
+  Trash2,
+  User as UserIcon,
+  Phone,
+  Tag,
+  CalendarDays,
+  MapPin,
+  DollarSign,
+  Users as UsersIcon,
+  Check,
 } from 'lucide-react';
 import type { Booking } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
-import { confirmBooking, cancelBookingAdmin, markNoShow } from '@/app/actions/bookings';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { Button } from '@/components/admin/Button';
+import { Badge } from '@/components/admin/Badge';
+import { EmptyState } from '@/components/admin/EmptyState';
+import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
+import { NativeSelect } from '@/components/admin/NativeSelect';
+import { RowIconButton } from '@/app/admin/clases/_components/ClasesClient';
+import { confirmBooking, cancelBookingAdmin } from '@/app/actions/bookings';
+import { paymentMethodLabel } from '@/lib/payment-methods';
 
-const SAGE = '#4a7c59';
-
-// Booking with createdAt as string (serialized)
 type SerializedBooking = Omit<Booking, 'createdAt'> & { createdAt: string };
 
-interface ClassInfo {
+type ClassInfo = {
   id: string;
   name: string;
   startsAt: string;
   color?: string | null;
   priceUsd: number;
+};
+type UpsellInfo = { id: string; name: string; priceUsd: number };
+
+// Map paymentStatus → Badge variant + display label (matches Calendar mapping).
+function paymentBadge(status: Booking['paymentStatus']): {
+  variant: 'active' | 'warning' | 'inactive' | 'destructive' | 'neutral';
+  label: string;
+} {
+  switch (status) {
+    case 'paid':
+      return { variant: 'active', label: 'Paid' };
+    case 'free':
+      return { variant: 'neutral', label: 'Free' };
+    case 'pending':
+      return { variant: 'warning', label: 'Pending' };
+    case 'cancelled':
+      return { variant: 'inactive', label: 'Cancelled' };
+    case 'no-show':
+      return { variant: 'destructive', label: 'No-show' };
+    default:
+      return { variant: 'neutral', label: status };
+  }
 }
 
-interface UpsellInfo {
-  id: string;
-  name: string;
-  priceUsd: number;
-}
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'free', label: 'Free' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'no-show', label: 'No-show' },
+];
 
-function getStatusMeta(status: Booking['paymentStatus'], lang: 'es' | 'en') {
-  const map = {
-    paid:      { es: 'Pagado',    en: 'Paid',      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    free:      { es: 'Gratis',    en: 'Free',       cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-    pending:   { es: 'Pendiente', en: 'Pending',    cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-    cancelled: { es: 'Cancelado', en: 'Cancelled',  cls: 'bg-gray-100 text-gray-500 border-gray-200' },
-    'no-show': { es: 'No-show',   en: 'No-show',    cls: 'bg-red-50 text-red-600 border-red-200' },
-  } as const;
-  const item = map[status] ?? map.pending;
-  return { label: item[lang], cls: item.cls };
-}
-
+// ═══════════════════════════════════════════════════════════════════════════
 export default function ReservasClient({
   initialBookings,
   classMap,
@@ -59,319 +81,560 @@ export default function ReservasClient({
   classMap: Record<string, ClassInfo>;
   upsellMap: Record<string, UpsellInfo>;
 }) {
-  const { lang } = useLanguage();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // Filters
   const [search, setSearch] = useState('');
-  const [filtroEstado, setFiltroEstado] = useState('all');
-  const [filtroClase, setFiltroClase] = useState('all');
-  const [selected, setSelected] = useState<SerializedBooking | null>(null);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [classFilter, setClassFilter] = useState('all');
+  const [fromDate, setFromDate] = useState(''); // YYYY-MM-DD, filters on booking date
+  const [toDate, setToDate] = useState('');
+
+  // Drawer + delete
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<SerializedBooking | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const bookings = initialBookings.map(b => ({
-    ...b,
-    createdAt: new Date(b.createdAt),
-  }));
+  // Class filter options
+  const classOptions = useMemo(() => {
+    const present = Array.from(new Set(initialBookings.map((b) => b.className))).sort();
+    return [
+      { value: 'all', label: 'All classes' },
+      ...present.map((name) => ({ value: name, label: name })),
+    ];
+  }, [initialBookings]);
 
-  const claseOptions = useMemo(
-    () => [...new Set(bookings.map(b => b.className))].sort(),
-    [bookings],
+  // Filter + sort
+  const filtered = useMemo(() => {
+    return initialBookings
+      .filter((b) => {
+        if (statusFilter !== 'all' && b.paymentStatus !== statusFilter) return false;
+        if (classFilter !== 'all' && b.className !== classFilter) return false;
+        if (fromDate && b.createdAt.slice(0, 10) < fromDate) return false;
+        if (toDate && b.createdAt.slice(0, 10) > toDate) return false;
+        if (search) {
+          const q = search.toLowerCase();
+          if (
+            !b.firstName.toLowerCase().includes(q) &&
+            !b.lastName.toLowerCase().includes(q) &&
+            !b.email.toLowerCase().includes(q) &&
+            !b.bookingReference.toLowerCase().includes(q)
+          )
+            return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }, [initialBookings, search, statusFilter, classFilter, fromDate, toDate]);
+
+  const filtersActive =
+    search !== '' ||
+    statusFilter !== 'all' ||
+    classFilter !== 'all' ||
+    fromDate !== '' ||
+    toDate !== '';
+
+  function clearFilters() {
+    setSearch('');
+    setStatusFilter('all');
+    setClassFilter('all');
+    setFromDate('');
+    setToDate('');
+  }
+
+  const selectedBooking = useMemo(
+    () => initialBookings.find((b) => b.id === selectedId) ?? null,
+    [initialBookings, selectedId],
   );
 
-  const filtered = useMemo(() => {
-    return bookings.filter(b => {
-      if (filtroEstado !== 'all' && b.paymentStatus !== filtroEstado) return false;
-      if (filtroClase !== 'all' && b.className !== filtroClase) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !b.firstName.toLowerCase().includes(q) &&
-          !b.lastName.toLowerCase().includes(q) &&
-          !b.email.toLowerCase().includes(q) &&
-          !b.bookingReference.toLowerCase().includes(q)
-        ) return false;
-      }
-      return true;
-    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }, [search, filtroEstado, filtroClase, bookings]);
-
-  function openDetail(b: (typeof filtered)[0]) {
-    setSelected(initialBookings.find(x => x.id === b.id) ?? null);
+  function openDetail(b: SerializedBooking) {
+    setSelectedId(b.id);
     setDrawerOpen(true);
   }
 
-  const selectedClase = selected ? classMap[selected.classId] : null;
-  const selectedUpsells = selected ? (selected.upsells ?? []).map(id => upsellMap[id]).filter(Boolean) : [];
-  const selectedTotal = selected && selectedClase
-    ? selectedClase.priceUsd * selected.persons + selectedUpsells.reduce((acc, u) => acc + u.priceUsd, 0)
-    : 0;
-
-  const dateStr = (d: Date | string) => {
-    const date = typeof d === 'string' ? new Date(d) : d;
-    return lang === 'es'
-      ? format(date, "d 'de' MMMM yyyy · HH:mm", { locale: es })
-      : format(date, 'MMM d, yyyy · h:mm a');
-  };
-
-  function handleConfirm(id: string) {
+  function handleConfirmPayment(id: string) {
     startTransition(async () => {
       await confirmBooking(id);
       router.refresh();
-      setDrawerOpen(false);
     });
   }
 
-  function handleCancel(id: string) {
-    startTransition(async () => {
-      await cancelBookingAdmin(id);
-      router.refresh();
+  async function handleConfirmCancel() {
+    if (!cancelTarget) return;
+    setIsCancelling(true);
+    try {
+      await cancelBookingAdmin(cancelTarget.id);
+      setCancelTarget(null);
       setDrawerOpen(false);
-    });
+      router.refresh();
+    } finally {
+      setIsCancelling(false);
+    }
   }
+
+  // Drawer math
+  const selectedClass = selectedBooking ? classMap[selectedBooking.classId] : null;
+  const selectedUpsells = selectedBooking
+    ? (selectedBooking.upsells ?? []).map((id) => upsellMap[id]).filter(Boolean)
+    : [];
+  const selectedTotal =
+    selectedBooking && selectedClass
+      ? selectedClass.priceUsd * selectedBooking.persons +
+        selectedUpsells.reduce((acc, u) => acc + u.priceUsd, 0)
+      : 0;
 
   return (
-    <div className="p-5 lg:p-7 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">{tr(lang, 'Reservas', 'Bookings')}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{filtered.length} {tr(lang, 'reservas', 'bookings')}</p>
-        </div>
-      </div>
+    <div className="px-6 lg:px-10 py-8 lg:py-10 max-w-7xl mx-auto">
+      <PageHeader
+        heading="Bookings"
+        description={`${initialBookings.length} ${initialBookings.length === 1 ? 'booking' : 'bookings'}`}
+      />
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder={tr(lang, 'Buscar nombre, email, código...', 'Search name, email, reference...')}
-            className="pl-9 text-sm"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <Select value={filtroClase} onValueChange={setFiltroClase}>
-          <SelectTrigger className="w-44 text-sm">
-            <SelectValue placeholder={tr(lang, 'Todas las clases', 'All classes')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{tr(lang, 'Todas las clases', 'All classes')}</SelectItem>
-            {claseOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-          <SelectTrigger className="w-40 text-sm">
-            <SelectValue placeholder={tr(lang, 'Todos', 'All statuses')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{tr(lang, 'Todos', 'All')}</SelectItem>
-            <SelectItem value="paid">{tr(lang, 'Pagado', 'Paid')}</SelectItem>
-            <SelectItem value="pending">{tr(lang, 'Pendiente', 'Pending')}</SelectItem>
-            <SelectItem value="cancelled">{tr(lang, 'Cancelado', 'Cancelled')}</SelectItem>
-            <SelectItem value="no-show">No-show</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                {[
-                  tr(lang, 'Código',   'Ref'),
-                  tr(lang, 'Alumno',   'Student'),
-                  tr(lang, 'Clase',    'Class'),
-                  tr(lang, 'Fecha',    'Date'),
-                  tr(lang, 'Personas', 'Pax'),
-                  tr(lang, 'Total',    'Total'),
-                  tr(lang, 'Estado',   'Status'),
-                  '',
-                ].map((h, i) => (
-                  <th
-                    key={i}
-                    className={`text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide ${
-                      h === tr(lang, 'Fecha', 'Date') ? 'hidden md:table-cell' :
-                      h === tr(lang, 'Personas', 'Pax') || h === tr(lang, 'Total', 'Total') ? 'hidden lg:table-cell' : ''
-                    }`}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(b => {
-                const clase = classMap[b.classId];
-                const upsellsForB = (b.upsells ?? []).map(id => upsellMap[id]).filter(Boolean);
-                const total = clase
-                  ? clase.priceUsd * b.persons + upsellsForB.reduce((s, u) => s + u.priceUsd, 0)
-                  : 0;
-                const status = getStatusMeta(b.paymentStatus, lang);
-                return (
-                  <tr
-                    key={b.id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 cursor-pointer transition-colors"
-                    onClick={() => openDetail(b)}
-                  >
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-[11px] text-slate-500 bg-gray-100 px-2 py-0.5 rounded">
-                        {b.bookingReference}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-slate-800">{b.firstName} {b.lastName}</p>
-                      <p className="text-xs text-slate-400">{b.email}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        {clase?.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: clase.color }} />}
-                        <span className="text-slate-700">{b.className}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 hidden md:table-cell">
-                      {clase
-                        ? (lang === 'es'
-                            ? format(new Date(clase.startsAt), "d MMM · HH:mm", { locale: es })
-                            : format(new Date(clase.startsAt), 'MMM d · h:mm a'))
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 hidden lg:table-cell">{b.persons}</td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="font-medium text-slate-700">${total}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline" className={`text-xs ${status.cls}`}>{status.label}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-slate-400 text-xs">{tr(lang, 'Ver →', 'View →')}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
-            <div className="py-12 text-center text-slate-400 text-sm">
-              {tr(lang, 'Sin reservas con ese filtro', 'No bookings match this filter')}
+      {initialBookings.length === 0 ? (
+        <EmptyState
+          icon={<UsersIcon strokeWidth={1} />}
+          heading="No bookings yet"
+          description="Bookings made through the public site will appear here."
+        />
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="mb-6 flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+            <div className="relative md:w-72">
+              <Search
+                aria-hidden
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-ink/40"
+                width={16}
+                height={16}
+                strokeWidth={1.5}
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, email, or code..."
+                className="w-full pl-7 pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200 placeholder:text-ink/30 placeholder:italic"
+              />
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Detail drawer */}
-      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent side="right" className="w-full sm:w-[400px] p-0 overflow-y-auto gap-0 border-l border-gray-100">
-          {selected && (
-            <div className="flex flex-col min-h-full">
-              <div className="px-6 pt-10 pb-5 border-b border-gray-100 bg-gray-50/60">
-                <p className="font-mono text-[11px] text-slate-400 mb-2">{selected.bookingReference}</p>
-                <h2 className="text-xl font-semibold text-slate-900 mb-3">
-                  {selected.firstName} {selected.lastName}
-                </h2>
-                <Badge variant="outline" className={`text-xs ${getStatusMeta(selected.paymentStatus, lang).cls}`}>
-                  {getStatusMeta(selected.paymentStatus, lang).label}
-                </Badge>
-              </div>
-
-              <div className="px-6 py-4 flex gap-2 border-b border-gray-100">
-                {selected.paymentStatus === 'pending' && (
-                  <Button
-                    size="sm"
-                    className="text-xs text-white flex-1 gap-1.5 h-9"
-                    style={{ backgroundColor: SAGE }}
-                    onClick={() => handleConfirm(selected.id)}
-                    disabled={isPending}
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    {tr(lang, 'Confirmar pago', 'Confirm payment')}
-                  </Button>
-                )}
-                {selected.paymentStatus !== 'cancelled' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-9 px-3 text-xs text-red-500 border-red-200 hover:bg-red-50"
-                    onClick={() => handleCancel(selected.id)}
-                    disabled={isPending}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-              </div>
-
-              <div className="px-6 py-5 border-b border-gray-100">
-                <SectionTitle>{tr(lang, 'Alumno', 'Student')}</SectionTitle>
-                <div className="space-y-3">
-                  <DrawerRow icon={<User className="w-3.5 h-3.5" />} label="Email" value={selected.email} />
-                  {selected.phone && (
-                    <DrawerRow icon={<Phone className="w-3.5 h-3.5" />} label={tr(lang, 'Teléfono', 'Phone')} value={selected.phone} />
-                  )}
-                  {selected.referralCode && (
-                    <DrawerRow icon={<Tag className="w-3.5 h-3.5" />} label={tr(lang, 'Código de referido', 'Referral code')} value={selected.referralCode} highlight />
-                  )}
-                  <DrawerRow icon={<CalendarDays className="w-3.5 h-3.5" />} label={tr(lang, 'Reservado el', 'Booked on')} value={dateStr(selected.createdAt)} />
-                </div>
-              </div>
-
-              {selectedClase && (
-                <div className="px-6 py-5 border-b border-gray-100">
-                  <SectionTitle>{tr(lang, 'Clase', 'Class')}</SectionTitle>
-                  <div className="flex items-center gap-2 mb-3">
-                    {selectedClase.color && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: selectedClase.color }} />}
-                    <span className="text-sm font-semibold text-slate-800">{selectedClase.name}</span>
-                  </div>
-                  <div className="space-y-3">
-                    <DrawerRow icon={<CalendarDays className="w-3.5 h-3.5" />} label={tr(lang, 'Fecha', 'Date')} value={dateStr(selectedClase.startsAt)} />
-                    <DrawerRow icon={<MapPin className="w-3.5 h-3.5" />} label={tr(lang, 'Personas', 'Persons')} value={String(selected.persons)} />
-                  </div>
-                </div>
-              )}
-
-              {selectedUpsells.length > 0 && (
-                <div className="px-6 py-5 border-b border-gray-100">
-                  <SectionTitle>{tr(lang, 'Extras', 'Extras')}</SectionTitle>
-                  <div className="space-y-2">
-                    {selectedUpsells.map(u => (
-                      <div key={u.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <DollarSign className="w-3.5 h-3.5 text-slate-400" />
-                          {u.name}
-                        </div>
-                        <span className="text-sm font-medium text-slate-800">${u.priceUsd}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="px-6 py-5 mt-auto">
-                <div className="flex items-center justify-between rounded-xl bg-slate-900 px-5 py-4">
-                  <span className="text-sm font-medium text-white/70">Total</span>
-                  <span className="text-lg font-bold text-white">${selectedTotal} USD</span>
-                </div>
-              </div>
+            <NativeSelect
+              filter
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+              options={classOptions}
+              aria-label="Filter by class"
+            />
+            <NativeSelect
+              filter
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              options={STATUS_OPTIONS}
+              aria-label="Filter by status"
+            />
+            <div className="flex items-end gap-2">
+              <label className="flex flex-col gap-1">
+                <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">From</span>
+                <input
+                  type="date"
+                  value={fromDate}
+                  max={toDate || undefined}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  aria-label="From date"
+                  className="pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">To</span>
+                <input
+                  type="date"
+                  value={toDate}
+                  min={fromDate || undefined}
+                  onChange={(e) => setToDate(e.target.value)}
+                  aria-label="To date"
+                  className="pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200"
+                />
+              </label>
             </div>
+            {filtersActive && (
+              <Button variant="tertiary" onClick={clearFilters} className="md:ml-auto">
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={<Search strokeWidth={1} />}
+              heading="No bookings match your filters"
+              description="Try clearing the filters."
+              action={
+                filtersActive ? (
+                  <Button variant="tertiary" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <BookingsTable
+              bookings={filtered}
+              classMap={classMap}
+              upsellMap={upsellMap}
+              onView={openDetail}
+              onCancel={(b) => setCancelTarget(b)}
+            />
           )}
-        </SheetContent>
-      </Sheet>
+        </>
+      )}
+
+      {/* ─── Drawer ─────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {drawerOpen && selectedBooking && (
+          <>
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              onClick={() => setDrawerOpen(false)}
+              className="fixed inset-0 z-40 bg-ink/30"
+            />
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Booking details"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-full md:w-[420px] lg:w-[480px] bg-warm-white border-l border-ink/10 overflow-y-auto"
+            >
+              <BookingDrawerContent
+                booking={selectedBooking}
+                bookingClass={selectedClass}
+                upsells={selectedUpsells}
+                total={selectedTotal}
+                isPending={isPending}
+                onClose={() => setDrawerOpen(false)}
+                onConfirmPayment={() => handleConfirmPayment(selectedBooking.id)}
+                onCancel={() => setCancelTarget(selectedBooking)}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      <DeleteConfirmation
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={handleConfirmCancel}
+        title="Cancel booking?"
+        description="This will mark the booking as cancelled. The student will be notified."
+        confirmLabel="Cancel booking"
+        cancelLabel="Keep booking"
+        loading={isCancelling}
+      />
     </div>
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+// ═══════════════════════════════════════════════════════════════════════════
+// Table
+// ═══════════════════════════════════════════════════════════════════════════
+function BookingsTable({
+  bookings,
+  classMap,
+  upsellMap,
+  onView,
+  onCancel,
+}: {
+  bookings: SerializedBooking[];
+  classMap: Record<string, ClassInfo>;
+  upsellMap: Record<string, UpsellInfo>;
+  onView: (b: SerializedBooking) => void;
+  onCancel: (b: SerializedBooking) => void;
+}) {
+  const headers = [
+    { label: 'Code', className: '' },
+    { label: 'Student', className: '' },
+    { label: 'Class', className: '' },
+    { label: 'Date', className: 'hidden md:table-cell' },
+    { label: 'People', className: 'hidden lg:table-cell' },
+    { label: 'Total', className: 'hidden lg:table-cell' },
+    { label: 'Status', className: '' },
+    { label: '', className: '' },
+  ];
+
   return (
-    <h3 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">{children}</h3>
+    <div className="bg-white border border-ink/10 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-warm-white border-b border-ink/10">
+              {headers.map((h, i) => (
+                <th
+                  key={i}
+                  className={`text-left px-4 py-3 font-body text-[10px] tracking-[0.2em] uppercase font-medium text-ink/50 ${h.className}`}
+                >
+                  {h.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((b) => {
+              const clase = classMap[b.classId];
+              const upsells = (b.upsells ?? []).map((id) => upsellMap[id]).filter(Boolean);
+              const total = clase
+                ? clase.priceUsd * b.persons + upsells.reduce((s, u) => s + u.priceUsd, 0)
+                : 0;
+              const badge = paymentBadge(b.paymentStatus);
+
+              return (
+                <tr
+                  key={b.id}
+                  onClick={() => onView(b)}
+                  className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200 cursor-pointer"
+                >
+                  <td className="px-4 py-4">
+                    <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+                      {b.bookingReference}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <p className="font-body text-sm font-medium text-ink truncate">
+                      {b.firstName} {b.lastName}
+                    </p>
+                    <p className="font-body text-xs text-ink/50 mt-0.5 truncate">
+                      {b.email}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <p className="font-body text-sm text-ink truncate">{b.className}</p>
+                    {clase && (
+                      <p className="font-body text-xs text-ink/50 mt-0.5">
+                        {format(new Date(clase.startsAt), 'MMM d · HH:mm', { locale: enUS })}
+                      </p>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 hidden md:table-cell">
+                    <span className="font-body text-sm text-ink/80">
+                      {format(new Date(b.createdAt), 'MMM d, yyyy', { locale: enUS })}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 hidden lg:table-cell">
+                    <span className="font-body text-sm text-ink">{b.persons}</span>
+                  </td>
+                  <td className="px-4 py-4 hidden lg:table-cell">
+                    <span className="font-body text-sm font-medium text-ink">${total}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <p className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/40 mt-1.5">
+                      {paymentMethodLabel(b.paymentMethod)}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div
+                      className="flex items-center justify-end gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <RowIconButton
+                        ariaLabel="View booking"
+                        onClick={() => onView(b)}
+                      >
+                        <Eye width={16} height={16} strokeWidth={1.5} />
+                      </RowIconButton>
+                      <RowIconButton
+                        ariaLabel="Cancel booking"
+                        onClick={() => onCancel(b)}
+                        hoverDestructive
+                        disabled={b.paymentStatus === 'cancelled'}
+                      >
+                        <Trash2 width={16} height={16} strokeWidth={1.5} />
+                      </RowIconButton>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
-function DrawerRow({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: string; highlight?: boolean }) {
+// ═══════════════════════════════════════════════════════════════════════════
+// Drawer
+// ═══════════════════════════════════════════════════════════════════════════
+function BookingDrawerContent({
+  booking,
+  bookingClass,
+  upsells,
+  total,
+  isPending,
+  onClose,
+  onConfirmPayment,
+  onCancel,
+}: {
+  booking: SerializedBooking;
+  bookingClass: ClassInfo | null;
+  upsells: UpsellInfo[];
+  total: number;
+  isPending: boolean;
+  onClose: () => void;
+  onConfirmPayment: () => void;
+  onCancel: () => void;
+}) {
+  const badge = paymentBadge(booking.paymentStatus);
+
   return (
-    <div className="flex items-start gap-2.5">
-      <span className="text-slate-400 flex-shrink-0 mt-0.5">{icon}</span>
+    <div className="flex flex-col h-full">
+      {/* Top bar */}
+      <div className="flex justify-between items-center px-6 py-4 border-b border-ink/10">
+        <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+          {booking.bookingReference}
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close drawer"
+          className="p-2 text-ink hover:opacity-70 transition-opacity duration-200 cursor-pointer"
+        >
+          <X width={20} height={20} strokeWidth={1.5} />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-6">
+        <h2 className="font-body text-xl font-medium text-ink leading-tight">
+          {booking.firstName} {booking.lastName}
+        </h2>
+        <div className="mt-3 flex items-center gap-3">
+          <Badge variant={badge.variant}>{badge.label}</Badge>
+          <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">
+            {paymentMethodLabel(booking.paymentMethod)}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 mt-6">
+          {booking.paymentStatus === 'pending' && (
+            <Button
+              variant="primary"
+              icon={<Check width={16} height={16} strokeWidth={1.5} />}
+              onClick={onConfirmPayment}
+              loading={isPending}
+            >
+              {booking.paymentMethod === 'card' ? 'Confirm payment' : 'Mark as paid'}
+            </Button>
+          )}
+          {booking.paymentStatus !== 'cancelled' && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex items-center gap-2 px-3 py-2 font-body text-sm text-burgundy hover:opacity-70 transition-opacity duration-200 cursor-pointer"
+            >
+              <Trash2 width={16} height={16} strokeWidth={1.5} />
+              <span>Cancel booking</span>
+            </button>
+          )}
+        </div>
+
+        {/* Student section */}
+        <Section title="Student">
+          <DrawerRow icon={<UserIcon width={14} height={14} strokeWidth={1.5} />} label="Email" value={booking.email} />
+          {booking.phone && (
+            <DrawerRow icon={<Phone width={14} height={14} strokeWidth={1.5} />} label="Phone" value={booking.phone} />
+          )}
+          {booking.referralCode && (
+            <DrawerRow icon={<Tag width={14} height={14} strokeWidth={1.5} />} label="Promo code" value={booking.referralCode} />
+          )}
+          <DrawerRow
+            icon={<CalendarDays width={14} height={14} strokeWidth={1.5} />}
+            label="Booked on"
+            value={format(new Date(booking.createdAt), 'MMM d, yyyy · HH:mm', { locale: enUS })}
+          />
+        </Section>
+
+        {/* Class section */}
+        {bookingClass && (
+          <Section title="Class">
+            <p className="font-body text-sm font-medium text-ink mb-3">{bookingClass.name}</p>
+            <DrawerRow
+              icon={<CalendarDays width={14} height={14} strokeWidth={1.5} />}
+              label="Date"
+              value={format(new Date(bookingClass.startsAt), 'MMM d, yyyy · HH:mm', { locale: enUS })}
+            />
+            <DrawerRow
+              icon={<MapPin width={14} height={14} strokeWidth={1.5} />}
+              label="People"
+              value={String(booking.persons)}
+            />
+          </Section>
+        )}
+
+        {/* Upsells */}
+        {upsells.length > 0 && (
+          <Section title="Extras">
+            <ul className="space-y-2">
+              {upsells.map((u) => (
+                <li key={u.id} className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2 font-body text-sm text-ink/70">
+                    <DollarSign width={14} height={14} strokeWidth={1.5} className="text-ink/40" />
+                    {u.name}
+                  </span>
+                  <span className="font-body text-sm font-medium text-ink">${u.priceUsd}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        {/* Total */}
+        <div className="mt-10 flex justify-between items-center bg-dark text-cream px-5 py-4">
+          <span className="font-body text-sm text-cream/70">Total</span>
+          <span className="font-body text-lg font-medium text-cream">${total} USD</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-8 pt-6 border-t border-ink/10">
+      <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50 mb-4">
+        {title}
+      </p>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function DrawerRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-ink/40 flex-shrink-0 mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
-        <p className="text-sm truncate" style={{ color: highlight ? '#c4a030' : '#1e293b', fontWeight: highlight ? 600 : 400 }}>
-          {value}
+        <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
+          {label}
         </p>
+        <p className="font-body text-sm text-ink mt-0.5 truncate">{value}</p>
       </div>
     </div>
   );
