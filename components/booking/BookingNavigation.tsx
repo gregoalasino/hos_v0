@@ -8,6 +8,9 @@ type Props = {
   canContinue: boolean;
   onBack: () => void;
   onContinue: () => void;
+  // Label for the final (step 4) button. Defaults to "Confirm and pay" (card);
+  // in-person methods pass "Reserve" since no payment is taken here.
+  payLabel?: string;
 };
 
 /**
@@ -16,13 +19,13 @@ type Props = {
  * - "Continue" / "Confirm and pay" button on the right
  */
 export function BookingNavigation({
-  step, isLoading, canContinue, onBack, onContinue,
+  step, isLoading, canContinue, onBack, onContinue, payLabel = 'Confirm and pay',
 }: Props) {
   const isPay = step === 4;
   const showBack = step > 1;
 
   const continueLabel = isPay
-    ? 'Confirm and pay'
+    ? payLabel
     : 'Continue';
 
   return (

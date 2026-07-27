@@ -28,6 +28,7 @@ import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
 import { NativeSelect } from '@/components/admin/NativeSelect';
 import { RowIconButton } from '@/app/admin/clases/_components/ClasesClient';
 import { confirmBooking, cancelBookingAdmin } from '@/app/actions/bookings';
+import { paymentMethodLabel } from '@/lib/payment-methods';
 
 type SerializedBooking = Omit<Booking, 'createdAt'> & { createdAt: string };
 
@@ -87,6 +88,8 @@ export default function ReservasClient({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
+  const [fromDate, setFromDate] = useState(''); // YYYY-MM-DD, filters on booking date
+  const [toDate, setToDate] = useState('');
 
   // Drawer + delete
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -109,6 +112,8 @@ export default function ReservasClient({
       .filter((b) => {
         if (statusFilter !== 'all' && b.paymentStatus !== statusFilter) return false;
         if (classFilter !== 'all' && b.className !== classFilter) return false;
+        if (fromDate && b.createdAt.slice(0, 10) < fromDate) return false;
+        if (toDate && b.createdAt.slice(0, 10) > toDate) return false;
         if (search) {
           const q = search.toLowerCase();
           if (
@@ -125,14 +130,21 @@ export default function ReservasClient({
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
-  }, [initialBookings, search, statusFilter, classFilter]);
+  }, [initialBookings, search, statusFilter, classFilter, fromDate, toDate]);
 
-  const filtersActive = search !== '' || statusFilter !== 'all' || classFilter !== 'all';
+  const filtersActive =
+    search !== '' ||
+    statusFilter !== 'all' ||
+    classFilter !== 'all' ||
+    fromDate !== '' ||
+    toDate !== '';
 
   function clearFilters() {
     setSearch('');
     setStatusFilter('all');
     setClassFilter('all');
+    setFromDate('');
+    setToDate('');
   }
 
   const selectedBooking = useMemo(
@@ -223,6 +235,35 @@ export default function ReservasClient({
               options={STATUS_OPTIONS}
               aria-label="Filter by status"
             />
+            <div className="flex items-end gap-2">
+              <label className="flex flex-col gap-1">
+                <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">From</span>
+                <input
+                  type="date"
+                  value={fromDate}
+                  max={toDate || undefined}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  aria-label="From date"
+                  className="pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">To</span>
+                <input
+                  type="date"
+                  value={toDate}
+                  min={fromDate || undefined}
+                  onChange={(e) => setToDate(e.target.value)}
+                  aria-label="To date"
+                  className="pb-2 border-b border-ink/20 bg-transparent font-body text-sm text-ink outline-none focus:border-ink transition-colors duration-200"
+                />
+              </label>
+            </div>
+            {filtersActive && (
+              <Button variant="tertiary" onClick={clearFilters} className="md:ml-auto">
+                Clear
+              </Button>
+            )}
           </div>
 
           {filtered.length === 0 ? (
@@ -394,6 +435,9 @@ function BookingsTable({
                   </td>
                   <td className="px-4 py-4">
                     <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <p className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/40 mt-1.5">
+                      {paymentMethodLabel(b.paymentMethod)}
+                    </p>
                   </td>
                   <td className="px-4 py-4">
                     <div
@@ -472,8 +516,11 @@ function BookingDrawerContent({
         <h2 className="font-body text-xl font-medium text-ink leading-tight">
           {booking.firstName} {booking.lastName}
         </h2>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-3">
           <Badge variant={badge.variant}>{badge.label}</Badge>
+          <span className="font-body text-[10px] tracking-[0.15em] uppercase text-ink/50">
+            {paymentMethodLabel(booking.paymentMethod)}
+          </span>
         </div>
 
         {/* Actions */}
@@ -485,7 +532,7 @@ function BookingDrawerContent({
               onClick={onConfirmPayment}
               loading={isPending}
             >
-              Confirm payment
+              {booking.paymentMethod === 'card' ? 'Confirm payment' : 'Mark as paid'}
             </Button>
           )}
           {booking.paymentStatus !== 'cancelled' && (

@@ -34,6 +34,7 @@ export type Booking = {
   persons: number;
   upsells: string[];
   paymentStatus: 'pending' | 'paid' | 'free' | 'cancelled' | 'no-show';
+  paymentMethod: 'card' | 'cash' | 'venmo';
   bookingReference: string;
   referralCode?: string;
   createdAt: Date;

@@ -8,10 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Tag, Check, CheckCircle, XCircle, Loader2,
+  Tag, Check, CheckCircle, XCircle, Loader2, CreditCard, Banknote, Smartphone,
 } from 'lucide-react';
 import type { Upsell, ReferralCode } from '@/types';
 import { startBookingCheckout } from '@/app/actions/checkout';
+import type { PaymentMethod } from '@/lib/payment-methods';
 import { downloadICS } from '@/lib/ics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ import { BookingSummary } from '@/components/booking/BookingSummary';
 import { BookingMobileSummary } from '@/components/booking/BookingMobileSummary';
 import { BookingNavigation } from '@/components/booking/BookingNavigation';
 import { BookingConfirmation } from '@/components/booking/BookingConfirmation';
+import { VenmoModal } from '@/components/booking/VenmoModal';
 
 // ── Class photo mapping ──────────────────────────────────────────────────────
 const CLASS_PHOTOS: Record<string, string> = {
@@ -74,6 +76,12 @@ const personalSchema = z.object({
 type PersonalData = z.infer<typeof personalSchema>;
 
 type PackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
+
+const PAYMENT_METHODS: { id: PaymentMethod; name: string; hint: string; Icon: typeof CreditCard }[] = [
+  { id: 'card',  name: 'Card',  hint: 'Pay securely online now', Icon: CreditCard },
+  { id: 'venmo', name: 'Venmo', hint: 'Send payment via Venmo',  Icon: Smartphone },
+  { id: 'cash',  name: 'Cash',  hint: 'Pay in person at the studio', Icon: Banknote },
+];
 
 const PACKS: { id: PackType; name: string; classes: number; price: number; saving?: string }[] = [
   { id: 'dropin', name: 'Drop-in',    classes: 1,  price: 20 },
@@ -207,6 +215,9 @@ export default function BookingFlow({
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<Set<string>>(new Set());
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [packType, setPackType] = useState<PackType>('dropin');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [pendingMethod, setPendingMethod] = useState<'cash' | 'venmo' | null>(null);
+  const [venmoModalOpen, setVenmoModalOpen] = useState(false);
   const [bookingRef, setBookingRef] = useState('');
   const [appliedCode, setAppliedCode] = useState<ReferralCode | null>(null);
   const [codeStatus, setCodeStatus] = useState<'idle' | 'success' | 'error' | 'loading'>('idle');
@@ -292,6 +303,25 @@ export default function BookingFlow({
     goToStep(4);
   }
 
+  // Step 4 "confirm" click. Venmo opens the payment modal first; card/cash run
+  // the checkout directly.
+  function handleStep4() {
+    if (paymentMethod === 'venmo' && !DEMO_MODE) {
+      setBookingError(null);
+      setVenmoModalOpen(true);
+      return;
+    }
+    handleConfirm();
+  }
+
+  // Customer tapped "I've paid" in the Venmo modal: only now do we create the
+  // (pending) booking. On success the modal unmounts as we move to step 5; on
+  // error we close it so the message on step 4 is visible.
+  async function handleVenmoPaid() {
+    await handleConfirm();
+    setVenmoModalOpen(false);
+  }
+
   async function handleConfirm() {
     if (!personalData) return;
     setIsLoading(true);
@@ -300,6 +330,7 @@ export default function BookingFlow({
     // ── DEMO MODE — bypass the API and jump to the confirmation screen ──────
     if (DEMO_MODE) {
       await new Promise((r) => setTimeout(r, 600)); // short delay for realism
+      setPendingMethod(paymentMethod === 'card' ? null : paymentMethod);
       setBookingRef(mockBookingReference());
       goToStep(5);
       setIsLoading(false);
@@ -320,6 +351,7 @@ export default function BookingFlow({
           cloudbedsRef: personalData.cloudbedsRef,
         },
         packType,
+        paymentMethod,
       });
 
       if (!res.ok) {
@@ -329,8 +361,17 @@ export default function BookingFlow({
         return;
       }
 
-      if (res.free) {
+      if (res.status === 'free') {
         // Fully covered (pack code / discount) — no payment needed.
+        setPendingMethod(null);
+        setBookingRef(res.bookingReference);
+        goToStep(5);
+        return;
+      }
+
+      if (res.status === 'offline') {
+        // Cash/Venmo — spot held, payment collected in person.
+        setPendingMethod(res.paymentMethod);
         setBookingRef(res.bookingReference);
         goToStep(5);
         return;
@@ -375,7 +416,7 @@ export default function BookingFlow({
     if (step === 1) goToStep(2);
     else if (step === 2) goToStep(3);
     else if (step === 3) form.handleSubmit(handlePersonalSubmit)();
-    else if (step === 4) handleConfirm();
+    else if (step === 4) handleStep4();
   }
 
   // Step 1 is the only step where Continue can be hard-disabled (no spots).
@@ -446,6 +487,7 @@ export default function BookingFlow({
           discountAmount={discountAmount}
           total={total}
           email={personalData?.email}
+          pendingMethod={pendingMethod}
         />
       ) : (
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
@@ -845,6 +887,49 @@ export default function BookingFlow({
                           })}
                         </div>
 
+                        {/* Payment method selector */}
+                        <div className="mt-10">
+                          <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
+                            Payment method
+                          </p>
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {PAYMENT_METHODS.map(({ id, name, hint, Icon }) => {
+                              const active = paymentMethod === id;
+                              return (
+                                <button
+                                  key={id}
+                                  type="button"
+                                  onClick={() => setPaymentMethod(id)}
+                                  aria-pressed={active}
+                                  className={`
+                                    group flex flex-col items-start gap-2 p-4 text-left
+                                    border transition-all duration-300 ease-out cursor-pointer
+                                    ${active
+                                      ? 'border-ink bg-cream/60'
+                                      : 'border-ink/10 hover:border-ink/30 hover:bg-cream/30'}
+                                  `}
+                                >
+                                  <Icon className="w-5 h-5 text-ink" strokeWidth={1.5} />
+                                  <span className="font-body text-sm font-medium text-ink">{name}</span>
+                                  <span className="font-body text-xs text-ink/60 leading-snug">{hint}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {paymentMethod === 'venmo' && (
+                            <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
+                              We&apos;ll show the Venmo details to complete your payment. Your spot
+                              stays pending until we verify it.
+                            </p>
+                          )}
+                          {paymentMethod === 'cash' && (
+                            <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
+                              We&apos;ll hold your spot — just pay in cash at the studio reception
+                              before your class.
+                            </p>
+                          )}
+                        </div>
+
                         {/* Cancellation note */}
                         <p className="font-body text-xs text-ink mt-6">
                           ✓ Free cancellation up to 2 hours before class.
@@ -868,6 +953,13 @@ export default function BookingFlow({
                   canContinue={canContinue}
                   onBack={handleBack}
                   onContinue={handleContinue}
+                  payLabel={
+                    paymentMethod === 'card'
+                      ? 'Confirm and pay'
+                      : paymentMethod === 'venmo'
+                        ? 'Pay with Venmo'
+                        : 'Reserve'
+                  }
                 />
               </div>
             </div>
@@ -886,6 +978,15 @@ export default function BookingFlow({
           </div>
         </div>
       )}
+
+      <VenmoModal
+        open={venmoModalOpen}
+        amount={total}
+        note={personalData ? `${personalData.firstName} ${personalData.lastName}` : ''}
+        isLoading={isLoading}
+        onPaid={handleVenmoPaid}
+        onCancel={() => setVenmoModalOpen(false)}
+      />
     </div>
   );
 }
