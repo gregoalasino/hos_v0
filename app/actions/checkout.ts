@@ -6,6 +6,10 @@ import { confirmPackPayment } from '@/app/actions/packs';
 
 export type CheckoutPackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
 
+// How the customer chose to pay. 'card' goes through Tilopay; 'cash'/'venmo' are
+// paid in person and confirmed manually by the admin from /admin/reservas.
+export type CheckoutPaymentMethod = 'card' | 'cash' | 'venmo';
+
 type PersonalData = {
   firstName: string;
   lastName: string;
@@ -21,11 +25,16 @@ export type CheckoutInput = {
   upsellIds: string[];
   personalData: PersonalData;
   packType: CheckoutPackType;
+  paymentMethod: CheckoutPaymentMethod;
 };
 
 type CheckoutResult =
-  | { ok: true; free: true; bookingReference: string }
-  | { ok: true; free: false; url: string }
+  // Fully covered by a pack/referral code — confirmed immediately, no payment.
+  | { ok: true; status: 'free'; bookingReference: string }
+  // Cash/Venmo — booking created as pending; admin collects payment in person.
+  | { ok: true; status: 'offline'; bookingReference: string; paymentMethod: 'cash' | 'venmo' }
+  // Card — hand off to Tilopay's hosted payment page.
+  | { ok: true; status: 'redirect'; url: string }
   | { ok: false; error: string };
 
 const PACK_COUNT: Record<Exclude<CheckoutPackType, 'dropin'>, number> = {
@@ -41,7 +50,8 @@ const PACK_COUNT: Record<Exclude<CheckoutPackType, 'dropin'>, number> = {
 //    class for free (upsells charged) and the pack code is emailed.
 export async function startBookingCheckout(input: CheckoutInput): Promise<CheckoutResult> {
   const supabase = await createServiceClient();
-  const { classId, upsellIds, personalData, packType } = input;
+  const { classId, upsellIds, personalData, packType, paymentMethod } = input;
+  const isOffline = paymentMethod === 'cash' || paymentMethod === 'venmo';
 
   // ── Validate class ──────────────────────────────────────────────────────────
   const { data: clase, error: classError } = await supabase
@@ -99,6 +109,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
         classes_total: pack.classes_count,
         amount_usd: pack.price_usd,
         status: 'pending',
+        payment_method: paymentMethod,
       })
       .select('id')
       .single();
@@ -106,6 +117,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
 
     if (!(await reserveSpot())) return { ok: false, error: 'no_spots_available' };
 
+    const packBookingRef = await newRef();
     const { data: booking, error: bErr } = await supabase
       .from('bookings')
       .insert({
@@ -116,9 +128,10 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
         phone: personalData.phone ?? null,
         upsell_ids: upsellIds,
         payment_status: 'pending',
+        payment_method: paymentMethod,
         pack_type: packType,
         pack_purchase_id: purchase.id,
-        booking_reference: await newRef(),
+        booking_reference: packBookingRef,
         is_hotel_guest: personalData.isHotelGuest,
         cloudbeds_ref: personalData.cloudbedsRef ?? null,
         total_usd: upsellsTotal,
@@ -128,6 +141,17 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
     if (bErr || !booking) {
       await supabase.rpc('increment_spots', { p_class_id: classId });
       return { ok: false, error: 'database_error' };
+    }
+
+    // Cash/Venmo — leave the pack purchase + booking pending. The admin confirms
+    // it from /admin/reservas, which generates the pack code and emails it.
+    if (isOffline) {
+      return {
+        ok: true,
+        status: 'offline',
+        bookingReference: packBookingRef,
+        paymentMethod,
+      };
     }
 
     try {
@@ -143,7 +167,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
         billToCountry: 'CR',
         capture: '1',
       });
-      return { ok: true, free: false, url };
+      return { ok: true, status: 'redirect', url };
     } catch {
       await supabase.rpc('increment_spots', { p_class_id: classId });
       return { ok: false, error: 'payment_init_failed' };
@@ -205,6 +229,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
       phone: personalData.phone ?? null,
       upsell_ids: upsellIds,
       payment_status: total <= 0 ? 'confirmed' : 'pending',
+      payment_method: paymentMethod,
       pack_type: 'dropin',
       booking_reference: bookingReference,
       referral_code: code ?? null,
@@ -222,7 +247,13 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
   // Free already (pack code / full discount) → consume code now, done.
   if (total <= 0) {
     if (packFree && code) await supabase.rpc('redeem_pack_code', { p_code: code });
-    return { ok: true, free: true, bookingReference };
+    return { ok: true, status: 'free', bookingReference };
+  }
+
+  // Cash/Venmo — booking stays pending; admin collects payment in person and
+  // confirms it from /admin/reservas (which also consumes any referral code).
+  if (isOffline) {
+    return { ok: true, status: 'offline', bookingReference, paymentMethod };
   }
 
   try {
@@ -238,7 +269,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
       billToCountry: 'CR',
       capture: '1',
     });
-    return { ok: true, free: false, url };
+    return { ok: true, status: 'redirect', url };
   } catch {
     await supabase.rpc('increment_spots', { p_class_id: classId });
     return { ok: false, error: 'payment_init_failed' };

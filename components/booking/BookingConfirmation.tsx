@@ -6,6 +6,7 @@ import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import type { Upsell, ReferralCode } from '@/types';
+import { paymentInstructions } from '@/lib/payment-methods';
 
 // Word-by-word reveal — same easing as the home Introduction headline
 const headlineContainer: Variants = {
@@ -34,6 +35,9 @@ type Props = {
   discountAmount: number;
   total: number;
   email?: string;
+  // Set when the customer chose Cash/Venmo: the spot is held but payment is
+  // still pending and collected in person. null for card/free bookings.
+  pendingMethod?: 'cash' | 'venmo' | null;
 };
 
 /**
@@ -44,6 +48,7 @@ export function BookingConfirmation({
   bookingRef, onDownloadICS,
   className, instructor, classDate, durationMinutes, location,
   priceUsd, isFree, selectedUpsells, appliedCode, discountAmount, total, email,
+  pendingMethod = null,
 }: Props) {
   const router = useRouter();
 
@@ -52,6 +57,7 @@ export function BookingConfirmation({
     format(classDate, 'EEEE, MMMM d yyyy');
   const timeStr = `${format(classDate, 'HH:mm')} — ${format(endTime, 'HH:mm')}`;
   const isTotalFree = total === 0;
+  const isPending = pendingMethod !== null;
 
   return (
     <div className="w-full max-w-xl mx-auto px-6 py-16 lg:py-24">
@@ -63,7 +69,7 @@ export function BookingConfirmation({
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
         >
-          Confirmed
+          {isPending ? 'Reserved' : 'Confirmed'}
         </motion.p>
 
         <motion.h1
@@ -142,12 +148,24 @@ export function BookingConfirmation({
         {/* Total */}
         <div className="mt-8 pt-6 border-t border-ink/30 flex justify-between items-baseline">
           <span className="font-body text-sm tracking-[0.1em] uppercase text-ink">
-            Total
+            {isPending ? 'Amount due' : 'Total'}
           </span>
           <span className="font-display font-light text-ink text-2xl md:text-3xl">
             {isTotalFree ? 'Free' : `$${total}`}
           </span>
         </div>
+
+        {/* Payment instructions — cash / Venmo */}
+        {isPending && (
+          <div className="mt-10 pt-8 border-t border-ink/15">
+            <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
+              {pendingMethod === 'venmo' ? 'Pay with Venmo' : 'Pay in cash'}
+            </p>
+            <p className="font-body text-sm text-ink leading-relaxed mt-3">
+              {paymentInstructions(pendingMethod)}
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* Email confirmation note */}
@@ -160,6 +178,7 @@ export function BookingConfirmation({
         {email
           ? `We've sent the details to ${email}.`
           : "We've sent the details to your email."}
+        {isPending && ' Keep your booking reference handy for payment.'}
       </motion.p>
 
       {/* Quicklinks */}

@@ -180,6 +180,7 @@ export interface Database {
           classes_total: number;
           classes_used: number;
           status: string;
+          payment_method: 'card' | 'cash' | 'venmo';
           amount_usd: number | null;
           created_at: string;
           paid_at: string | null;
@@ -195,6 +196,7 @@ export interface Database {
           classes_total: number;
           classes_used?: number;
           status?: string;
+          payment_method?: 'card' | 'cash' | 'venmo';
           amount_usd?: number | null;
           created_at?: string;
           paid_at?: string | null;
@@ -210,6 +212,7 @@ export interface Database {
           classes_total?: number;
           classes_used?: number;
           status?: string;
+          payment_method?: 'card' | 'cash' | 'venmo';
           amount_usd?: number | null;
           created_at?: string;
           paid_at?: string | null;
@@ -254,6 +257,7 @@ export interface Database {
           persons: number;
           upsell_ids: string[];
           payment_status: 'pending' | 'confirmed' | 'cancelled' | 'no-show';
+          payment_method: 'card' | 'cash' | 'venmo';
           pack_type: string | null;
           booking_reference: string;
           referral_code: string | null;
@@ -276,6 +280,7 @@ export interface Database {
           persons?: number;
           upsell_ids?: string[];
           payment_status?: 'pending' | 'confirmed' | 'cancelled' | 'no-show';
+          payment_method?: 'card' | 'cash' | 'venmo';
           pack_type?: string | null;
           booking_reference: string;
           referral_code?: string | null;
@@ -298,6 +303,7 @@ export interface Database {
           persons?: number;
           upsell_ids?: string[];
           payment_status?: 'pending' | 'confirmed' | 'cancelled' | 'no-show';
+          payment_method?: 'card' | 'cash' | 'venmo';
           pack_type?: string | null;
           booking_reference?: string;
           referral_code?: string | null;
