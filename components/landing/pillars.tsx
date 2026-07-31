@@ -3,6 +3,7 @@
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
+import { Ornament } from "./ornament";
 
 const pillars = [
   {
@@ -61,7 +62,7 @@ export function Pillars() {
     <section
       id="pillars"
       ref={ref}
-      className="bg-warm-white py-20 lg:py-28"
+      className="bg-warm-white pt-6 lg:pt-8 pb-20 lg:pb-28"
     >
       <div className="w-[90%] md:w-[80%] mx-auto">
         {/* Section heading — single line, restrained */}
@@ -71,6 +72,9 @@ export function Pillars() {
           transition={{ duration: 1.0, ease: "easeOut" }}
           className="text-center mb-16 lg:mb-20"
         >
+          {/* Kundalini serpent — the Shakti energy, above the world of Shakti */}
+          <Ornament src="/logos/snake-sun-rays.png" className="h-20 md:h-24 mx-auto mb-6 lg:mb-8" />
+
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
             The world of Shakti
           </h2>
