@@ -3,6 +3,7 @@
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { Ornament } from "./ornament";
 
 const experiences = [
   {
@@ -139,14 +140,19 @@ export function SeasonalExperiences() {
       <div className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-3 lg:gap-12">
         {/* LEFT — heading + intro */}
         <div className="lg:col-span-1 lg:pr-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 1.0, ease: "easeOut" }}
-            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
-          >
-            Seasonal experiences
-          </motion.h2>
+          {/* Moon phases centered over the title — echoes the "Moon cycles" gathering */}
+          <div className="w-fit">
+            <Ornament src="/logos/moon-phase.png" className="h-8 md:h-9 mx-auto mb-5 lg:mb-6" />
+
+            <motion.h2
+              initial={{ opacity: 0, y: 16 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+              transition={{ duration: 1.0, ease: "easeOut" }}
+              className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
+            >
+              Seasonal experiences
+            </motion.h2>
+          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}

@@ -329,7 +329,7 @@ function TemplatesTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-warm-white border-b border-ink/10">
+            <tr className="bg-neutral-50 border-b border-ink/10">
               {headers.map((h, i) => (
                 <th
                   key={i}
@@ -349,7 +349,7 @@ function TemplatesTable({
               return (
                 <tr
                   key={t.id}
-                  className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200"
+                  className="border-b border-ink/[0.08] last:border-0 hover:bg-neutral-50 transition-colors duration-200"
                 >
                   <td className="px-4 py-4">
                     <div className="flex items-start gap-3">
@@ -369,7 +369,7 @@ function TemplatesTable({
                     </div>
                   </td>
                   <td className="px-4 py-4 hidden xl:table-cell">
-                    <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+                    <span className="font-mono text-xs text-ink/70 bg-neutral-50 px-2 py-0.5">
                       {t.slug}
                     </span>
                   </td>
@@ -465,7 +465,7 @@ export function RowIconButton({
       disabled={disabled}
       className={`
         w-8 h-8 p-1.5 inline-flex items-center justify-center
-        text-ink/60 hover:bg-cream/40
+        text-ink/60 hover:bg-neutral-50
         ${hoverDestructive ? 'hover:text-burgundy' : 'hover:text-ink'}
         transition-colors duration-200 cursor-pointer
         ${disabled ? 'opacity-40 cursor-not-allowed' : ''}

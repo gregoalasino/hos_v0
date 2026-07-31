@@ -189,7 +189,7 @@ export default function UpsellsClient({
                     type="button"
                     onClick={() => openEdit(u)}
                     aria-label="Edit upsell"
-                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-ink transition-colors duration-200 cursor-pointer"
+                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 hover:text-ink transition-colors duration-200 cursor-pointer"
                   >
                     <Pencil width={16} height={16} strokeWidth={1.5} />
                   </button>
@@ -197,7 +197,7 @@ export default function UpsellsClient({
                     type="button"
                     onClick={() => setDeleting(u)}
                     aria-label="Delete upsell"
-                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-burgundy transition-colors duration-200 cursor-pointer"
+                    className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 hover:text-burgundy transition-colors duration-200 cursor-pointer"
                   >
                     <Trash2 width={16} height={16} strokeWidth={1.5} />
                   </button>

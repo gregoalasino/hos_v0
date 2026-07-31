@@ -106,3 +106,18 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ─── Admin panel scope ──────────────────────────────────────────────
+   The admin reuses the site's color tokens but reads better with a
+   clean, legible sans-serif and a crisp white surface strategy. Everything
+   here is scoped to `.admin-scope` (set on the admin shell) so the
+   public site keeps Chalet and its cream palette untouched.
+
+   `font-body` utilities emit `font-family: var(--font-body), …`; the
+   `var(--font-body)` normally resolves to the self-hosted Chalet face.
+   Redefining it inside this scope swaps every admin surface to Arial
+   without changing a single component's class list. The sidebar logo
+   uses `font-display` (Krylon) and is intentionally left as-is. */
+.admin-scope {
+  --font-body: Arial, Helvetica, 'Helvetica Neue', sans-serif;
+}

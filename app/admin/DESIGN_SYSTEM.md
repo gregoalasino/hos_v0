@@ -4,8 +4,16 @@ Single source of truth for the House of Shakti admin panel.
 
 > **Admin prioritizes legibility and density over editorial restraint.** Use this document when in doubt.
 
-The admin shares the public site's color tokens and font stack but applies them
-with a different philosophy: information first, restraint second.
+The admin shares the public site's color tokens but applies them with a
+different philosophy: information first, restraint second. It also runs on a
+**white surface + burgundy/black accent** palette and a **clean sans-serif**,
+both scoped to `.admin-scope` (set on the admin shell in `DashboardLayout.tsx`
+and on `/login`). The public site keeps its cream palette and Chalet face
+untouched.
+
+`.admin-scope` in `globals.css` redefines `--font-body` to Arial, so every
+`font-body` utility inside the admin resolves to the sans-serif with no
+per-component class changes.
 
 ---
 
@@ -13,8 +21,8 @@ with a different philosophy: information first, restraint second.
 
 | Stack | Family | When to use |
 |---|---|---|
-| `font-display` | Krylon | ONLY the sidebar logo "House of Shakti" and occasional page heading accents. Never body, labels, or buttons. |
-| `font-body` | Chalet | Default for everything: page headings, labels, table headers, body, buttons, badges. |
+| `font-display` | Krylon | ONLY the sidebar logo "House of Shakti". Never body, labels, or buttons. |
+| `font-body` | **Arial** (sans-serif, via `.admin-scope`) | Default for everything: page headings, labels, table headers, body, buttons, badges. |
 
 ### Size scale
 
@@ -37,10 +45,11 @@ Line height: `leading-tight` for headings, `leading-normal` for body. Avoid
 
 | Token | Hex | Use |
 |---|---|---|
-| `bg-warm-white` | `#f2ebe7` | Main content area background |
-| `bg-white` | `#ffffff` | Cards / elevated surfaces |
-| `bg-dark` | `#340000` | Sidebar background |
-| `bg-cream/40` | — | Row hover state |
+| `bg-neutral-50` | `#fafafa` | Main content area background (soft white — less glare than pure white) |
+| `bg-white` | `#ffffff` | Cards / tables / drawers / elevated surfaces |
+| `bg-burgundy` | `#8D0000` | Sidebar background + primary actions (the landing's "bordó") |
+| `bg-neutral-50` | `#fafafa` | Row hover state + table header rows |
+| `bg-black` (or `hover:bg-dark`) | `#000000` / `#340000` | Secondary-button hover, total bars, high-contrast accents |
 
 ### Borders
 
@@ -125,7 +134,7 @@ The admin is a tool. Tools open quickly and don't perform.
 ## 6. Layout shell
 
 ```tsx
-<div className="min-h-screen flex bg-warm-white">
+<div className="admin-scope min-h-screen flex bg-neutral-50 text-ink">
   <Sidebar />
   <main className="flex-1 md:ml-[260px]">
     {children}

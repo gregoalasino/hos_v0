@@ -205,7 +205,7 @@ export default function CalendarioClient({
             <button
               type="button"
               onClick={() => setWeekOffset(0)}
-              className="px-3 py-2 font-body text-sm text-ink hover:bg-cream/40 transition-colors duration-200 cursor-pointer"
+              className="px-3 py-2 font-body text-sm text-ink hover:bg-neutral-50 transition-colors duration-200 cursor-pointer"
             >
               Today
             </button>
@@ -299,7 +299,7 @@ export default function CalendarioClient({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-full md:w-[420px] lg:w-[480px] bg-warm-white border-l border-ink/10 overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 z-50 w-full md:w-[420px] lg:w-[480px] bg-white border-l border-ink/10 overflow-y-auto"
             >
               <DrawerContent
                 clase={selectedClass}
@@ -485,7 +485,7 @@ function MobileDaySelector({
                 ${
                   active
                     ? 'border-burgundy bg-burgundy text-cream'
-                    : 'border-ink/10 text-ink hover:bg-cream/40'
+                    : 'border-ink/10 text-ink hover:bg-neutral-50'
                 }
               `}
             >

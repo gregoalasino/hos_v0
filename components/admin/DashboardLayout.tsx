@@ -17,7 +17,7 @@ export const ADMIN_TERRA = '#8B6F47'; // terracotta
 // it. `md:ml-[260px]` reserves space on md+ for the fixed sidebar.
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex bg-warm-white">
+    <div className="admin-scope min-h-screen flex bg-neutral-50 text-ink">
       <Sidebar />
       <main className="flex-1 min-w-0 md:ml-[260px]">
         {children}
