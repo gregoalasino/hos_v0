@@ -66,7 +66,7 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
       />
 
       {toast && (
-        <div className="mb-6 px-4 py-3 bg-cream border border-ink/15 font-body text-sm text-ink">
+        <div className="mb-6 px-4 py-3 bg-neutral-50 border border-ink/15 font-body text-sm text-ink">
           {toast}
         </div>
       )}
@@ -82,7 +82,7 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-warm-white border-b border-ink/10">
+                <tr className="bg-neutral-50 border-b border-ink/10">
                   {['Customer', 'Pack', 'Code', 'Usage', 'Amount', 'Status', 'Actions'].map(
                     (h, i) => (
                       <th
@@ -99,7 +99,7 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
                 {purchases.map((p) => (
                   <tr
                     key={p.id}
-                    className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200 align-middle"
+                    className="border-b border-ink/[0.08] last:border-0 hover:bg-neutral-50 transition-colors duration-200 align-middle"
                   >
                     <td className="px-4 py-4">
                       <p className="font-body text-sm font-medium text-ink">
@@ -118,7 +118,7 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
                             navigator.clipboard?.writeText(p.code!);
                             flash(`Copied ${p.code}`);
                           }}
-                          className="inline-flex items-center gap-1.5 font-mono text-xs text-ink bg-cream/60 px-2 py-1 hover:bg-cream transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 font-mono text-xs text-ink bg-neutral-50 px-2 py-1 hover:bg-neutral-50 transition-colors cursor-pointer"
                           title="Copy code"
                         >
                           {p.code}
@@ -213,7 +213,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink/20 font-body text-xs text-ink hover:bg-cream/60 transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink/20 font-body text-xs text-ink hover:bg-neutral-50 transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
     >
       {icon}
       {label}
@@ -240,7 +240,7 @@ function IconButton({
       onClick={onClick}
       aria-label={ariaLabel}
       disabled={disabled}
-      className={`w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 ${
+      className={`w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 ${
         hoverDestructive ? 'hover:text-burgundy' : 'hover:text-ink'
       } transition-colors duration-200 cursor-pointer disabled:opacity-40`}
     >

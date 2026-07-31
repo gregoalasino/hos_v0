@@ -22,7 +22,7 @@ export function PageHeader({ eyebrow, heading, description, actions }: PageHeade
             {eyebrow}
           </p>
         )}
-        <h1 className="font-body text-2xl lg:text-3xl font-normal text-ink leading-tight mt-2">
+        <h1 className="font-body text-2xl lg:text-3xl font-normal text-black leading-tight mt-2">
           {heading}
         </h1>
         {description && (

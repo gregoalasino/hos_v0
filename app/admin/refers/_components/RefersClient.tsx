@@ -305,14 +305,14 @@ function CodeRow({
     <Card>
       <div className="flex flex-col lg:flex-row lg:items-center gap-6">
         {/* Icon */}
-        <div className="w-12 h-12 bg-cream/40 flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 bg-neutral-50 flex items-center justify-center flex-shrink-0">
           <Icon width={18} height={18} strokeWidth={1.5} className="text-ink/60" />
         </div>
 
         {/* Identifier */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-medium text-ink bg-cream/40 px-2 py-1">
+            <span className="font-mono text-sm font-medium text-ink bg-neutral-50 px-2 py-1">
               {code.code}
             </span>
             {!code.isActive && <Badge variant="inactive">Inactive</Badge>}
@@ -362,7 +362,7 @@ function CodeRow({
             onClick={onToggle}
             disabled={isPending}
             aria-label={code.isActive ? 'Deactivate code' : 'Activate code'}
-            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-ink transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 hover:text-ink transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {code.isActive ? (
               <Eye width={16} height={16} strokeWidth={1.5} />
@@ -374,7 +374,7 @@ function CodeRow({
             type="button"
             onClick={onEdit}
             aria-label="Edit code"
-            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-ink transition-colors duration-200 cursor-pointer"
+            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 hover:text-ink transition-colors duration-200 cursor-pointer"
           >
             <Pencil width={16} height={16} strokeWidth={1.5} />
           </button>
@@ -382,7 +382,7 @@ function CodeRow({
             type="button"
             onClick={onDelete}
             aria-label="Delete code"
-            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-cream/40 hover:text-burgundy transition-colors duration-200 cursor-pointer"
+            className="w-8 h-8 p-1.5 inline-flex items-center justify-center text-ink/60 hover:bg-neutral-50 hover:text-burgundy transition-colors duration-200 cursor-pointer"
           >
             <Trash2 width={16} height={16} strokeWidth={1.5} />
           </button>

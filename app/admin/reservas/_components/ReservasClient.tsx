@@ -312,7 +312,7 @@ export default function ReservasClient({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-full md:w-[420px] lg:w-[480px] bg-warm-white border-l border-ink/10 overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 z-50 w-full md:w-[420px] lg:w-[480px] bg-white border-l border-ink/10 overflow-y-auto"
             >
               <BookingDrawerContent
                 booking={selectedBooking}
@@ -375,7 +375,7 @@ function BookingsTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-warm-white border-b border-ink/10">
+            <tr className="bg-neutral-50 border-b border-ink/10">
               {headers.map((h, i) => (
                 <th
                   key={i}
@@ -399,10 +399,10 @@ function BookingsTable({
                 <tr
                   key={b.id}
                   onClick={() => onView(b)}
-                  className="border-b border-ink/[0.08] last:border-0 hover:bg-cream/40 transition-colors duration-200 cursor-pointer"
+                  className="border-b border-ink/[0.08] last:border-0 hover:bg-neutral-50 transition-colors duration-200 cursor-pointer"
                 >
                   <td className="px-4 py-4">
-                    <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+                    <span className="font-mono text-xs text-ink/70 bg-neutral-50 px-2 py-0.5">
                       {b.bookingReference}
                     </span>
                   </td>
@@ -498,7 +498,7 @@ function BookingDrawerContent({
     <div className="flex flex-col h-full">
       {/* Top bar */}
       <div className="flex justify-between items-center px-6 py-4 border-b border-ink/10">
-        <span className="font-mono text-xs text-ink/70 bg-cream/40 px-2 py-0.5">
+        <span className="font-mono text-xs text-ink/70 bg-neutral-50 px-2 py-0.5">
           {booking.bookingReference}
         </span>
         <button
@@ -598,7 +598,7 @@ function BookingDrawerContent({
         )}
 
         {/* Total */}
-        <div className="mt-10 flex justify-between items-center bg-dark text-cream px-5 py-4">
+        <div className="mt-10 flex justify-between items-center bg-burgundy text-cream px-5 py-4">
           <span className="font-body text-sm text-cream/70">Total</span>
           <span className="font-body text-lg font-medium text-cream">${total} USD</span>
         </div>

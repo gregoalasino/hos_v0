@@ -25,7 +25,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   primary:
     'bg-burgundy text-cream px-5 py-2.5 text-sm font-medium hover:bg-dark transition-colors duration-200 ease-out',
   secondary:
-    'bg-transparent border border-ink/20 text-ink px-5 py-2.5 text-sm font-medium hover:bg-ink hover:text-cream hover:border-ink transition-colors duration-200 ease-out',
+    'bg-transparent border border-ink/25 text-ink px-5 py-2.5 text-sm font-medium hover:bg-black hover:text-white hover:border-black transition-colors duration-200 ease-out',
   tertiary:
     'bg-transparent text-ink px-3 py-2 text-sm hover:opacity-70 transition-opacity duration-200 ease-out',
   destructive:

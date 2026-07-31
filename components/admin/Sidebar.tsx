@@ -44,7 +44,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-dark text-cream">
+    <div className="flex flex-col h-full bg-burgundy text-cream">
       {/* TOP — brand block. Not a link: admin is its own context. */}
       <div className="px-6 pt-10 pb-12">
         <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/40">
@@ -74,8 +74,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     border-l-2
                     ${
                       active
-                        ? 'bg-cream/10 text-cream border-burgundy'
-                        : 'text-cream/70 border-transparent hover:bg-cream/5 hover:text-cream/90'
+                        ? 'bg-black/20 text-cream border-cream'
+                        : 'text-cream/70 border-transparent hover:bg-black/10 hover:text-cream'
                     }
                   `}
                 >
@@ -99,7 +99,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <div className="flex items-center gap-3">
           <div
             aria-hidden
-            className="w-10 h-10 bg-burgundy flex items-center justify-center font-body text-sm font-medium text-cream rounded-full flex-shrink-0"
+            className="w-10 h-10 bg-black/25 flex items-center justify-center font-body text-sm font-medium text-cream rounded-full flex-shrink-0"
           >
             A
           </div>
@@ -191,7 +191,7 @@ export function Sidebar() {
         aria-label="Open admin menu"
         aria-controls="admin-mobile-drawer"
         aria-expanded={drawerOpen}
-        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 flex items-center justify-center bg-warm-white border border-ink/10 text-ink hover:bg-cream transition-colors duration-200 cursor-pointer"
+        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 flex items-center justify-center bg-white border border-ink/15 text-ink hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
       >
         <Menu width={20} height={20} strokeWidth={1.5} />
       </button>
