@@ -7,7 +7,7 @@ export type PaymentMethod = 'card' | 'cash' | 'venmo';
 // Venmo handle shown to the customer when they pay by Venmo. Public (it's just a
 // username), so it lives in a NEXT_PUBLIC_ var with a safe placeholder fallback.
 export const VENMO_HANDLE =
-  process.env.NEXT_PUBLIC_VENMO_HANDLE ?? '@HouseOfShakti';
+  process.env.NEXT_PUBLIC_VENMO_HANDLE ?? '@Nancy-Goodfellow';
 
 // Handle without the leading @, used to build the Venmo profile URL.
 export const VENMO_USERNAME = VENMO_HANDLE.replace(/^@/, '');
