@@ -56,13 +56,18 @@ export default function AdminLoginPage() {
     <div className="admin-scope font-body min-h-screen bg-neutral-50 flex items-center justify-center p-4 text-ink">
       <div className="w-full max-w-sm">
 
-        {/* Logo */}
+        {/* Logo — House of Shakti monogram (from /public) */}
         <div className="text-center mb-8">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
             style={{ backgroundColor: BURGUNDY }}
           >
-            <span className="text-white text-lg">🌙</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/favicon.png"
+              alt="House of Shakti"
+              className="w-8 h-8 object-contain"
+            />
           </div>
           <h1 className="font-body text-2xl font-normal text-black">Panel Admin</h1>
           <p className="font-body text-sm text-ink/50 mt-1">House of Shakti</p>
