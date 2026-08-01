@@ -18,10 +18,7 @@ export function ShaktiPricing() {
         className="w-[90%] md:w-[80%] mx-auto"
       >
         <div className="border border-ink/15 px-8 py-14 md:px-16 md:py-20 text-center">
-          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-            Investment
-          </p>
-          <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mt-6">
+          <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
             Tailored to your group and dates.
           </h2>
           <p className="font-body text-sm text-ink leading-[1.7] mt-6 max-w-xl mx-auto">

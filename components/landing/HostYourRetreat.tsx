@@ -37,11 +37,7 @@ export function HostYourRetreat() {
                 />
               </div>
 
-              <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-                For Teachers & Hosts
-              </p>
-
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
+              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
                 Host your retreat
               </h3>
 
@@ -72,11 +68,7 @@ export function HostYourRetreat() {
                 />
               </div>
 
-              <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-                Private Use
-              </p>
-
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
+              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
                 The sanctuary, in private
               </h3>
 

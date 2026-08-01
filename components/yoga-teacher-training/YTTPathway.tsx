@@ -35,19 +35,11 @@ export function YTTPathway() {
     <section className="bg-warm-white py-20 lg:py-28">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-2xl">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
-          >
-            The Pathway
-          </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mt-6"
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
             Two pathways, one journey.
           </motion.h2>
@@ -65,14 +57,13 @@ export function YTTPathway() {
               variants={item}
               className="border border-ink/15 p-8 md:p-10 flex flex-col"
             >
-              <p className="font-body text-[10px] tracking-[0.25em] uppercase text-burgundy">
-                {phase.tag}
-              </p>
-              <h3 className="font-display font-light text-ink text-2xl leading-snug mt-4">
+              <h3 className="font-display font-light text-ink text-2xl leading-snug">
                 {phase.title}
               </h3>
-              <p className="font-body text-xs tracking-[0.05em] uppercase text-ink/50 mt-3">
-                {phase.place}
+              {/* Phase + location as one fact line under the title, rather than
+                  a tag above it */}
+              <p className="font-body text-xs text-ink mt-3">
+                {phase.tag} · {phase.place}
               </p>
               <p className="font-body text-sm text-ink leading-[1.8] mt-6">{phase.body}</p>
             </motion.article>

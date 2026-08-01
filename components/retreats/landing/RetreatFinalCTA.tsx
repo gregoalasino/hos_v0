@@ -6,7 +6,7 @@ import Link from 'next/link';
 import type { Retreat } from '@/lib/retreats';
 
 // Pre-footer moment — mirrors the accommodations FinalCTA exactly:
-// warm-white background, centered eyebrow + heading, editorial underline CTAs.
+// warm-white background, centered heading, editorial underline CTAs.
 // No background image, no dark overlay — clean editorial closing.
 export function RetreatFinalCTA({ retreat }: { retreat: Retreat }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -23,11 +23,7 @@ export function RetreatFinalCTA({ retreat }: { retreat: Retreat }) {
         transition={{ duration: 1.0, ease: 'easeOut' }}
         className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
       >
-        <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-          Limited spots
-        </p>
-
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mt-6">
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
           {retreat.finalCTAHeading}
         </h2>
 

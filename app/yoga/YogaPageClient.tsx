@@ -411,10 +411,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
         <div className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 lg:gap-10">
             <div className="max-w-2xl">
-              <p className="font-body text-[10px] tracking-[0.25em] uppercase text-cream/70">
-                Buy a class pack
-              </p>
-              <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight mt-3">
+              <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight">
                 Save with a pack of 5, 10 or 20
               </h3>
 
@@ -510,12 +507,13 @@ function YogaInstructors() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-                {instructor.discipline}
-              </p>
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
+              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
                 {instructor.name}
               </h3>
+              {/* Discipline reads as a fact line under the name, not a tag above it */}
+              <p className="font-body text-xs text-ink mt-2">
+                {instructor.discipline}
+              </p>
               <p className="font-body text-sm text-ink leading-relaxed mt-3">
                 {instructor.bio}
               </p>
