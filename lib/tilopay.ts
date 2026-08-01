@@ -67,10 +67,17 @@ export async function login(): Promise<string> {
     cache: 'no-store',
   });
   if (!res.ok) {
+    // Capture Tilopay's error body so production logs reveal the real cause
+    // (e.g. bad credentials) instead of just an HTTP status.
+    const body = await res.text().catch(() => '');
+    console.error('[tilopay.login] failed', res.status, body.slice(0, 500));
     throw new Error(`tilopay_login_failed_${res.status}`);
   }
   const data = await res.json();
-  if (!data.access_token) throw new Error('tilopay_login_no_token');
+  if (!data.access_token) {
+    console.error('[tilopay.login] no access_token in response', JSON.stringify(data).slice(0, 500));
+    throw new Error('tilopay_login_no_token');
+  }
   return data.access_token as string;
 }
 
@@ -120,9 +127,16 @@ export async function createPayment(params: CreatePaymentParams): Promise<string
   });
 
   if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[tilopay.processPayment] failed', res.status, body.slice(0, 500));
     throw new Error(`tilopay_process_failed_${res.status}`);
   }
   const data = await res.json();
-  if (!data.url) throw new Error('tilopay_process_no_url');
+  if (!data.url) {
+    // Tilopay can answer 200 with an error payload (e.g. invalid amount) and no
+    // url. Log it so the failure is diagnosable from server logs.
+    console.error('[tilopay.processPayment] no url in response', JSON.stringify(data).slice(0, 500));
+    throw new Error('tilopay_process_no_url');
+  }
   return data.url as string;
 }
