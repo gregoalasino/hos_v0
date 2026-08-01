@@ -37,10 +37,7 @@ export function ShaktiExperienceTeaser() {
               />
 
               <div className="relative w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20">
-                <p className="font-body text-[10px] md:text-[11px] tracking-[0.3em] uppercase text-cream/80">
-                  The Signature Immersion
-                </p>
-                <h2 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[0.98] tracking-[-0.01em] mt-5 md:mt-6 max-w-3xl">
+                <h2 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[0.98] tracking-[-0.01em] max-w-3xl">
                   Shakti Experience
                 </h2>
                 <p className="font-body text-sm md:text-base text-cream/85 leading-[1.7] mt-6 max-w-xl">

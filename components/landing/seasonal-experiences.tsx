@@ -7,7 +7,6 @@ import { Ornament } from "./ornament";
 
 const experiences = [
   {
-    eyebrow: "Signature",
     title: "The House of Shakti experience",
     description:
       "An all-inclusive immersion with accommodation, daily practice, and a curated itinerary — designed for guests who want everything considered.",
@@ -15,7 +14,6 @@ const experiences = [
     href: "/contact",
   },
   {
-    eyebrow: "Seasonal",
     title: "Moon cycles in Santa Teresa",
     description:
       "A new moon gathering that marks the change of seasons — three nights of yoga, breathwork, and shared meals.",
@@ -23,7 +21,6 @@ const experiences = [
     href: "/contact",
   },
   {
-    eyebrow: "For Two",
     title: "A weekend of return",
     description:
       "Designed for couples or close friends seeking a softer pace away from the noise. Private practice, slow mornings.",
@@ -87,6 +84,40 @@ export function SeasonalExperiences() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Landing here directly at #seasonal-experiences — arriving from another
+  // page via the nav link, or opening a shared link. Two problems to solve:
+  //   1. The router's own hash handling goes through smooth scrolling, which
+  //      some browsers drop outright, leaving the visitor at the top instead.
+  //   2. Images above this section finish loading *after* we jump and shift
+  //      the page, so the section slides out from under the viewport.
+  // Hence: jump once the route settles, then realign after late layout shifts
+  // — but only while the visitor hasn't scrolled away on their own.
+  useEffect(() => {
+    if (window.location.hash !== "#seasonal-experiences") return;
+
+    let landedAt = -1;
+    const jump = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      el.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+      landedAt = window.scrollY;
+    };
+
+    // Only fires if nothing else already moved us.
+    const initial = window.setTimeout(() => {
+      if (window.scrollY < 4) jump();
+    }, 350);
+    // Only fires if we're still parked where we landed.
+    const realign = window.setTimeout(() => {
+      if (landedAt >= 0 && Math.abs(window.scrollY - landedAt) < 8) jump();
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(initial);
+      window.clearTimeout(realign);
+    };
+  }, []);
+
   // ── Drag-to-scroll handlers ─────────────────────────────────────────────
   // While dragging we disable scroll-snap so the user gets a frictionless
   // pull; on release we restore proximity snap + smooth behavior so the
@@ -133,8 +164,12 @@ export function SeasonalExperiences() {
 
   return (
     <section
+      id="seasonal-experiences"
       ref={sectionRef}
-      className="py-20 lg:py-28 bg-warm-white"
+      /* scroll-mt offsets the fixed navbar so a #seasonal-experiences jump
+         doesn't land the heading underneath it. Sized against the compact
+         navbar (h-14 mobile / h-20 desktop) plus a little air. */
+      className="py-20 lg:py-28 bg-warm-white scroll-mt-20 lg:scroll-mt-24"
     >
       {/* Container global del proyecto: 90% mobile / 80% desktop */}
       <div className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-3 lg:gap-12">
@@ -212,10 +247,6 @@ export function SeasonalExperiences() {
                       className="w-full h-full object-cover pointer-events-none"
                     />
                   </div>
-
-                  <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-                    {exp.eyebrow}
-                  </p>
 
                   <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-tight mt-3">
                     {exp.title}

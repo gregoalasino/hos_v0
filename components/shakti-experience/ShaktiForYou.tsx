@@ -41,20 +41,11 @@ export function ShaktiForYou() {
 
         {/* Text */}
         <div className="mt-12 lg:mt-0">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
-          >
-            Is This For You
-          </motion.p>
-
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.15 }}
-            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mt-6"
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
             This experience is for you if…
           </motion.h2>

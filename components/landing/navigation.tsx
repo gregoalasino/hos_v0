@@ -14,6 +14,9 @@ const navItems: { label: string; href: string }[] = [
   { label: 'Yoga Classes', href: '/yoga' },
   { label: 'Accommodations', href: '/accommodations' },
   { label: 'Retreats', href: '/retreats' },
+  // Anchor into the home page rather than a route of its own — the section
+  // lives at <section id="seasonal-experiences"> in seasonal-experiences.tsx.
+  { label: 'Seasonal Experiences', href: '/#seasonal-experiences' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -23,6 +26,9 @@ const navItems: { label: string; href: string }[] = [
 function useActiveRoute() {
   const pathname = usePathname();
   return (href: string): boolean => {
+    // Anchor links point at a section, not a route — never mark them active,
+    // otherwise they'd light up across the whole page they live on.
+    if (href.includes('#')) return false;
     if (href === '/') return pathname === '/';
     return pathname === href || pathname.startsWith(`${href}/`);
   };
@@ -159,6 +165,57 @@ function Drawer({
   onClose: () => void;
 }) {
   const isActive = useActiveRoute();
+  const pathname = usePathname();
+
+  // Anchor links (e.g. "/#seasonal-experiences") need special handling: while
+  // the drawer is open the body carries `overflow: hidden`, so the browser's
+  // native jump-to-hash is swallowed and the page never moves. When we're
+  // already on the target route we take over — close the drawer, then scroll
+  // on the next frame, once the lock has been released. Cross-route hash
+  // navigation is left to the router, which remounts the page and handles it.
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    if (!href.includes('#')) {
+      onClose();
+      return;
+    }
+    const [path, hash] = href.split('#');
+    const targetPath = path || '/';
+    if (pathname !== targetPath) {
+      onClose();
+      return; // different route — let Next handle navigation + hash
+    }
+    e.preventDefault();
+    onClose();
+    // Keep the URL in sync so the anchor is shareable / back-button friendly.
+    window.history.replaceState(null, '', `#${hash}`);
+    // Release the scroll lock here rather than waiting for the close effect to
+    // clean up: that takes more than one frame (setState → re-render → effect
+    // cleanup), and a scroll issued while `overflow: hidden` is still applied
+    // is silently dropped. The effect's own cleanup resets to the same value,
+    // so doing it early is harmless.
+    document.body.style.overflow = '';
+
+    const target = document.getElementById(hash);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth' });
+
+    // Safety net: a few embedded/automation browsers drop smooth scrolls
+    // outright instead of falling back to an instant jump, which would leave
+    // the link doing nothing at all. If we genuinely haven't moved, jump.
+    // Must be 'instant', not 'auto' — 'auto' defers to the CSS
+    // `scroll-behavior: smooth` on <html>, i.e. the very thing that failed.
+    const distance = target.getBoundingClientRect().top;
+    if (distance > 4) {
+      window.setTimeout(() => {
+        if (window.scrollY < 4) {
+          target.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
+        }
+      }, 300);
+    }
+  };
 
   // Close on Escape.
   useEffect(() => {
@@ -240,7 +297,7 @@ function Drawer({
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={onClose}
+                    onClick={(e) => handleNavClick(e, item.href)}
                     className={`block font-display font-light text-ink text-2xl ${
                       isActive(item.href)
                         ? 'underline underline-offset-4 decoration-[0.5px]'
