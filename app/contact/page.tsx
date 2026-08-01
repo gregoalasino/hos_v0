@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
+import { MessageCircle, Mail, Phone, ArrowUpRight } from 'lucide-react';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 
@@ -56,7 +57,7 @@ function ContactLink({
     <a
       href={href}
       {...externalProps}
-      className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer"
+      className="font-body text-base text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer"
     >
       {children}
     </a>
@@ -67,9 +68,60 @@ function ContactLink({
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-      <span className="font-body text-sm text-ink">{label}</span>
+      <span className="font-body text-base text-ink">{label}</span>
       {children}
     </div>
+  );
+}
+
+/**
+ * Primary CTA — a bordered "chip" contact action with an icon.
+ * Used for the most important reach-outs (WhatsApp, Email). Bigger tap target,
+ * clearer affordance than a bare underlined link, while staying editorial.
+ */
+function ContactCTA({
+  href,
+  icon: Icon,
+  label,
+  value,
+  external = false,
+  emphasis = false,
+}: {
+  href: string;
+  icon: typeof MessageCircle;
+  label: string;
+  value: string;
+  external?: boolean;
+  emphasis?: boolean;
+}) {
+  const externalProps = external
+    ? { target: '_blank', rel: 'noopener noreferrer' as const }
+    : {};
+  return (
+    <a
+      href={href}
+      {...externalProps}
+      className={`group flex items-center gap-4 px-5 py-4 border transition-colors duration-300 cursor-pointer ${
+        emphasis
+          ? 'border-burgundy/40 bg-burgundy/[0.04] hover:bg-burgundy/[0.08]'
+          : 'border-ink/15 hover:border-ink/40 hover:bg-ink/[0.02]'
+      }`}
+    >
+      <Icon
+        className={`w-5 h-5 flex-shrink-0 ${emphasis ? 'text-burgundy' : 'text-ink'}`}
+        strokeWidth={1.5}
+      />
+      <span className="flex flex-col min-w-0">
+        <span className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
+          {label}
+        </span>
+        <span className="font-body text-base text-ink truncate">{value}</span>
+      </span>
+      <ArrowUpRight
+        className="w-4 h-4 ml-auto flex-shrink-0 text-ink/40 group-hover:text-ink group-hover:translate-x-[1px] group-hover:-translate-y-[1px] transition-all duration-300"
+        strokeWidth={1.5}
+      />
+    </a>
   );
 }
 
@@ -104,10 +156,10 @@ function ContactColumns() {
     <section className="bg-warm-white pb-16 lg:pb-20">
       <div
         ref={sectionRef}
-        className="w-[90%] md:w-[80%] mx-auto grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 items-start"
+        className="w-[90%] md:w-[80%] mx-auto grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-16 items-start"
       >
-        {/* LEFT — info blocks (col-span-3 = 30%) */}
-        <div className="lg:col-span-3 order-2 lg:order-1">
+        {/* LEFT — info blocks (col-span-6 = 60%, roomier + more legible) */}
+        <div className="lg:col-span-6 order-2 lg:order-1">
           {/* Block 1 — Reservations & Inquiries */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -115,29 +167,38 @@ function ContactColumns() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.0 }}
             className="border-t border-ink/10 py-10 lg:py-12"
           >
-            <h2 className="font-display font-light text-ink text-lg lg:text-xl leading-snug">
+            <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
               Reservations &amp; Inquiries
             </h2>
-            <p className="font-body text-sm text-ink leading-relaxed mt-6">
+            <p className="font-body text-base text-ink leading-relaxed mt-5 max-w-xl">
               Our team is available to help you plan your stay, retreats, or
               private use of the sanctuary. We typically respond within 24 hours.
             </p>
-            <div className="space-y-3 mt-6">
-              <DetailRow label="Email:">
-                <ContactLink href={`mailto:${EMAIL_RESERVATIONS}`}>
-                  {EMAIL_RESERVATIONS}
-                </ContactLink>
-              </DetailRow>
-              <DetailRow label="WhatsApp:">
-                <ContactLink href={WHATSAPP_URL} external>
-                  {PHONE_DISPLAY}
-                </ContactLink>
-              </DetailRow>
-              <DetailRow label="Phone:">
-                <ContactLink href={`tel:${PHONE_E164}`}>
-                  {PHONE_DISPLAY}
-                </ContactLink>
-              </DetailRow>
+            {/* Primary reach-outs — WhatsApp first (fastest), then email + phone.
+                Email spans full width so the address never truncates. */}
+            <div className="grid sm:grid-cols-2 gap-3 mt-7 max-w-xl">
+              <ContactCTA
+                href={WHATSAPP_URL}
+                icon={MessageCircle}
+                label="WhatsApp"
+                value={PHONE_DISPLAY}
+                external
+                emphasis
+              />
+              <ContactCTA
+                href={`tel:${PHONE_E164}`}
+                icon={Phone}
+                label="Call"
+                value={PHONE_DISPLAY}
+              />
+              <div className="sm:col-span-2">
+                <ContactCTA
+                  href={`mailto:${EMAIL_RESERVATIONS}`}
+                  icon={Mail}
+                  label="Email"
+                  value={EMAIL_RESERVATIONS}
+                />
+              </div>
             </div>
           </motion.div>
 
@@ -148,36 +209,37 @@ function ContactColumns() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.15 }}
             className="border-t border-ink/10 py-10 lg:py-12"
           >
-            <h2 className="font-display font-light text-ink text-lg lg:text-xl leading-snug">
+            <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
               Host a Retreat
             </h2>
-            <p className="font-body text-sm text-ink leading-relaxed mt-6">
+            <p className="font-body text-base text-ink leading-relaxed mt-5 max-w-xl">
               For teachers, hosts, and brands seeking to use House of Shakti as
               a setting for retreats or curated gatherings.
             </p>
-            <div className="space-y-3 mt-6">
-              <DetailRow label="Email:">
-                <ContactLink href={`mailto:${EMAIL_RETREATS}`}>
-                  {EMAIL_RETREATS}
-                </ContactLink>
-              </DetailRow>
+            <div className="mt-7 max-w-xl">
+              <ContactCTA
+                href={`mailto:${EMAIL_RETREATS}`}
+                icon={Mail}
+                label="Email"
+                value={EMAIL_RETREATS}
+              />
             </div>
           </motion.div>
         </div>
 
-        {/* RIGHT — large vertical image (col-span-7 = 70%) */}
+        {/* RIGHT — vertical image (col-span-4 = 40%, smaller than before) */}
         <motion.div
           initial={{ opacity: 0, scale: 1.04 }}
           animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.04 }}
           transition={{ duration: 1.6, ease: 'easeOut' }}
-          className="lg:col-span-7 order-1 lg:order-2"
+          className="lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-28"
         >
-          <div className="relative aspect-[4/5] overflow-hidden bg-ink/5">
+          <div className="relative aspect-[4/5] overflow-hidden bg-ink/5 max-w-sm lg:max-w-none mx-auto">
             <Image
               src={COLUMN_IMAGE}
               alt="The saltwater pool framed by the jungle at House of Shakti"
               fill
-              sizes="(max-width: 1024px) 100vw, 65vw"
+              sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover"
               priority
             />
@@ -202,19 +264,19 @@ function VisitSection() {
           transition={{ duration: 1.0, ease: 'easeOut' }}
           className="border-t border-ink/10 py-10 lg:py-12"
         >
-          <h2 className="font-display font-light text-ink text-lg lg:text-xl leading-snug">
+          <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
             Visit
           </h2>
-          <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-6">
+          <p className="font-body text-base text-ink leading-relaxed max-w-2xl mt-6">
             House of Shakti is hidden in the canopy of the Nicoya Peninsula,
             five minutes from Playa Hermosa, Santa Teresa.
           </p>
 
           {/* Address block — TODO: confirm full street address with Nancy */}
           <address className="not-italic space-y-1 mt-6">
-            <p className="font-body text-sm text-ink">House of Shakti</p>
-            <p className="font-body text-sm text-ink">Santa Teresa</p>
-            <p className="font-body text-sm text-ink">Puntarenas, Costa Rica</p>
+            <p className="font-body text-base text-ink">House of Shakti</p>
+            <p className="font-body text-base text-ink">Santa Teresa</p>
+            <p className="font-body text-base text-ink">Puntarenas, Costa Rica</p>
           </address>
 
           <div className="mt-6">
@@ -244,10 +306,10 @@ function PressSection() {
           transition={{ duration: 1.0, ease: 'easeOut' }}
           className="border-t border-b border-ink/10 py-10 lg:py-12"
         >
-          <h2 className="font-display font-light text-ink text-lg lg:text-xl leading-snug">
+          <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
             Press &amp; Media Enquiries
           </h2>
-          <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-6">
+          <p className="font-body text-base text-ink leading-relaxed max-w-2xl mt-6">
             For press, media, and editorial enquiries.
           </p>
           <div className="mt-6">
