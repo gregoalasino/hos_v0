@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -82,10 +82,12 @@ export default function ReservasClient({
   upsellMap: Record<string, UpsellInfo>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Filters
-  const [search, setSearch] = useState('');
+  // Filters — `?q=` pre-fills the search (e.g. deep-linked from Packs to
+  // reconcile a customer's bookings against their pack).
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
   const [statusFilter, setStatusFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
   const [fromDate, setFromDate] = useState(''); // YYYY-MM-DD, filters on booking date

@@ -32,21 +32,21 @@ export default function AdminLoginPage() {
       });
 
       if (authError) {
-        setError('Email o contraseña incorrectos.');
+        setError('Incorrect email or password.');
         return;
       }
 
       const role = data.user?.user_metadata?.role;
       if (role !== 'admin') {
         await supabase.auth.signOut();
-        setError('Esta cuenta no tiene acceso al panel de administración.');
+        setError('This account does not have access to the admin panel.');
         return;
       }
 
       router.push('/admin');
       router.refresh();
     } catch {
-      setError('Ocurrió un error. Intentá de nuevo.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
               className="w-8 h-8 object-contain"
             />
           </div>
-          <h1 className="font-body text-2xl font-normal text-black">Panel Admin</h1>
+          <h1 className="font-body text-2xl font-normal text-black">Admin Panel</h1>
           <p className="font-body text-sm text-ink/50 mt-1">House of Shakti</p>
         </div>
 
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="password" className="font-body text-[10px] font-medium text-ink/50 uppercase tracking-[0.15em]">
-                Contraseña
+                Password
               </Label>
               <div className="relative">
                 <Input
@@ -130,15 +130,15 @@ export default function AdminLoginPage() {
               disabled={loading}
             >
               {loading
-                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Ingresando…</>
-                : 'Ingresar'
+                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Signing in…</>
+                : 'Sign in'
               }
             </Button>
           </form>
         </div>
 
         <p className="text-center font-body text-xs text-ink/40 mt-6">
-          House of Shakti · Sistema de administración
+          House of Shakti · Admin system
         </p>
       </div>
     </div>
