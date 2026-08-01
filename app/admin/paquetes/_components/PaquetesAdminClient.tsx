@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, Check, Mail, X, Copy, CalendarClock } from 'lucide-react';
+import { Package, Check, Mail, X, Copy, CalendarClock, Users, ArrowRight } from 'lucide-react';
 import type { PackPurchase } from '@/lib/queries/packs';
-import type { LinkedPendingBooking } from '@/types';
+import type { PackConfirmationReminder } from '@/types';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Badge } from '@/components/admin/Badge';
 import { EmptyState } from '@/components/admin/EmptyState';
@@ -19,9 +20,10 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Reminder shown after confirming a pack that still has a pending class
-  // booking (cash/Venmo) — prompts the admin to confirm that booking too.
-  const [reminder, setReminder] = useState<LinkedPendingBooking | null>(null);
+  // Reminder shown after confirming ANY pack payment: prompts the admin to
+  // cross-check the Bookings section for this customer so pack usage stays
+  // accurate. Includes a one-click confirm when a linked booking exists.
+  const [reminder, setReminder] = useState<PackConfirmationReminder | null>(null);
   const [confirmingBooking, setConfirmingBooking] = useState(false);
 
   function flash(msg: string) {
@@ -40,27 +42,44 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
             ? `Payment confirmed — code ${res.code} emailed.`
             : `Payment confirmed — code ${res.code}. Email not sent (configure RESEND_API_KEY, then resend).`,
         );
-        router.refresh();
-        // If this pack was bought together with a class booking that's still
-        // pending, remind the admin to confirm it so a credit is redeemed.
-        if (res.linkedBooking) setReminder(res.linkedBooking);
+        // Always remind the admin to reconcile this customer against Bookings.
+        // The list is refreshed when the reminder is dismissed (deferring the
+        // refresh keeps it from racing the modal open).
+        if (res.customer) {
+          setReminder({ customer: res.customer, linkedBooking: res.linkedBooking ?? null });
+        } else {
+          router.refresh();
+        }
       } else {
         flash('Could not confirm payment.');
       }
     });
   }
 
+  // Dismiss the reminder and refresh the list so the confirmed pack updates.
+  function closeReminder() {
+    setReminder(null);
+    router.refresh();
+  }
+
   function handleConfirmLinkedBooking() {
-    if (!reminder) return;
+    if (!reminder?.linkedBooking) return;
+    const bookingId = reminder.linkedBooking.id;
     setConfirmingBooking(true);
     startTransition(async () => {
-      await confirmBooking(reminder.id);
+      await confirmBooking(bookingId);
       setConfirmingBooking(false);
       setReminder(null);
       flash('Class booking confirmed — pack credit redeemed.');
       router.refresh();
     });
   }
+
+  // Deep-link to Bookings pre-filtered by this customer's email so the admin can
+  // compare and reconcile pack usage.
+  const bookingsHref = reminder
+    ? `/admin/reservas?q=${encodeURIComponent(reminder.customer.email)}`
+    : '/admin/reservas';
 
   function handleResend(id: string) {
     setBusyId(id);
@@ -218,44 +237,83 @@ export default function PaquetesAdminClient({ purchases }: { purchases: PackPurc
         </div>
       )}
 
-      {/* ── Reminder: confirm the linked class booking ─────────────────────── */}
+      {/* ── Reminder: reconcile this customer against Bookings ─────────────── */}
       <Modal
         isOpen={!!reminder}
-        onClose={() => setReminder(null)}
-        title="One more step — confirm the class booking"
-        subtitle="This pack was bought together with a class reservation."
+        onClose={closeReminder}
+        title="Payment confirmed — now check Bookings"
+        subtitle="Reconcile this customer so the pack usage stays accurate."
         footer={
           <>
-            <Button variant="secondary" onClick={() => setReminder(null)} disabled={confirmingBooking}>
-              I&apos;ll do it later
+            <Button variant="secondary" onClick={closeReminder} disabled={confirmingBooking}>
+              Done
             </Button>
-            <Button
-              variant="primary"
-              icon={<Check width={16} height={16} strokeWidth={1.5} />}
-              onClick={handleConfirmLinkedBooking}
-              loading={confirmingBooking}
-            >
-              Confirm booking now
-            </Button>
+            {reminder?.linkedBooking ? (
+              <Button
+                variant="primary"
+                icon={<Check width={16} height={16} strokeWidth={1.5} />}
+                onClick={handleConfirmLinkedBooking}
+                loading={confirmingBooking}
+              >
+                Confirm booking now
+              </Button>
+            ) : (
+              <Link href={bookingsHref} className="inline-flex">
+                <Button
+                  variant="primary"
+                  icon={<ArrowRight width={16} height={16} strokeWidth={1.5} />}
+                >
+                  Go to Bookings
+                </Button>
+              </Link>
+            )}
           </>
         }
       >
         <div className="space-y-4">
+          {/* Customer to match */}
           <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-ink/10">
-            <CalendarClock width={18} height={18} strokeWidth={1.5} className="text-ink/50 flex-shrink-0 mt-0.5" />
+            <Users width={18} height={18} strokeWidth={1.5} className="text-ink/50 flex-shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="font-body text-sm font-medium text-ink">{reminder?.className}</p>
-              <p className="font-mono text-xs text-ink/60 mt-1">{reminder?.reference}</p>
+              <p className="font-body text-sm font-medium text-ink">
+                {reminder?.customer.firstName} {reminder?.customer.lastName}
+              </p>
+              <p className="font-body text-xs text-ink/60 mt-0.5">{reminder?.customer.email}</p>
             </div>
           </div>
+
           <p className="font-body text-sm text-ink/70 leading-relaxed">
-            The class reservation paid with this pack is still <strong>pending</strong>. Confirm it
-            so the pack registers its first use (e.g. 1/5) and the student&apos;s spot is secured.
+            Go to <strong>Bookings</strong> and match this customer against their class
+            reservations, then confirm each one so the pack&apos;s usage (e.g. 1/5, 2/5) stays
+            up to date. Cash and Venmo need this manual check; card payments (Tilopay) reconcile
+            automatically.
           </p>
-          <p className="font-body text-xs text-ink/50 leading-relaxed">
-            Card payments (Tilopay) confirm this automatically. Cash and Venmo need your confirmation
-            — otherwise the pack keeps showing 0 uses and the booking stays pending in Bookings.
-          </p>
+
+          {reminder?.linkedBooking ? (
+            <div className="flex items-start gap-3 p-4 border border-burgundy/20 bg-burgundy/[0.04]">
+              <CalendarClock width={18} height={18} strokeWidth={1.5} className="text-burgundy flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="font-body text-xs text-ink/60">
+                  This pack was bought with a class booking that&apos;s still pending:
+                </p>
+                <p className="font-body text-sm font-medium text-ink mt-1">
+                  {reminder.linkedBooking.className}
+                </p>
+                <p className="font-mono text-xs text-ink/60 mt-0.5">{reminder.linkedBooking.reference}</p>
+                <p className="font-body text-xs text-ink/60 mt-2">
+                  Confirm it here to redeem the first credit, or review it in Bookings.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <Link
+              href={bookingsHref}
+              className="inline-flex items-center gap-1.5 font-body text-sm text-burgundy hover:opacity-70 transition-opacity"
+            >
+              Open this customer in Bookings
+              <ArrowRight width={14} height={14} strokeWidth={1.5} />
+            </Link>
+          )}
         </div>
       </Modal>
     </div>

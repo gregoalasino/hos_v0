@@ -126,6 +126,7 @@ export async function confirmPackPayment(
   code?: string;
   emailSent?: boolean;
   error?: string;
+  customer?: { firstName: string; lastName: string; email: string };
   linkedBooking?: LinkedPendingBooking | null;
 }> {
   const supabase = await createServiceClient();
@@ -137,10 +138,18 @@ export async function confirmPackPayment(
     .single();
 
   if (fetchError || !purchase) return { ok: false, error: 'not_found' };
+
+  const customer = {
+    firstName: purchase.first_name,
+    lastName: purchase.last_name,
+    email: purchase.email,
+  };
+
   if (purchase.status === 'paid' && purchase.code) {
     return {
       ok: true,
       code: purchase.code,
+      customer,
       linkedBooking: await findLinkedPendingBooking(supabase, id),
     };
   }
@@ -180,6 +189,7 @@ export async function confirmPackPayment(
     ok: true,
     code,
     emailSent: emailResult.sent,
+    customer,
     linkedBooking: await findLinkedPendingBooking(supabase, id),
   };
 }

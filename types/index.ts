@@ -121,6 +121,15 @@ export type ClassInstancePayload = {
 // pack (cash/Venmo). Surfaced to remind the admin to confirm it too.
 export type LinkedPendingBooking = { id: string; reference: string; className: string };
 
+// Shown after confirming a pack payment: reminds the admin to cross-check the
+// Bookings section against this customer so pack usage stays accurate. If the
+// pack was bought together with a class booking, that booking is included so it
+// can be confirmed in one click.
+export type PackConfirmationReminder = {
+  customer: { firstName: string; lastName: string; email: string };
+  linkedBooking: LinkedPendingBooking | null;
+};
+
 export type RetreatSubmission = {
   id: string;
   retreat_name: string;
