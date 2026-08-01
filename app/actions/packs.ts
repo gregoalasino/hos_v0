@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createServiceClient } from '@/lib/supabase/server';
 import { sendPackCodeEmail } from '@/lib/email';
 import { createPayment } from '@/lib/tilopay';
+import type { LinkedPendingBooking } from '@/types';
 
 export type PackPurchaseInput = {
   packId: string;
@@ -97,9 +98,36 @@ export async function startPackCheckout(
 
 // ── Step 2 — payment confirmed → generate code + email it ─────────────────────
 // This is the seam the Tilopay webhook will call instead of the admin action.
+// LinkedPendingBooking lives in @/types — 'use server' modules may only export
+// async functions. It's the pending class booking bought together with this
+// pack (cash/Venmo); confirming it is what redeems the pack's first credit.
+async function findLinkedPendingBooking(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  packPurchaseId: string,
+): Promise<LinkedPendingBooking | null> {
+  const { data } = await supabase
+    .from('bookings')
+    .select('id, booking_reference, classes(name)')
+    .eq('pack_purchase_id', packPurchaseId)
+    .eq('payment_status', 'pending')
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    reference: data.booking_reference,
+    className: (data.classes as unknown as { name: string } | null)?.name ?? 'Class',
+  };
+}
+
 export async function confirmPackPayment(
   id: string,
-): Promise<{ ok: boolean; code?: string; emailSent?: boolean; error?: string }> {
+): Promise<{
+  ok: boolean;
+  code?: string;
+  emailSent?: boolean;
+  error?: string;
+  linkedBooking?: LinkedPendingBooking | null;
+}> {
   const supabase = await createServiceClient();
 
   const { data: purchase, error: fetchError } = await supabase
@@ -110,7 +138,11 @@ export async function confirmPackPayment(
 
   if (fetchError || !purchase) return { ok: false, error: 'not_found' };
   if (purchase.status === 'paid' && purchase.code) {
-    return { ok: true, code: purchase.code };
+    return {
+      ok: true,
+      code: purchase.code,
+      linkedBooking: await findLinkedPendingBooking(supabase, id),
+    };
   }
 
   // Generate a unique code.
@@ -144,7 +176,12 @@ export async function confirmPackPayment(
   });
 
   revalidatePath('/admin/paquetes');
-  return { ok: true, code, emailSent: emailResult.sent };
+  return {
+    ok: true,
+    code,
+    emailSent: emailResult.sent,
+    linkedBooking: await findLinkedPendingBooking(supabase, id),
+  };
 }
 
 // ── Resend the code email (e.g. after the RESEND key is configured) ───────────

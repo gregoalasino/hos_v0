@@ -4,6 +4,7 @@ export type YogaClass = {
   slug: string;
   description: string;
   instructor: string;
+  instructorId?: string | null;
   startsAt: Date;
   durationMinutes: number;
   capacity: number;
@@ -102,6 +103,24 @@ export type ClassPack = {
   is_active: boolean;
 };
 
+// Payload to create/edit a single dated class session (not a recurring
+// template). Shared between the calendar modal and the server actions.
+export type ClassInstancePayload = {
+  name: string;
+  description: string | null;
+  instructor_id: string | null;
+  starts_at: string; // ISO instant
+  duration_minutes: number;
+  capacity: number;
+  price_dropin_usd: number;
+  location: string;
+  is_active: boolean;
+};
+
+// A class booking still awaiting confirmation that was purchased together with a
+// pack (cash/Venmo). Surfaced to remind the admin to confirm it too.
+export type LinkedPendingBooking = { id: string; reference: string; className: string };
+
 export type RetreatSubmission = {
   id: string;
   retreat_name: string;
@@ -147,6 +166,7 @@ export function dbClassToYogaClass(row: DbClass): YogaClass {
     slug: row.slug,
     description: row.description ?? '',
     instructor: row.instructors?.name ?? '',
+    instructorId: row.instructor_id ?? null,
     startsAt: new Date(row.starts_at),
     durationMinutes: row.duration_minutes,
     capacity: row.capacity,

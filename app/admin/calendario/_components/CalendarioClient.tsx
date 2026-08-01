@@ -19,12 +19,19 @@ import {
   Trash2,
   CalendarX,
 } from 'lucide-react';
-import type { YogaClass, Booking } from '@/types';
-import { deleteClass } from '@/app/actions/classes';
+import type { YogaClass, Booking, ClassInstancePayload } from '@/types';
+import {
+  deleteClass,
+  createClassInstance,
+  updateClassInstance,
+} from '@/app/actions/classes';
 import { Button } from '@/components/admin/Button';
 import { Badge } from '@/components/admin/Badge';
 import { EmptyState } from '@/components/admin/EmptyState';
 import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
+import CalendarClassModal, {
+  type EditableInstance,
+} from '@/components/admin/CalendarClassModal';
 
 // ─── Category palette — mirrors /app/yoga/YogaPageClient.tsx exactly so the
 // admin calendar reads the same color language students see on the public site.
@@ -71,6 +78,25 @@ function classTopPx(startsAt: string): number {
   return Math.max(0, (minutes / 60) * HOUR_PX);
 }
 
+// Local yyyy-MM-dd for a day (calendar works in local time).
+function localDateStr(day: Date): string {
+  const y = day.getFullYear();
+  const m = String(day.getMonth() + 1).padStart(2, '0');
+  const d = String(day.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// Converts a vertical click offset in a day column into a HH:mm start time,
+// snapped to 30-minute increments and clamped to the visible grid range.
+function timeFromOffsetY(offsetY: number): string {
+  const totalMin = GRID_START_HOUR * 60 + (offsetY / HOUR_PX) * 60;
+  const snapped = Math.round(totalMin / 30) * 30;
+  const clamped = Math.min(GRID_END_HOUR * 60, Math.max(GRID_START_HOUR * 60, snapped));
+  const hh = Math.floor(clamped / 60);
+  const mm = clamped % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
 // Map payment status → Badge variant + display label.
 function paymentBadgeFor(status: string): {
   variant: 'active' | 'warning' | 'inactive' | 'destructive' | 'neutral';
@@ -98,9 +124,11 @@ function paymentBadgeFor(status: string): {
 export default function CalendarioClient({
   initialClasses,
   initialBookings,
+  instructors,
 }: {
   initialClasses: SerializedClass[];
   initialBookings: SerializedBooking[];
+  instructors: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [weekOffset, setWeekOffset] = useState(0);
@@ -108,6 +136,13 @@ export default function CalendarioClient({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Create / edit class modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [editInstance, setEditInstance] = useState<EditableInstance | undefined>();
+  const [createPrefill, setCreatePrefill] = useState<{ date: string; time: string } | undefined>();
+  const [isSaving, setIsSaving] = useState(false);
 
   // Mobile: which day index (0–6) is currently visible. Defaults to today if
   // today is within the displayed week, otherwise 0 (Monday).
@@ -187,6 +222,48 @@ export default function CalendarioClient({
     }
   }
 
+  // ── Create / edit ──────────────────────────────────────────────────────────
+  function openCreate(prefill?: { date: string; time: string }) {
+    setModalMode('create');
+    setEditInstance(undefined);
+    setCreatePrefill(prefill);
+    setModalOpen(true);
+  }
+
+  function openEditFromDrawer() {
+    if (!selectedClass) return;
+    setModalMode('edit');
+    setEditInstance({
+      name: selectedClass.name,
+      description: selectedClass.description,
+      instructorId: selectedClass.instructorId,
+      startsAt: selectedClass.startsAt,
+      durationMinutes: selectedClass.durationMinutes,
+      capacity: selectedClass.capacity,
+      priceUsd: selectedClass.priceUsd,
+      location: selectedClass.location,
+      isActive: selectedClass.isActive,
+    });
+    setDrawerOpen(false);
+    setModalOpen(true);
+  }
+
+  async function handleSaveClass(payload: ClassInstancePayload) {
+    setIsSaving(true);
+    try {
+      if (modalMode === 'edit' && selectedClass) {
+        await updateClassInstance(selectedClass.id, payload);
+      } else {
+        await createClassInstance(payload);
+      }
+      setModalOpen(false);
+      setSelectedClass(null);
+      router.refresh();
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className="px-6 lg:px-10 py-8 lg:py-10">
       {/* ─── Header row ─────────────────────────────────────────────────── */}
@@ -222,13 +299,19 @@ export default function CalendarioClient({
         </div>
 
         {/* Manage the recurring schedule / add a one-off class */}
-        <div>
+        <div className="flex items-center gap-2 md:gap-3">
           <Button
             variant="secondary"
-            icon={<Plus width={16} height={16} strokeWidth={1.5} />}
             onClick={() => router.push('/admin/clases')}
           >
             Manage classes
+          </Button>
+          <Button
+            variant="primary"
+            icon={<Plus width={16} height={16} strokeWidth={1.5} />}
+            onClick={() => openCreate()}
+          >
+            New class
           </Button>
         </div>
       </div>
@@ -238,14 +321,14 @@ export default function CalendarioClient({
         <EmptyState
           icon={<CalendarX strokeWidth={1} />}
           heading="No classes this week"
-          description="Classes appear automatically from the recurring weekly schedule. Manage the schedule or add a one-off class."
+          description="Classes appear automatically from the recurring weekly schedule. Add a one-off class for this week, or manage the recurring schedule."
           action={
             <Button
               variant="primary"
               icon={<Plus width={16} height={16} strokeWidth={1.5} />}
-              onClick={() => router.push('/admin/clases')}
+              onClick={() => openCreate({ date: localDateStr(weekDays[0]), time: '10:00' })}
             >
-              Manage classes
+              New class
             </Button>
           }
         />
@@ -261,6 +344,9 @@ export default function CalendarioClient({
             <MobileDayList
               classes={classMap.get(mobileDayIdx) ?? []}
               onSelect={openDrawer}
+              onCreate={() =>
+                openCreate({ date: localDateStr(weekDays[mobileDayIdx]), time: '10:00' })
+              }
             />
           </div>
 
@@ -270,6 +356,9 @@ export default function CalendarioClient({
               days={weekDays}
               classMap={classMap}
               onSelect={openDrawer}
+              onCreate={(day, offsetY) =>
+                openCreate({ date: localDateStr(day), time: timeFromOffsetY(offsetY) })
+              }
             />
           </div>
         </>
@@ -307,6 +396,7 @@ export default function CalendarioClient({
                 occupied={occupied}
                 occupancyPct={occupancyPct}
                 onClose={() => setDrawerOpen(false)}
+                onEdit={openEditFromDrawer}
                 onDelete={() => setDeleteOpen(true)}
               />
             </motion.aside>
@@ -324,6 +414,18 @@ export default function CalendarioClient({
         confirmLabel="Delete class"
         loading={isDeleting}
       />
+
+      {/* ─── Create / edit class modal ──────────────────────────────────── */}
+      <CalendarClassModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onSave={handleSaveClass}
+        mode={modalMode}
+        instructors={instructors}
+        instance={editInstance}
+        prefill={createPrefill}
+        loading={isSaving}
+      />
     </div>
   );
 }
@@ -335,10 +437,12 @@ function DesktopWeekGrid({
   days,
   classMap,
   onSelect,
+  onCreate,
 }: {
   days: Date[];
   classMap: Map<number, SerializedClass[]>;
   onSelect: (c: SerializedClass) => void;
+  onCreate: (day: Date, offsetY: number) => void;
 }) {
   return (
     <div className="grid grid-cols-[60px_repeat(7,minmax(120px,1fr))] gap-2 lg:gap-3 min-w-[800px]">
@@ -366,8 +470,13 @@ function DesktopWeekGrid({
       {days.map((day, dayIdx) => (
         <div
           key={day.toISOString()}
-          className="relative"
+          className="relative cursor-pointer group/col"
           style={{ height: GRID_HEIGHT }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            onCreate(day, e.clientY - rect.top);
+          }}
+          title="Click to add a class"
         >
           {/* Hourly horizontal lines */}
           {Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, i) => (
@@ -426,7 +535,10 @@ function CalendarClassCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation(); // don't trigger the column's "add class" handler
+        onClick();
+      }}
       className="absolute left-0.5 right-0.5 p-3 text-left overflow-hidden border-l-[3px] transition-colors duration-200 cursor-pointer"
       style={{
         top,
@@ -514,15 +626,31 @@ function MobileDaySelector({
 function MobileDayList({
   classes,
   onSelect,
+  onCreate,
 }: {
   classes: SerializedClass[];
   onSelect: (c: SerializedClass) => void;
+  onCreate: () => void;
 }) {
+  const addButton = (
+    <button
+      type="button"
+      onClick={onCreate}
+      className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-ink/25 font-body text-sm text-ink/60 hover:border-ink/50 hover:text-ink transition-colors duration-200 cursor-pointer"
+    >
+      <Plus width={16} height={16} strokeWidth={1.5} />
+      Add class
+    </button>
+  );
+
   if (classes.length === 0) {
     return (
-      <p className="font-body text-sm text-ink/40 italic py-12 text-center">
-        No classes scheduled for this day.
-      </p>
+      <div className="space-y-4">
+        <p className="font-body text-sm text-ink/40 italic py-8 text-center">
+          No classes scheduled for this day.
+        </p>
+        {addButton}
+      </div>
     );
   }
 
@@ -558,6 +686,7 @@ function MobileDayList({
           </button>
         );
       })}
+      <div className="pt-1">{addButton}</div>
     </div>
   );
 }
@@ -571,6 +700,7 @@ function DrawerContent({
   occupied,
   occupancyPct,
   onClose,
+  onEdit,
   onDelete,
 }: {
   clase: SerializedClass;
@@ -578,6 +708,7 @@ function DrawerContent({
   occupied: number;
   occupancyPct: number;
   onClose: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   const cat = categoryFor(clase.name);
@@ -673,11 +804,10 @@ function DrawerContent({
 
         {/* Actions */}
         <div className="flex gap-3 mt-8">
-          {/* TODO: wire to the existing class edit flow when 9.4 lands. For
-              now this is a placeholder — Nancy can still edit via /admin/clases. */}
           <Button
             variant="secondary"
             icon={<Pencil width={16} height={16} strokeWidth={1.5} />}
+            onClick={onEdit}
           >
             Edit
           </Button>
