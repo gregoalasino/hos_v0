@@ -1,16 +1,17 @@
-import { getAllClasses } from '@/lib/queries/classes';
+import { getAllClasses, getInstructors } from '@/lib/queries/classes';
 import { getAllBookings } from '@/lib/queries/bookings';
 import { ensureUpcomingWeeks } from '@/app/actions/classes';
 import CalendarioClient from './_components/CalendarioClient';
 import type { YogaClass, Booking } from '@/types';
 
 export default async function AdminCalendarioPage() {
-  // Keep this/next week's sessions materialized from the recurring schedule.
+  // Materialize the recurring schedule for the next ~3 months.
   await ensureUpcomingWeeks();
 
-  const [classes, bookings] = await Promise.all([
+  const [classes, bookings, instructors] = await Promise.all([
     getAllClasses(),
     getAllBookings(),
+    getInstructors(),
   ]);
 
   const serializedClasses = classes.map(c => ({
@@ -27,6 +28,7 @@ export default async function AdminCalendarioPage() {
     <CalendarioClient
       initialClasses={serializedClasses}
       initialBookings={serializedBookings}
+      instructors={instructors}
     />
   );
 }

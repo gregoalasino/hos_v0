@@ -33,9 +33,17 @@ const navItems: NavItem[] = [
   { href: '/admin/refers',     label: 'Promo codes', icon: Ticket },
 ];
 
+type PendingCounts = Partial<Record<string, number>>;
+
 // ─── Inner content — used by both the desktop fixed sidebar and the mobile
 // drawer. `onNavigate` lets the parent close the drawer when a link is tapped.
-function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarBody({
+  onNavigate,
+  pendingCounts,
+}: {
+  onNavigate?: () => void;
+  pendingCounts?: PendingCounts;
+}) {
   const pathname = usePathname();
 
   const isActive = (item: NavItem): boolean => {
@@ -61,6 +69,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           {navItems.map((item) => {
             const active = isActive(item);
             const Icon = item.icon;
+            const count = pendingCounts?.[item.href] ?? 0;
+            const hasPending = count > 0;
             return (
               <li key={item.href}>
                 <Link
@@ -75,17 +85,27 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     ${
                       active
                         ? 'bg-black/20 text-cream border-cream'
-                        : 'text-cream/70 border-transparent hover:bg-black/10 hover:text-cream'
+                        : hasPending
+                          ? 'text-cream border-transparent bg-black/10 hover:bg-black/15'
+                          : 'text-cream/70 border-transparent hover:bg-black/10 hover:text-cream'
                     }
                   `}
                 >
                   <Icon
-                    className={active ? 'text-cream' : 'text-cream/70'}
+                    className={active || hasPending ? 'text-cream' : 'text-cream/70'}
                     width={18}
                     height={18}
                     strokeWidth={1.5}
                   />
                   <span>{item.label}</span>
+                  {hasPending && (
+                    <span
+                      aria-label={`${count} pending`}
+                      className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-cream text-burgundy font-body text-xs font-semibold rounded-full leading-none"
+                    >
+                      {count > 99 ? '99+' : count}
+                    </span>
+                  )}
                 </Link>
               </li>
             );
@@ -151,7 +171,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 // Renders all three modes from a single component:
 //  - md+: fixed desktop sidebar
 //  - <md: fixed hamburger button (top-left of viewport) + slide-in drawer
-export function Sidebar() {
+export function Sidebar({ pendingCounts }: { pendingCounts?: PendingCounts }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Close drawer on Escape.
@@ -181,7 +201,7 @@ export function Sidebar() {
         className="hidden md:flex fixed left-0 top-0 h-screen w-[260px] z-30"
         aria-label="Admin sidebar"
       >
-        <SidebarBody />
+        <SidebarBody pendingCounts={pendingCounts} />
       </aside>
 
       {/* Mobile hamburger button (<md) — fixed top-left of viewport */}
@@ -224,7 +244,7 @@ export function Sidebar() {
               className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-[260px]"
             >
               <div className="relative h-full">
-                <SidebarBody onNavigate={() => setDrawerOpen(false)} />
+                <SidebarBody onNavigate={() => setDrawerOpen(false)} pendingCounts={pendingCounts} />
 
                 {/* Close button inside drawer (top-right) */}
                 <button
