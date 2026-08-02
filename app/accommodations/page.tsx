@@ -1,22 +1,16 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Script from 'next/script';
 import { motion, Variants, useInView } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
 import { AccommodationsFAQ } from '@/components/accommodations/AccommodationsFAQ';
+import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabilityLink';
 
-// ─── Cloudbeds immersive widget ──────────────────────────────────────────────
-// Public property embed (same IDs used on the client's current WIX site).
-// `zE6Wy8` is the public property/widget id — not a credential. The immersive
-// loader script binds a click handler to any element carrying `data-be-url`,
-// opening the booking engine as an overlay instead of navigating away.
-const CLOUDBEDS_PROPERTY_CODE = 'zE6Wy8';
-const CLOUDBEDS_URL = `https://us2.cloudbeds.com/reservation/${CLOUDBEDS_PROPERTY_CODE}`;
-const CLOUDBEDS_IMMERSIVE_SRC = `https://us2.cloudbeds.com/widget/load/${CLOUDBEDS_PROPERTY_CODE}/immersive`;
+// The Cloudbeds immersive loader is mounted once, site-wide, in app/layout.tsx;
+// it exposes window.openImmersiveExperiencePopup, which CheckAvailabilityLink calls.
 
 // ─── YouTube placeholder (same as home & yoga heroes) ────────────────────────
 const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
@@ -232,40 +226,6 @@ function SuiteCarousel({
         </div>
       )}
     </div>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// REUSABLE: shared Cloudbeds CTA — editorial underline-link style
-// ═════════════════════════════════════════════════════════════════════════════
-function CheckAvailabilityLink({ label = 'Check availability', className = 'mt-6' }: { label?: string; className?: string }) {
-  // CLOUDBEDS_BOOK_NOW_TRIGGER — the immersive loader script (mounted once in
-  // AccommodationsPage) exposes `window.openImmersiveExperiencePopup`, which
-  // opens the booking engine as an overlay on top of the page. We keep the
-  // anchor's `href` as a graceful fallback: if the widget script hasn't loaded
-  // (blocked / offline), the click just follows the link to the reservation
-  // page. Middle-click / cmd-click also still open the reservation in a new tab.
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Let the browser handle modified clicks (new tab, etc.) via the href.
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    const openPopup = window.openImmersiveExperiencePopup;
-    if (typeof openPopup === 'function') {
-      e.preventDefault();
-      openPopup({ propertyCode: CLOUDBEDS_PROPERTY_CODE });
-    }
-    // else: fall through to the href (new-tab reservation page).
-  };
-
-  return (
-    <a
-      href={CLOUDBEDS_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={handleClick}
-      className={`inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer ${className}`}
-    >
-      {label}
-    </a>
   );
 }
 
@@ -547,10 +507,8 @@ function FinalCTA() {
 export default function AccommodationsPage() {
   return (
     <main className="bg-warm-white overflow-hidden">
-      {/* Cloudbeds immersive booking widget — loads once and exposes
-          window.openImmersiveExperiencePopup, which every CheckAvailabilityLink
-          calls on click to open the booking engine as an overlay. */}
-      <Script src={CLOUDBEDS_IMMERSIVE_SRC} strategy="afterInteractive" />
+      {/* The Cloudbeds immersive booking widget is mounted site-wide in
+          app/layout.tsx; every CheckAvailabilityLink calls the popup it exposes. */}
       <Navigation />
       <AccommodationsHero />
       <AccommodationsIntro />

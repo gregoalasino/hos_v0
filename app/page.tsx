@@ -1,14 +1,15 @@
 import { Navigation } from "@/components/landing/navigation";
 import { Hero } from "@/components/landing/hero";
-import { Introduction } from "@/components/landing/introduction";
+// Introduction ("We are not in the business of more.") removed from home — file preserved
+// import { Introduction } from "@/components/landing/introduction";
 import { Pillars } from "@/components/landing/pillars";
-import { ShaktiExperienceTeaser } from "@/components/landing/shakti-experience-teaser";
-import { YogaTeacherTrainingTeaser } from "@/components/landing/yoga-teacher-training-teaser";
+import { ReturnToYourself } from "@/components/landing/return-to-yourself";
 import { SeasonalExperiences } from "@/components/landing/seasonal-experiences";
 import { Gallery } from "@/components/landing/gallery";
 // TODO: Testimonials section removed from home — file preserved
 // import { Testimonials } from "@/components/landing/testimonials";
 import { HostYourRetreat } from "@/components/landing/HostYourRetreat";
+import { QuoteBreak } from "@/components/landing/QuoteBreak";
 import { Ornament } from "@/components/landing/ornament";
 import { Footer } from "@/components/landing/footer";
 
@@ -17,11 +18,18 @@ export default function Home() {
     <main className="overflow-hidden">
       <Navigation />
       <Hero />
-      <Introduction />
-      <SeasonalExperiences />
+      {/* Brand statement + scattered photos, right below the hero video */}
+      <ReturnToYourself />
       <Pillars />
-      <ShaktiExperienceTeaser />
-      <YogaTeacherTrainingTeaser />
+      {/* Wide, low transition band with a quote (re:center-style strip) */}
+      <QuoteBreak
+        size="short"
+        image="/images/sanctuary/271A0778_websize%201.webp"
+        quote="A Sanctuary, just like hotel but with family"
+        author="House of Shakti"
+        role="Santa Teresa, Costa Rica"
+      />
+      <SeasonalExperiences />
       <HostYourRetreat />
       {/* Rhythm mark — a quiet breath between sections */}
       <div className="bg-warm-white flex justify-center">

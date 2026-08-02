@@ -10,6 +10,7 @@ const sitemapLinks: { label: string; href: string }[] = [
   { label: 'Yoga classes', href: '/yoga' },
   { label: 'Accommodations', href: '/accommodations' },
   { label: 'Retreats', href: '/retreats' },
+  { label: 'Host your retreat', href: '/host-your-retreat' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'Contact', href: '/contact' },
 ];

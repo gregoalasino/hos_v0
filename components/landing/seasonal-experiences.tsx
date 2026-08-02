@@ -12,15 +12,15 @@ const experiences = [
     description:
       "An all-inclusive immersion with accommodation, daily practice, and a curated itinerary — designed for guests who want everything considered.",
     image: "/images/sanctuary/271A0822_websize%201.webp",
-    href: "/contact",
+    href: "/shakti-experience",
   },
   {
-    eyebrow: "Seasonal",
-    title: "Moon cycles in Santa Teresa",
+    eyebrow: "Yoga Teacher Training",
+    title: "The Awakened Body · RYT 200",
     description:
-      "A new moon gathering that marks the change of seasons — three nights of yoga, breathwork, and shared meals.",
-    image: "/images/yoga/NE8A7702%201.webp",
-    href: "/contact",
+      "A Tantric Yoga intensive — a 100-hour residential immersion with an optional online program, leading to a Yoga Alliance Registered 200-hour certification.",
+    image: "/images/yoga/IMG_8693%201.webp",
+    href: "/yoga-teacher-training",
   },
   {
     eyebrow: "For Two",
@@ -28,7 +28,7 @@ const experiences = [
     description:
       "Designed for couples or close friends seeking a softer pace away from the noise. Private practice, slow mornings.",
     image: "/images/sanctuary/271A0759_websize%201.webp",
-    href: "/contact",
+    href: "/accommodations",
   },
 ];
 

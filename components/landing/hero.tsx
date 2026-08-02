@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { CheckAvailabilityBar } from "./CheckAvailabilityBar";
+
 // Placeholder YouTube IDs — swap for self-hosted .mp4 when available.
 // IMPORTANT: `loop=1` only works on YouTube embeds when `playlist=<same_id>` is set.
 const VIDEO_ID_DESKTOP = "90FhvO1AvT8";
@@ -30,11 +33,11 @@ export function Hero() {
         Desktop: container with side padding, matching Aman's framing.
       */}
       {/*
-        Width rules: mobile = full-bleed (sección marcada como full-width),
-                     desktop = 80% del viewport.
+        Width rules: full-bleed edge-to-edge on every device — el video
+                     del hero ocupa todo el ancho de la pantalla.
         `mt-*` desplaza el contenido por debajo del navbar fijo, para que hero + nav = 100vh.
       */}
-      <div className="w-full md:w-[80%] mx-auto mt-16 md:mt-20">
+      <div className="w-full mx-auto mt-16 md:mt-20">
         <div
           className="
             relative overflow-hidden bg-dark
@@ -79,6 +82,36 @@ export function Hero() {
                 border-0
               "
             />
+          </div>
+
+          {/* Bottom overlay — tagline + Cloudbeds availability bar (à la RecenterLife) */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-dark/70 via-dark/20 to-transparent pointer-events-none"
+          />
+          <div className="absolute inset-x-0 bottom-0">
+            <div className="w-[85%] md:w-[88%] mx-auto pb-8 md:pb-12">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
+                className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[1.02] tracking-[-0.01em] max-w-3xl"
+              >
+                A space to reconnect to what matters
+              </motion.h1>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.0, ease: "easeOut", delay: 0.45 }}
+                className="mt-7 md:mt-9 flex flex-wrap items-center gap-x-6 gap-y-4"
+              >
+                <CheckAvailabilityBar />
+                <span className="font-body text-xs md:text-sm text-cream/80 tracking-[0.02em]">
+                  Santa Teresa, Costa Rica
+                </span>
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
