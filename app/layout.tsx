@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { LanguageProvider } from '@/contexts/language-context'
+import { SplashScreen } from '@/components/landing/SplashScreen'
+import { CLOUDBEDS_IMMERSIVE_SRC } from '@/lib/cloudbeds'
 import './globals.css'
 import Script from 'next/script';
 
@@ -46,6 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${krylon.variable} ${chalet.variable}`}>
       <body className="font-body antialiased">
+        <SplashScreen />
         <LanguageProvider>
           {children}
         </LanguageProvider>
@@ -54,6 +57,10 @@ export default function RootLayout({
           src="https://static1.cloudbeds.com/booking-engine/latest/static/js/immersive-experience/cb-immersive-experience.js"
           strategy="afterInteractive"
         />
+        {/* Per-property immersive loader — exposes window.openImmersiveExperiencePopup
+            site-wide so the hero availability bar and every CheckAvailabilityLink
+            can open the booking engine as an overlay from any page. */}
+        <Script src={CLOUDBEDS_IMMERSIVE_SRC} strategy="afterInteractive" />
       </body>
     </html>
   )

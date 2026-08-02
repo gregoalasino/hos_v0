@@ -74,7 +74,7 @@ export function Introduction() {
           initial={{ opacity: 0, y: 12 }}
           animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
           transition={{ duration: 1.2, ease: "easeOut", delay: 1.8 }}
-          className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
+          className="font-body text-ink max-w-2xl text-base md:text-lg leading-[1.8] mt-12 lg:mt-16"
         >
           House of Shakti was built around a quieter idea — that travel can
           return you to yourself rather than take you further away. Here,

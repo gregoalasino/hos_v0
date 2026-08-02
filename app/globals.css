@@ -105,6 +105,13 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Brand rule — images and buttons stay square across the public site.
+     Admin has its own scope (`.admin-scope`) and is intentionally exempt. */
+  img:not(.admin-scope img),
+  button:not(.admin-scope button) {
+    border-radius: 0 !important;
+  }
 }
 
 /* ─── Admin panel scope ──────────────────────────────────────────────
