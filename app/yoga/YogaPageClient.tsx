@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, Variants, useInView } from 'framer-motion';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import type { YogaClass } from '@/types';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
@@ -405,23 +405,37 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
           })}
         </div>
 
-        {/* Class packs entry point — practice often, save with a pack */}
-        <Link
-          href="/paquetes"
-          className="group mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-ink/15 bg-cream/30 px-6 py-5 hover:border-ink/40 transition-colors duration-200"
-        >
-          <div>
-            <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
-              Practice often?
-            </p>
-            <p className="font-body text-sm text-ink mt-1">
-              Save with a class pack of 5, 10 or 20 — book any class for free with your code.
-            </p>
+        {/* ── Class packs — high-emphasis burgundy banner ──────────────────────
+            Buy a pack directly here, then redeem class by class with the code
+            we email you. This direct purchase is card-only via Tilopay. */}
+        <div className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 lg:gap-10">
+            <div className="max-w-2xl">
+              <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight">
+                Save with a pack of 5, 10 or 20
+              </h3>
+
+              {/* Info callout — what buying here means */}
+              <div className="flex items-start gap-3 mt-5">
+                <Info className="w-4 h-4 flex-shrink-0 text-cream/80 mt-[3px]" strokeWidth={1.75} aria-hidden />
+                <p className="font-body text-sm text-cream/85 leading-relaxed">
+                  Buy your classes now and redeem them whenever you like — one class at a
+                  time. We&apos;ll email you a personal code to book any class for free.
+                  This direct purchase is by card only, processed securely through{' '}
+                  <span className="font-medium text-cream">Tilopay</span>.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/paquetes"
+              className="group inline-flex items-center justify-center gap-2 flex-shrink-0 self-start lg:self-auto bg-cream text-burgundy font-body text-sm tracking-[0.05em] px-7 py-4 hover:bg-warm-white transition-colors duration-200 whitespace-nowrap"
+            >
+              Buy class packs
+              <span className="transition-transform duration-200 group-hover:translate-x-[2px]">→</span>
+            </Link>
           </div>
-          <span className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] whitespace-nowrap group-hover:opacity-70 transition-opacity">
-            View class packs →
-          </span>
-        </Link>
+        </div>
       </div>
     </section>
   );
@@ -493,12 +507,13 @@ function YogaInstructors() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-                {instructor.discipline}
-              </p>
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
+              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
                 {instructor.name}
               </h3>
+              {/* Discipline reads as a fact line under the name, not a tag above it */}
+              <p className="font-body text-xs text-ink mt-2">
+                {instructor.discipline}
+              </p>
               <p className="font-body text-sm text-ink leading-relaxed mt-3">
                 {instructor.bio}
               </p>

@@ -121,11 +121,11 @@ const SHAKTI_SADHANA: Retreat = {
 
   // Hero
   heroImage: '/images/yoga/IMG_8420%201.webp', // TODO: retreat-specific cover photo
-  heroEyebrow: 'July 18 – 23 · 2026',
+  heroEyebrow: 'July 18 – 24 · 2026',
   heroTitle: 'Shakti Sadhana',
   heroSubhead: 'An invitation to return to the source of your vital energy.',
   heroLocation: 'Santa Teresa, Costa Rica',
-  heroDates: '6 days · 5 nights',
+  heroDates: '7 days · 6 nights',
   heroCupos: 'Intimate group',
 
   // Manifesto

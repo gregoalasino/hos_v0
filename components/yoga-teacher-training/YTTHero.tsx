@@ -34,20 +34,11 @@ export function YTTHero() {
 
           <div className="absolute inset-0 flex items-end">
             <div className="w-[85%] md:w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20">
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut' }}
-                className="font-body text-[10px] md:text-[11px] tracking-[0.3em] uppercase text-cream/80"
-              >
-                A Tantric Yoga Intensive
-              </motion.p>
-
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.1, ease: 'easeOut', delay: 0.12 }}
-                className="font-display font-light text-cream text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.01em] mt-5 md:mt-6 max-w-4xl"
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+                className="font-display font-light text-cream text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.01em] max-w-4xl"
               >
                 The Awakened Body
               </motion.h1>
@@ -55,7 +46,7 @@ export function YTTHero() {
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.22 }}
+                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
                 className="font-body text-sm md:text-base text-cream/85 leading-[1.7] mt-6 max-w-xl"
               >
                 A 100-hour immersion, with an optional 100-hour online program, leading to a Yoga
@@ -65,7 +56,7 @@ export function YTTHero() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.32 }}
+                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
                 className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-7 md:mt-8"
               >
                 {meta.map((item, i) => (
@@ -81,7 +72,7 @@ export function YTTHero() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.44 }}
+                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.32 }}
                 className="mt-9 md:mt-10"
               >
                 <Link

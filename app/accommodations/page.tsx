@@ -96,7 +96,7 @@ function AccommodationsHero() {
           <div className="absolute inset-0 hidden md:block">
             <iframe
               src={youtubeEmbedUrl(VIDEO_ID_DESKTOP)}
-              title="Suites & casita at House of Shakti"
+              title="Accommodations at House of Shakti"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen={false}
               tabIndex={-1}
@@ -112,7 +112,7 @@ function AccommodationsHero() {
           <div className="absolute inset-0 md:hidden">
             <iframe
               src={youtubeEmbedUrl(VIDEO_ID_MOBILE)}
-              title="Suites & casita at House of Shakti"
+              title="Accommodations at House of Shakti"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen={false}
               tabIndex={-1}
@@ -131,10 +131,10 @@ function AccommodationsHero() {
 
 // ═════════════════════════════════════════════════════════════════════════════
 // INTRO — short, scannable orientation (no image)
-// Sets the expectation that there are two distinct dwelling types
-// before the two cards below.
+// Sets the expectation that there are four distinct dwellings
+// before the grid below.
 // ═════════════════════════════════════════════════════════════════════════════
-const INTRO_HEADLINE = 'Two ways to stay.';
+const INTRO_HEADLINE = 'Four ways to stay.';
 
 function AccommodationsIntro() {
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -156,9 +156,9 @@ function AccommodationsIntro() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
             className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
           >
-            Four suites circle a saltwater pool at the heart of the property. La
-            Casita rests alone in the jungle — a private one-bedroom retreat, a few
-            steps further in. Five rooms in total.
+            The Main House gathers four suites around a shared heart. La Casita and
+            the Jungle Bungalow sit deeper in the greenery, each standing alone.
+            Shakti House opens to jungle and ocean from a single wide deck.
           </motion.p>
         </div>
       </div>
@@ -169,13 +169,16 @@ function AccommodationsIntro() {
 // ═════════════════════════════════════════════════════════════════════════════
 // IMAGE CAROUSEL — Aman Amanjena style: arrows right-aligned, fade between
 // images. No dots, no progress bar, no captions.
-// `aspect` is overridable so the same component serves the compact grid
-// cards (4/5) and the Casita feature row (3/4 or whatever fits).
+//
+// Default crop is 4/3 (landscape) rather than a portrait ratio: at two columns
+// the card has to fit image + copy inside one viewport, otherwise the guest
+// sees a photo and has to scroll to learn which dwelling it belongs to.
+// `aspect` stays overridable for layouts that can afford more height.
 // ═════════════════════════════════════════════════════════════════════════════
-function SuiteCarousel({
+function StayCarousel({
   images,
   alt,
-  aspect = 'aspect-[4/5]',
+  aspect = 'aspect-[4/3]',
 }: {
   images: string[];
   alt: string;
@@ -232,70 +235,78 @@ function SuiteCarousel({
 // ═════════════════════════════════════════════════════════════════════════════
 // SUITE CARD — compact card used inside the 2×2 grid
 // ═════════════════════════════════════════════════════════════════════════════
-type SuiteData = {
-  eyebrow: string;
+type StayData = {
+  // Fact line rendered UNDER the title: capacity · layout. Not an eyebrow —
+  // the guest should read the dwelling's name before its specs.
+  meta: string;
   title: string;
   description: string;
   images: string[];
 };
 
-function SuiteCard({ eyebrow, title, description, images }: SuiteData) {
+function StayCard({ meta, title, description, images }: StayData) {
   return (
     <article>
-      <SuiteCarousel images={images} alt={title} aspect="aspect-[4/5]" />
+      <StayCarousel images={images} alt={title} />
 
-      {/* Typography matched to home Pillars (compact card pattern) */}
-      <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mt-6">
-        {eyebrow}
-      </p>
-      <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mt-3 lg:mt-4">
+      {/* Typography matched to home Pillars (compact card pattern).
+          Vertical rhythm is tighter than the Pillars original: the card must
+          read as one unit inside a single viewport, so the copy block stays
+          close to the image it describes. */}
+      <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mt-5">
         {title}
       </h3>
-      <p className="font-body text-sm text-ink leading-relaxed mt-3 lg:mt-4">
+      <p className="font-body text-xs text-ink mt-2">{meta}</p>
+      <p className="font-body text-sm text-ink leading-relaxed mt-3">
         {description}
       </p>
 
-      <CheckAvailabilityLink className="mt-6 lg:mt-8" />
+      <CheckAvailabilityLink className="mt-4 lg:mt-5" />
     </article>
   );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SUITES GRID — 2×2 desktop, single column mobile
+// STAYS GRID — 2×2 desktop, single column mobile.
+// The four dwellings, in the order Nancy presents them in the accommodations
+// brief. Capacity + layout ride in the fact line under each title.
 // ═════════════════════════════════════════════════════════════════════════════
-const SUITES: SuiteData[] = [
+const STAYS: StayData[] = [
   {
-    eyebrow: 'Suite',
-    title: 'The Pool Suite',
+    meta: 'Up to 10 guests · Four suites, each with a private bathroom',
+    title: 'Main House',
     description:
-      'A king bed and pool-facing windows. Mornings open to the saltwater pool and the slow rhythm of the gardens beyond.',
-    // TODO: replace with curated photos of this specific suite
+      'Four spacious suites, each with its own private bathroom, gathered around a shared heart. Room configurations shift to meet each group — triples, doubles, or private queens. Air conditioning in every suite, and Wi-Fi that reaches every corner.',
+    // TODO: replace with curated Main House photos
     images: [
       '/images/sanctuary/271A0822_websize%201.webp',
       '/images/sanctuary/271A0828_websize%201.webp',
       '/images/sanctuary/271A0829_websize%201.webp',
       '/images/sanctuary/271A0800_websize%201.webp',
-    ],
-  },
-  {
-    eyebrow: 'Suite',
-    title: 'The Garden Suite',
-    description:
-      'Twin beds with garden views and dappled morning light. A few steps from the shared kitchen and the fire feature.',
-    // TODO: replace with curated photos of this specific suite
-    images: [
       '/images/sanctuary/271A0660_websize%201.webp',
-      '/images/sanctuary/271A0668_websize%201.webp',
       '/images/sanctuary/271A0692_websize%201.webp',
-      '/images/sanctuary/271A0676_websize%201.webp',
     ],
   },
   {
-    eyebrow: 'Suite',
-    title: 'The Canopy Suite',
+    meta: 'Up to 3 guests · One bedroom, kitchen and terrace',
+    title: 'La Casita',
     description:
-      'King bed, bay window nook. Suspended at canopy level — the jungle wakes up just outside the glass.',
-    // TODO: replace with curated photos of this specific suite
+      'A one-bedroom home set inside the tropical greenery — queen bed, full kitchen, and a terrace that opens onto the jungle. A single bed can be added in the living area. Built for slow mornings and unhurried work.',
+    // TODO: replace with curated La Casita photos
+    images: [
+      '/images/sanctuary/271A0840_websize%201.webp',
+      '/images/sanctuary/271A0851_websize%201.webp',
+      '/images/sanctuary/271A0870_websize%201.webp',
+      '/images/sanctuary/271A0873_websize%201.webp',
+      '/images/sanctuary/271A0883_websize%201.webp',
+    ],
+  },
+  {
+    meta: 'Up to 2 guests · One bedroom, private bathroom',
+    title: 'Jungle Bungalow',
+    description:
+      'A single room in the heart of the jungle. Queen bed, private bathroom, and a ceiling fan turning through naturally cool air. The most secluded of the four — and the quietest.',
+    // TODO: replace with curated Jungle Bungalow photos
     images: [
       '/images/sanctuary/271A0698_websize%201.webp',
       '/images/sanctuary/271A0704_websize%201.webp',
@@ -304,11 +315,11 @@ const SUITES: SuiteData[] = [
     ],
   },
   {
-    eyebrow: 'Suite',
-    title: 'The Sunset Suite',
+    meta: 'Up to 4 guests · Two bedrooms, two bathrooms',
+    title: 'Shakti House',
     description:
-      'Twin beds with late light. Soft afternoon sun crosses the bay window, long shadows reach the deck.',
-    // TODO: replace with curated photos of this specific suite
+      'Two queen bedrooms, two full bathrooms, and a kitchen that makes it a real home. The deck reaches out toward jungle and ocean at once — the widest view on the property.',
+    // TODO: replace with curated Shakti House photos
     images: [
       '/images/sanctuary/271A0766_websize%201.webp',
       '/images/sanctuary/271A0778_websize%201.webp',
@@ -318,21 +329,25 @@ const SUITES: SuiteData[] = [
   },
 ];
 
-function SuitesGrid() {
+function StaysGrid() {
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
+  // No top padding — the intro above already closes with py-20/28. Doubling it
+  // pushed the first row out of the fold on laptop viewports.
   return (
-    <section className="bg-warm-white py-20 lg:py-28">
+    <section className="bg-warm-white pb-20 lg:pb-28">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
+          /* Asymmetric gaps: rows need more breathing room than columns so the
+             eye groups each image with its own copy (proximity), not with the
+             card sitting below it. */
+          className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-10 gap-y-14 lg:gap-y-20"
         >
-          {SUITES.map((suite) => (
-            <SuiteCard key={suite.title} {...suite} />
+          {STAYS.map((stay) => (
+            <StayCard key={stay.title} {...stay} />
           ))}
         </motion.div>
       </div>
@@ -341,83 +356,39 @@ function SuitesGrid() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// CASITA FEATURE — full-width asymmetric row, distinct from the 4 suites
-// Image LEFT (5/12), text RIGHT (7/12) on desktop. Stacked on mobile.
+// CASITA FEATURE — REMOVED. La Casita is now one of the four dwellings in
+// <StaysGrid /> (position 2, per Nancy's accommodations brief), so the
+// standalone asymmetric feature row would have duplicated it. The layout
+// pattern lives on in the retreats hub if we ever need it back here.
 // ═════════════════════════════════════════════════════════════════════════════
-const CASITA: SuiteData = {
-  eyebrow: 'Casita',
-  title: 'La Casita',
-  description:
-    "A standalone one-bedroom retreat tucked deeper into the jungle. Queen bed, full kitchen, and a private deck where monkeys and tropical birds keep their own schedule. La Casita asks for more solitude — and rewards it.",
-  // TODO: replace with curated casita-specific photos when available
-  images: [
-    '/images/sanctuary/271A0840_websize%201.webp',
-    '/images/sanctuary/271A0851_websize%201.webp',
-    '/images/sanctuary/271A0870_websize%201.webp',
-    '/images/sanctuary/271A0873_websize%201.webp',
-    '/images/sanctuary/271A0883_websize%201.webp',
-  ],
-};
-
-function CasitaFeature() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white pb-20 lg:pb-28">
-      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
-        <motion.article
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-center"
-        >
-          {/* Image — LEFT */}
-          <div>
-            <SuiteCarousel
-              images={CASITA.images}
-              alt={CASITA.title}
-              aspect="aspect-[4/5]"
-            />
-          </div>
-
-          {/* Text — RIGHT (typography matched to home HostYourRetreat) */}
-          <div className="lg:pl-4">
-            <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink">
-              {CASITA.eyebrow}
-            </p>
-            <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-3">
-              {CASITA.title}
-            </h3>
-            <p className="font-body text-sm text-ink leading-relaxed mt-4 max-w-xl">
-              {CASITA.description}
-            </p>
-
-            <CheckAvailabilityLink className="mt-6" />
-          </div>
-        </motion.article>
-      </div>
-    </section>
-  );
-}
 
 // ═════════════════════════════════════════════════════════════════════════════
-// ALL STAYS INCLUDE
+// EVERY STAY INCLUDES
 // ═════════════════════════════════════════════════════════════════════════════
+const STAY_INTRO =
+  'Every accommodation at House of Shakti has been thoughtfully prepared to offer comfort, simplicity, and a deep connection with nature.';
+
 const STAY_INCLUDES = [
-  'Access to the saltwater pool',
-  'Daily yoga at the shala',
-  'Shared kitchen and dining',
-  'Fire feature and chill area',
-  'WiFi throughout the property',
-  'Workspace in every room',
+  'Daily housekeeping',
+  'Fresh towels and premium bed linens',
+  'High-speed Wi-Fi',
+  'Swimming pool',
+  'Access to the yoga shala',
+  'Complimentary parking',
+  'Personalized support throughout your stay — wellness services, tours, transportation, and local experiences',
+  'A serene environment designed for rest and renewal',
 ];
 
+// Items that carry a fee. Both require booking ahead, which is why the
+// reservation note lives in the section label rather than on each line.
 const STAY_EXTRAS = [
-  '8-person sauna over the jungle',
-  'Cold plunge',
-  'Private yoga sessions',
+  'Regular yoga classes, subject to schedule',
+  'Sauna and ice bath wellness area',
 ];
+
+// Surfaced as a closing note: the one exception across the four dwellings.
+const STAY_NOTE =
+  'Air conditioning is available in all accommodations except the Jungle Bungalow, which is naturally ventilated and equipped with a ceiling fan.';
 
 function AllStaysInclude() {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -432,9 +403,13 @@ function AllStaysInclude() {
         transition={{ duration: 1.0, ease: 'easeOut' }}
         className="w-[90%] md:w-[80%] max-w-5xl mx-auto"
       >
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mb-16 lg:mb-20">
-          All stays include
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
+          Every stay includes
         </h2>
+
+        <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-6 mb-16 lg:mb-20">
+          {STAY_INTRO}
+        </p>
 
         {/* Included list */}
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -449,7 +424,7 @@ function AllStaysInclude() {
         {/* Extras */}
         <div className="mt-16">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink mb-6">
-            Available at extra cost
+            By advance reservation, at extra cost
           </p>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
             {STAY_EXTRAS.map((item) => (
@@ -460,6 +435,11 @@ function AllStaysInclude() {
             ))}
           </ul>
         </div>
+
+        {/* Closing note */}
+        <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-16 pt-8 border-t border-ink/10">
+          {STAY_NOTE}
+        </p>
       </motion.div>
     </section>
   );
@@ -488,10 +468,7 @@ function FinalCTA() {
         transition={{ duration: 1.0, ease: 'easeOut' }}
         className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
       >
-        <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-          Reserve your stay
-        </p>
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mt-6">
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
           When would you like to arrive?
         </h2>
 
@@ -512,8 +489,7 @@ export default function AccommodationsPage() {
       <Navigation />
       <AccommodationsHero />
       <AccommodationsIntro />
-      <SuitesGrid />
-      <CasitaFeature />
+      <StaysGrid />
       <AllStaysInclude />
       <SeasonalExperiences />
       <AccommodationsFAQ />

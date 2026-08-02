@@ -25,20 +25,11 @@ export default function NotFound() {
         "
       >
         <div className="max-w-md mx-auto px-6 text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
-          >
-            404
-          </motion.p>
-
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.4 }}
-            className="font-display font-light text-ink text-3xl md:text-4xl lg:text-5xl leading-[1.1] mt-6"
+            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+            className="font-display font-light text-ink text-3xl md:text-4xl lg:text-5xl leading-[1.1]"
           >
             This page doesn&apos;t live here.
           </motion.h1>
@@ -48,7 +39,7 @@ export default function NotFound() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.7 }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
             className="font-body text-base text-ink leading-relaxed mt-8"
           >
             The page you&apos;re looking for may have moved, or perhaps never existed at all.
@@ -57,7 +48,7 @@ export default function NotFound() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 1.0 }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.8 }}
             className="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12"
           >
             {/* Plain <a> instead of next/link Link — in App Router

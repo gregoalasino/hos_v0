@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 
 // Full-bleed image hero, matched to the HOS home/retreats framing (80% container
 // on desktop, edge-to-edge on mobile, mt-* offset for the fixed navbar).
-// Structure mirrors the Trama Viva "Within" hero — eyebrow chip, oversized
-// display title, a meta row, and a single CTA — but in the House of Shakti palette.
+// Structure mirrors the Trama Viva "Within" hero — oversized display title,
+// a meta row, and a single CTA — but in the House of Shakti palette.
 // TODO: swap the placeholder image for a hero-specific Shakti Experience photo.
 const HERO_IMAGE = '/images/sanctuary/271A0642_websize%201.webp';
 
@@ -38,20 +38,11 @@ export function ShaktiHero() {
           {/* Content */}
           <div className="absolute inset-0 flex items-end">
             <div className="w-[85%] md:w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20">
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut' }}
-                className="font-body text-[10px] md:text-[11px] tracking-[0.3em] uppercase text-cream/80"
-              >
-                A Return to the Body
-              </motion.p>
-
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.1, ease: 'easeOut', delay: 0.12 }}
-                className="font-display font-light text-cream text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.01em] mt-5 md:mt-6"
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+                className="font-display font-light text-cream text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.01em]"
               >
                 Shakti Experience
               </motion.h1>
@@ -59,7 +50,7 @@ export function ShaktiHero() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.28 }}
+                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.16 }}
                 className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-7 md:mt-8"
               >
                 {meta.map((item, i) => (
@@ -75,7 +66,7 @@ export function ShaktiHero() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.4 }}
+                transition={{ duration: 1.0, ease: 'easeOut', delay: 0.28 }}
                 className="mt-9 md:mt-10"
               >
                 <Link

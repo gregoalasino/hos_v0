@@ -56,10 +56,7 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
       <Navigation />
       <main className="bg-warm-white min-h-screen">
         <section className="w-[90%] md:w-[80%] max-w-5xl mx-auto pt-32 pb-24">
-          <p className="font-body text-[11px] tracking-[0.3em] uppercase text-ink/50">
-            House of Shakti
-          </p>
-          <h1 className="font-display text-4xl md:text-5xl font-light text-ink mt-3 leading-tight">
+          <h1 className="font-display text-4xl md:text-5xl font-light text-ink leading-tight">
             Class packs
           </h1>
           <p className="font-body text-base text-ink/70 mt-4 max-w-xl leading-relaxed">

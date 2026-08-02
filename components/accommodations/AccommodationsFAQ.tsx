@@ -15,7 +15,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: "What's included in my stay?",
     answer:
-      'Every stay includes daily yoga at the shala, access to the saltwater pool, shared kitchen and dining, the fire feature and chill area, WiFi throughout the property, and a workspace in every room. The 8-person sauna, cold plunge, and private yoga sessions are available at an extra cost.',
+      'Every stay includes daily housekeeping, fresh towels and premium bed linens, high-speed Wi-Fi, the swimming pool, access to the yoga shala, complimentary parking, and personalized support throughout your stay — from wellness services to tours and transportation. Our regular yoga classes and the sauna and ice bath wellness area are available by advance reservation, at an extra cost.',
   },
   {
     question: 'Do you accommodate dietary restrictions?',

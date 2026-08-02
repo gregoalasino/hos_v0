@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 
-const HEADLINE = 'Two we curate. A few we host.';
+const HEADLINE = 'The year ahead.';
 
 const headlineContainer: Variants = {
   hidden: { opacity: 1 },
@@ -52,10 +52,9 @@ export function RetreatsIntroduction() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
             className="font-body text-sm text-ink leading-[1.7] mt-12 lg:mt-16 max-w-2xl"
           >
-            A small number of retreats happen at House of Shakti each year. Two we
-            curate ourselves, and a handful are hosted by independent teachers
-            whose practice meets ours. All slow, all intentional, all held by the
-            jungle.
+            Retreats and teacher trainings confirmed for 2026, listed by date.
+            Some we curate ourselves; others are led by teachers whose practice
+            meets ours. Each one links through to where you can hold your place.
           </motion.p>
         </div>
       </div>

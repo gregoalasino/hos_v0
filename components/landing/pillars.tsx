@@ -7,7 +7,6 @@ import { Ornament } from "./ornament";
 
 const pillars = [
   {
-    eyebrow: "Daily Practice",
     title: "Yoga classes",
     description:
       "Mornings open with breath and movement on the open-air shala. Afternoons close softer — restorative, slow.",
@@ -15,7 +14,6 @@ const pillars = [
     link: "/yoga",
   },
   {
-    eyebrow: "Considered Rest",
     title: "Boutique accommodation",
     description:
       "Six rooms shaped by the land they sit in. Hardwood, natural linen, light filtered through tropical canopy.",
@@ -23,7 +21,6 @@ const pillars = [
     link: "/accommodations",
   },
   {
-    eyebrow: "Seasonal Gatherings",
     title: "Transformational retreats",
     description:
       "A handful of immersive programs each year, each tied to a season and a teacher.",
@@ -103,10 +100,6 @@ export function Pillars() {
 
                 {/* Text block */}
                 <div className="mt-6 lg:mt-8">
-                  <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-ink mb-3 lg:mb-4">
-                    {pillar.eyebrow}
-                  </p>
-
                   <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mb-3 lg:mb-4">
                     {pillar.title}
                   </h3>

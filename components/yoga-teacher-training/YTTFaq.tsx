@@ -38,19 +38,11 @@ export function YTTFaq() {
   return (
     <section className="bg-warm-white py-20 lg:py-28">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
-        >
-          Frequently Asked Questions
-        </motion.p>
         <motion.h2
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-          className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mt-6 max-w-2xl"
+          transition={{ duration: 1.0, ease: 'easeOut' }}
+          className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] max-w-2xl"
         >
           Everything you might be wondering.
         </motion.h2>
@@ -58,7 +50,7 @@ export function YTTFaq() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
           className="mt-12 lg:mt-16 max-w-3xl border-t border-ink/15"
         >
           {faqs.map((faq, i) => {

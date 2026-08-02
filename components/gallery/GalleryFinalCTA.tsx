@@ -5,7 +5,7 @@ import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 
 // Pre-footer moment — same editorial treatment as /retreats and /accommodations:
-// warm-white background, centered eyebrow + heading, two underline-link CTAs.
+// warm-white background, centered heading, two underline-link CTAs.
 // No background image, no dark overlay.
 export function GalleryFinalCTA() {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -20,11 +20,7 @@ export function GalleryFinalCTA() {
         transition={{ duration: 1.0, ease: 'easeOut' }}
         className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
       >
-        <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-          Beyond the frame
-        </p>
-
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mt-6">
+        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
           Photographs only carry so much.
         </h2>
 

@@ -23,15 +23,6 @@ export function ShaktiIntro() {
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-3xl">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy mb-8"
-          >
-            The Invitation
-          </motion.p>
-
           <motion.h2
             variants={headlineContainer}
             initial="hidden"

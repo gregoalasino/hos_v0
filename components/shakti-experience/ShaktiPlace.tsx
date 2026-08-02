@@ -32,19 +32,11 @@ export function ShaktiPlace() {
         {/* Heading + intro */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-end">
           <div>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              transition={{ duration: 1.0, ease: 'easeOut' }}
-              className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
-            >
-              The Place
-            </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 16 }}
               animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-              transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-              className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mt-6"
+              transition={{ duration: 1.0, ease: 'easeOut' }}
+              className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
             >
               House of Shakti
             </motion.h2>
@@ -52,7 +44,7 @@ export function ShaktiPlace() {
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
             className="font-body text-sm text-ink leading-[1.8] mt-8 lg:mt-0"
           >
             A tranquil and luxurious sanctuary nestled in nature, perched on a serene hilltop with
@@ -66,7 +58,7 @@ export function ShaktiPlace() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
+          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mt-14 lg:mt-16"
         >
           <div className="relative aspect-[4/3] md:aspect-auto md:col-span-2 overflow-hidden">
@@ -82,7 +74,7 @@ export function ShaktiPlace() {
           <motion.h3
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.35 }}
+            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.25 }}
             className="font-display font-light text-ink text-2xl leading-snug"
           >
             The Main House — an elegant, serene living experience balancing privacy with warm shared

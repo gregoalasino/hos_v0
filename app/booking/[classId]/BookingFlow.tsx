@@ -16,7 +16,6 @@ import type { PaymentMethod } from '@/lib/payment-methods';
 import { downloadICS } from '@/lib/ics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form';
@@ -295,8 +294,6 @@ export default function BookingFlow({
       isHotelGuest: false, cloudbedsRef: '',
     },
   });
-
-  const watchGuest = form.watch('isHotelGuest');
 
   function handlePersonalSubmit(values: PersonalData) {
     setPersonalData(values);
@@ -726,12 +723,12 @@ export default function BookingFlow({
                               <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 font-body text-[10px] tracking-[0.25em] uppercase text-ink">
                                   <Tag className="w-3 h-3 text-ink" strokeWidth={1.5} />
-                                  Referral code <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                  Referral / packs code <span className="font-normal normal-case tracking-normal">(optional)</span>
                                 </FormLabel>
                                 <div className="flex items-end gap-3">
                                   <FormControl>
                                     <Input
-                                      placeholder="e.g. SURF-CAMP"
+                                      placeholder="e.g. SURF-CAMP or your pack code"
                                       {...field}
                                       onChange={(e) => {
                                         field.onChange(e);
@@ -779,42 +776,6 @@ export default function BookingFlow({
                               </FormItem>
                             )} />
 
-                            {/* Hotel guest — simple inline row, no card */}
-                            <FormField control={form.control} name="isHotelGuest" render={({ field }) => (
-                              <FormItem className="pt-4 border-t border-ink/10">
-                                <label className="flex items-start gap-3 cursor-pointer">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                      className="mt-1 cursor-pointer"
-                                    />
-                                  </FormControl>
-                                  <div>
-                                    <FormLabel className="font-body text-sm font-medium text-ink cursor-pointer">
-                                      I&apos;m a guest at the hotel
-                                    </FormLabel>
-                                    <p className="font-body text-xs text-ink mt-1">
-                                      Class is included in your stay.
-                                    </p>
-                                  </div>
-                                </label>
-                              </FormItem>
-                            )} />
-
-                            {watchGuest && (
-                              <FormField control={form.control} name="cloudbedsRef" render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
-                                    Cloudbeds reservation number <span className="font-normal normal-case tracking-normal">(optional)</span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="e.g. CB-123456" className={editorialInput} {...field} />
-                                  </FormControl>
-                                  <FormMessage className="text-xs text-burgundy mt-1" />
-                                </FormItem>
-                              )} />
-                            )}
                           </form>
                         </Form>
                       </motion.div>

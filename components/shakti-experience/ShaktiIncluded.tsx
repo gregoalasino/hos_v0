@@ -51,20 +51,11 @@ export function ShaktiIncluded() {
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-2 lg:gap-20">
         {/* Included */}
         <div>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/60"
-          >
-            What’s Included
-          </motion.p>
-
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-            className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15] mt-6"
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]"
           >
             Everything considered.
           </motion.h2>
@@ -88,16 +79,17 @@ export function ShaktiIncluded() {
           </motion.ul>
         </div>
 
-        {/* Not included */}
+        {/* Not included — carries its own heading, mirroring the left column.
+            Without it the list of exclusions reads as if it were included. */}
         <div className="mt-16 lg:mt-0">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.15 }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/60"
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]"
           >
-            Not Included
-          </motion.p>
+            Not included.
+          </motion.h2>
 
           <motion.div
             variants={listContainer}

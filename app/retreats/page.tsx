@@ -4,9 +4,7 @@ import { HostYourRetreat } from '@/components/landing/HostYourRetreat';
 import { RetreatsHero } from '@/components/retreats/RetreatsHero';
 import { RetreatsIntroduction } from '@/components/retreats/RetreatsIntroduction';
 import { HOSRetreats } from '@/components/retreats/HOSRetreats';
-import { OtherRetreats } from '@/components/retreats/OtherRetreats';
 import { RetreatsGallery } from '@/components/retreats/RetreatsGallery';
-import { RetreatsFinalCTA } from '@/components/retreats/RetreatsFinalCTA';
 
 // NOTE: `./data.ts` is no longer imported here. It remains in the repo
 // because individual retreat landing pages (Phase 5.2) may want to reuse
@@ -19,10 +17,11 @@ export default function RetreatsPage() {
       <RetreatsHero />
       <RetreatsIntroduction />
       <HOSRetreats />
-      <OtherRetreats />
-      <RetreatsGallery />
+      {/* "Host your retreat" + "The sanctuary, in private" now sit above the
+          gallery: the offer to book the space belongs next to the schedule
+          that motivates it, not after a closing photo essay. */}
       <HostYourRetreat />
-      <RetreatsFinalCTA />
+      <RetreatsGallery />
       <Footer />
     </main>
   );

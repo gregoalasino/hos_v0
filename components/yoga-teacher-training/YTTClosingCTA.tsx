@@ -25,10 +25,7 @@ export function YTTClosingCTA() {
             transition={{ duration: 1.1, ease: 'easeOut' }}
             className="relative w-[85%] max-w-2xl mx-auto text-center py-24"
           >
-            <p className="font-body text-[10px] md:text-[11px] tracking-[0.3em] uppercase text-cream/80">
-              An invitation to return home to yourself
-            </p>
-            <h2 className="font-display font-light text-cream text-3xl md:text-5xl leading-[1.2] mt-6">
+            <h2 className="font-display font-light text-cream text-3xl md:text-5xl leading-[1.2]">
               Come home to your body. Awaken your practice. Live the teachings.
             </h2>
             <p className="font-body text-sm md:text-base text-cream/85 leading-[1.8] mt-6">

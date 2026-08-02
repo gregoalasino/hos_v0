@@ -42,19 +42,11 @@ export function YTTPricing() {
     <section className="bg-dark text-cream py-20 lg:py-28">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-2xl">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/60"
-          >
-            Investment
-          </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-            className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15] mt-6"
+            transition={{ duration: 1.0, ease: 'easeOut' }}
+            className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]"
           >
             Costa Rica Immersion — 100 hours.
           </motion.h2>
