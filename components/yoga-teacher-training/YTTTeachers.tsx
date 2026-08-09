@@ -8,7 +8,7 @@ const teachers = [
   {
     name: 'Nancy Goodfellow',
     handle: '@wildheart.yogini',
-    image: '/images/teachers/Dise%C3%B1o%20sin%20t%C3%ADtulo%20(8)%201.webp',
+    image: '/images/teachers/nancy.webp',
     bio: [
       'Nancy brings together years of experience in yoga, embodiment practices, nervous system regulation, conscious leadership, and transformational retreat facilitation.',
       'Her teaching style is compassionate, authentic, and deeply experiential, weaving the timeless wisdom of Tantra with modern somatic approaches. She believes yoga is not simply something we practice — it is a way of living.',
@@ -48,7 +48,7 @@ export function YTTTeachers() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            Guided with presence and heart.
+            Meet your teachers
           </motion.h2>
         </div>
 

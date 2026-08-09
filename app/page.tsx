@@ -24,8 +24,8 @@ export default function Home() {
       {/* Wide, low transition band with a quote (re:center-style strip) */}
       <QuoteBreak
         size="short"
-        image="/images/sanctuary/271A0778_websize%201.webp"
-        quote="A Sanctuary, just like hotel but with family"
+        image="/images/sanctuary/271A0714_websize%201.webp"
+        quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
         author="House of Shakti"
         role="Santa Teresa, Costa Rica"
       />

@@ -2,7 +2,18 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { Ornament } from '@/components/landing/ornament';
+
+// All CTAs on the YTT landing route to Nancy's WhatsApp.
+const NANCY_WHATSAPP = 'https://wa.me/50684904626';
+
+const paymentSchedule = [
+  'A Non-refundable deposit of $500 is required to hold your space (once accepted into program).',
+  '½ Tuition Investment must be paid within 30 days of acceptance. (Unless special payment arrangements were made).',
+  'Full tuition must be paid by February 15, 2025.',
+  'Cancellation Policy: The deposit of $500 is non-refundable once accepted, but may be used for future trainings or retreats.',
+  '75% of the remaining amount will be refunded up until 30 days before the course starts. No refunds given under any circumstances after the commencement of the course.',
+];
 
 const tiers = [
   {
@@ -97,13 +108,64 @@ export function YTTPricing() {
             Optional 100-Hour online program — pricing and schedule available upon request. Please
             contact us for available payment options.
           </p>
-          <Link
-            href="/contact"
+          <a
+            href={NANCY_WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-block shrink-0 bg-cream text-dark font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy hover:text-cream transition-colors duration-300"
           >
-            Request pricing & dates
-          </Link>
+            Request pricing &amp; dates
+          </a>
         </motion.div>
+
+        {/* Payment schedule + apply block */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+          className="mt-20 lg:mt-28 grid lg:grid-cols-2 gap-12 lg:gap-20 lg:items-center"
+        >
+          {/* Left — schedule */}
+          <div className="lg:border-r lg:border-cream/15 lg:pr-20">
+            <h3 className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]">
+              Payment Schedule
+            </h3>
+            <ul className="mt-8 space-y-5">
+              {paymentSchedule.map((line) => (
+                <li key={line} className="flex gap-4">
+                  <span aria-hidden className="mt-[7px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-burgundy" />
+                  <span className="font-body text-sm text-cream/85 leading-[1.7]">{line}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right — invitation + apply */}
+          <div className="text-center">
+            <Ornament src="/logos/moon-phase.png" className="h-8 md:h-9 mx-auto mb-8 opacity-80" />
+            <p className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.2] max-w-md mx-auto">
+              Self-Love investment is within your reach
+            </p>
+            <a
+              href={NANCY_WHATSAPP}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-burgundy text-cream font-body text-sm tracking-[0.05em] px-10 py-3.5 hover:bg-cream hover:text-dark transition-colors duration-300 mt-10"
+            >
+              Apply Now
+            </a>
+          </div>
+        </motion.div>
+
+        {/* Closing line */}
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+          transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
+          className="font-display font-light text-cream text-2xl md:text-3xl text-center mt-20 lg:mt-24"
+        >
+          Hold your space now with a $500 deposit
+        </motion.p>
       </div>
     </section>
   );

@@ -97,7 +97,7 @@ export function Hero() {
                 transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
                 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[1.02] tracking-[-0.01em] max-w-3xl"
               >
-                A space to reconnect to what matters
+                Immersed in nature, awakened to essence.
               </motion.h1>
 
               <motion.div

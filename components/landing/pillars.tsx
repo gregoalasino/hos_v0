@@ -7,25 +7,25 @@ import { Ornament } from "./ornament";
 
 const pillars = [
   {
-    title: "Yoga classes",
+    title: "Retreats",
     description:
-      "Mornings open with breath and movement on the open-air shala. Afternoons close softer — restorative, slow.",
-    image: "/images/yoga/NE8A7854%201.webp",
-    link: "/yoga",
+      "Discover thoughtfully curated yoga retreats in the heart of Santa Teresa, guided by inspiring facilitators from around the world. Surrounded by jungle and ocean, each retreat offers space to reconnect, restore and return to yourself.",
+    image: "/images/seccion3/card_retreats.webp",
+    link: "/retreats",
   },
   {
-    title: "Boutique accommodation",
+    title: "Accommodations",
     description:
-      "Six rooms shaped by the land they sit in. Hardwood, natural linen, light filtered through tropical canopy.",
-    image: "/images/sanctuary/271A0822_websize%201.webp",
+      "Stay your way. Choose from comfortable accommodations and experience packages for individuals, couples and groups.",
+    image: "/images/seccion3/card_accommodations.webp",
     link: "/accommodations",
   },
   {
-    title: "Transformational retreats",
+    title: "Yoga Shala",
     description:
-      "A handful of immersive programs each year, each tied to a season and a teacher.",
-    image: "/images/sanctuary/271A0851_websize%201.webp",
-    link: "/retreats",
+      "A peaceful space where movement, learning and community come together through yoga, workshops, ceremonies and mindful experiences.",
+    image: "/images/yoga/NE8A7702%201.webp",
+    link: "/yoga",
   },
 ];
 
@@ -73,7 +73,7 @@ export function Pillars() {
           <Ornament src="/logos/snake-sun-rays.png" className="h-20 md:h-24 mx-auto mb-6 lg:mb-8" />
 
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
-            The world of Shakti
+            Discover House of Shakti
           </h2>
         </motion.div>
 
