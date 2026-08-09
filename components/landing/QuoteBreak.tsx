@@ -40,8 +40,11 @@ export function QuoteBreak({
   const short = size === "short";
 
   const containerWidth = short ? "w-full" : "w-full md:w-[80%] mx-auto";
+  // "short" is a full-width strip whose height is driven by the text (a small
+  // floor keeps a sliver of image on very short quotes). "tall" keeps the
+  // cinematic viewport-height band.
   const bandHeight = short
-    ? "min-h-[42vh] md:min-h-[46vh]"
+    ? "min-h-[200px]"
     : "min-h-[70vh] lg:min-h-[80vh]";
   // Long testimonials (full paragraphs) need a smaller type scale than the
   // punchy one-liners this band was designed for — otherwise the display font
@@ -78,9 +81,17 @@ export function QuoteBreak({
             className="absolute inset-0 bg-gradient-to-t from-dark/75 via-dark/30 to-dark/10"
           />
 
-          {/* Quote */}
-          <div className={`absolute inset-0 flex ${justify}`}>
-            <div className="w-[85%] md:w-[80%] mx-auto pb-14 md:pb-20">
+          {/* Quote — for "short" the content sits in normal flow so the band
+              height follows the text (a low, full-width strip); for "tall" it
+              fills the viewport-height band and aligns as requested. */}
+          <div className={short ? "relative" : `absolute inset-0 flex ${justify}`}>
+            <div
+              className={
+                short
+                  ? "w-[85%] md:w-[80%] mx-auto py-10 md:py-14"
+                  : "w-[85%] md:w-[80%] mx-auto pb-14 md:pb-20"
+              }
+            >
               {avatar && (
                 <motion.img
                   src={avatar}
