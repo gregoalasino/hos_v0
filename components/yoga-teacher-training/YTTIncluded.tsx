@@ -49,7 +49,7 @@ export function YTTIncluded() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            The 100-hour Costa Rica immersion.
+            The 100 Hours Costa Rica Immersion includes.
           </motion.h2>
 
           <motion.ul

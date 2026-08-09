@@ -7,25 +7,25 @@ import { Ornament } from "./ornament";
 
 const experiences = [
   {
-    title: "The House of Shakti experience",
+    title: "Shakti Experience",
     description:
-      "An all-inclusive immersion with accommodation, daily practice, and a curated itinerary — designed for guests who want everything considered.",
-    image: "/images/sanctuary/271A0822_websize%201.webp",
+      "A curated journey of movement, nature, wellness and connection. Designed to help you reconnect with yourself and the essence of House of Shakti.",
+    image: "/images/seccionSeasonalExperiences/card_shakti_experience.webp",
     href: "/shakti-experience",
   },
   {
     eyebrow: "Yoga Teacher Training",
-    title: "The Awakened Body · RYT 200",
+    title: "The Awakened Body: Embody Tantra Yoga Teacher Training",
     description:
-      "A Tantric Yoga intensive — a 100-hour residential immersion with an optional online program, leading to a Yoga Alliance Registered 200-hour certification.",
+      "A certified Tantric Yoga Teacher Training designed to deepen your practice, awaken the body, expand awareness, and inspire authentic teaching through embodied practice.",
     image: "/images/yoga/IMG_8693%201.webp",
     href: "/yoga-teacher-training",
   },
   {
-    title: "A weekend of return",
+    title: "Sacred Union: A Journey for Two",
     description:
-      "Designed for couples or close friends seeking a softer pace away from the noise. Private practice, slow mornings.",
-    image: "/images/sanctuary/271A0759_websize%201.webp",
+      "A private couples experience designed to deepen intimacy, strengthen connection and cultivate presence.",
+    image: "/images/seccionSeasonalExperiences/card_couples.webp",
     href: "/accommodations",
   },
 ];
@@ -186,7 +186,7 @@ export function SeasonalExperiences() {
               transition={{ duration: 1.0, ease: "easeOut" }}
               className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
             >
-              Seasonal experiences
+              Featured Experiences
             </motion.h2>
           </div>
 
@@ -196,9 +196,7 @@ export function SeasonalExperiences() {
             transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
             className="font-body text-sm text-ink leading-relaxed mt-6 lg:mt-10 max-w-full lg:max-w-xs"
           >
-            Across each season, House of Shakti hosts a small number of
-            curated experiences — gatherings designed to deepen practice,
-            slow the pace, and return guests to themselves.
+            Explore the experiences currently unfolding at House of Shakti.
           </motion.p>
         </div>
 

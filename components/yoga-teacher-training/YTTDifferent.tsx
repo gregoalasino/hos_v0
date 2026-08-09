@@ -28,9 +28,9 @@ export function YTTDifferent() {
 
   return (
     <section className="bg-warm-white py-20 lg:py-28">
-      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
+      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-5 lg:gap-16 lg:items-center">
         {/* Text */}
-        <div className="order-2 lg:order-none">
+        <div className="order-2 lg:order-none lg:col-span-3">
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
@@ -70,7 +70,7 @@ export function YTTDifferent() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="relative aspect-[4/5] overflow-hidden order-1 lg:order-none mb-12 lg:mb-0"
+          className="relative aspect-[4/5] overflow-hidden order-1 lg:order-none lg:col-span-2 mb-12 lg:mb-0"
         >
           <img src={IMAGE} alt="" aria-hidden className="w-full h-full object-cover" />
         </motion.div>

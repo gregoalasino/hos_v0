@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 
-const HEADLINE = 'The year ahead.';
+const HEADLINE = 'Where Transformation Meets Paradise';
 
 const headlineContainer: Variants = {
   hidden: { opacity: 1 },
@@ -50,11 +50,9 @@ export function RetreatsIntroduction() {
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
-            className="font-body text-sm text-ink leading-[1.7] mt-12 lg:mt-16 max-w-2xl"
+            className="font-body text-sm tracking-[0.15em] text-ink/70 mt-12 lg:mt-16 max-w-2xl uppercase"
           >
-            Retreats and teacher trainings confirmed for 2026, listed by date.
-            Some we curate ourselves; others are led by teachers whose practice
-            meets ours. Each one links through to where you can hold your place.
+            Signature Retreats / Hosted Retreats / Yoga Training / Experiences
           </motion.p>
         </div>
       </div>

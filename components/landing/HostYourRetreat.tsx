@@ -25,7 +25,7 @@ export function HostYourRetreat() {
           <Link href="/host-your-retreat" className="group block">
             <div className="relative aspect-[3/2] overflow-hidden">
               <img
-                src="/images/yoga/NE8A7854%201.webp"
+                src="/images/card_host_your_retreat.webp"
                 alt="Host your retreat at House of Shakti"
                 className="w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.02]"
               />
@@ -43,11 +43,10 @@ export function HostYourRetreat() {
             </h2>
 
             <p className="font-body text-sm text-ink leading-[1.8] mt-6 max-w-xl">
-              Bring your group to House of Shakti — a private sanctuary on a hilltop
-              in Santa Teresa, five minutes from Playa Hermosa. We provide the space,
-              the rhythm, and the team; you bring the practice. Accommodation for up
-              to your whole group, a yoga shala, pool, sauna and cold plunge, and a
-              menu of on- and off-site experiences.
+              Bring your retreat to House of Shakti, a peaceful sanctuary in the heart
+              of Santa Teresa. We offer accommodations, a beautiful yoga shala, wellness
+              amenities, nourishing meals, and curated experiences—all supported by an
+              experienced team, so you can focus on what you do best: guiding your community.
             </p>
 
             <Link

@@ -20,7 +20,7 @@ type Photo = {
 
 const photos: Photo[] = [
   {
-    src: "/images/yoga/NE8A7702%201.webp",
+    src: "/images/seccion2/imagen1_seccion2.webp",
     alt: "Morning practice at the shala",
     width: "w-44 lg:w-[16%]",
     aspect: "aspect-[3/4]",
@@ -34,8 +34,8 @@ const photos: Photo[] = [
     offset: "lg:mt-0",
   },
   {
-    src: "/images/contrast_therapy/IMG_7340%201.webp",
-    alt: "Cold water, clear mind",
+    src: "/images/seccion2/img2seccion2.webp",
+    alt: "Between the jungle and the sea",
     width: "w-56 lg:w-[24%]",
     aspect: "aspect-[4/5]",
     offset: "lg:mt-28",
@@ -75,7 +75,7 @@ export function ReturnToYourself() {
           transition={{ duration: 1.0, ease: "easeOut" }}
           className="font-display font-light text-ink text-center text-3xl md:text-5xl lg:text-6xl leading-[1.08] tracking-[-0.01em] max-w-4xl mx-auto"
         >
-          You don&apos;t escape here. You return to yourself.
+          A Journey of Wisdom and Wellness
         </motion.h2>
 
         {/* Subtext */}
@@ -85,8 +85,12 @@ export function ReturnToYourself() {
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.25 }}
           className="font-body text-sm md:text-base text-ink leading-[1.8] text-center max-w-2xl mx-auto mt-8"
         >
-          A few days of practice, rest, and presence — between the jungle and the sea
-          of Santa Teresa — and a rhythm that stays with you long after you go home.
+          This isn&apos;t an escape. It&apos;s a return.
+          A return to your body, your breath and what truly matters.
+          A few days immersed in nature, movement, rest and connection—between the jungle
+          and the sea of Santa Teresa.
+          Join us for retreats, trainings and classes rooted in presence, connection and
+          transformation.
         </motion.p>
 
         {/* Scattered photo row with a threaded line */}

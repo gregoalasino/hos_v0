@@ -22,13 +22,13 @@ export function YTTIntro() {
   return (
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
-        <div className="max-w-3xl">
+        <div>
           <motion.h2
             variants={headlineContainer}
             initial="hidden"
             animate={inView ? 'visible' : 'hidden'}
             aria-label={HEADLINE}
-            className="font-display font-light text-ink text-3xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em]"
+            className="font-display font-light text-ink text-3xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em] max-w-3xl"
           >
             {words.map((word, i) => (
               <span key={`${word}-${i}`} aria-hidden>
@@ -42,29 +42,45 @@ export function YTTIntro() {
             ))}
           </motion.h2>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 }}
-            className="mt-12 lg:mt-16 space-y-6 max-w-2xl"
-          >
-            <p className="font-body text-sm text-ink leading-[1.8]">
-              This training goes far beyond the physical practice of yoga. Through movement,
-              breathwork, meditation, Tantra philosophy, ritual, nervous system regulation, somatic
-              awareness, and authentic connection, you’ll explore yoga as a living practice that
-              transforms the way you relate to yourself and the world.
-            </p>
-            <p className="font-body text-sm text-ink leading-[1.8]">
-              Held in the lush tropical beauty of Costa Rica, this immersive experience offers the
-              perfect balance of disciplined study, embodied practice, community living, and deep
-              restoration.
-            </p>
-            <p className="font-body text-sm text-ink leading-[1.8] italic">
-              Whether your intention is to become a yoga teacher or simply to deepen your personal
-              practice, this training offers a grounded, integrative, and heart-centered path into
-              embodied living.
-            </p>
-          </motion.div>
+          {/* Text + supporting class photo, side by side */}
+          <div className="mt-12 lg:mt-16 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 }}
+              className="space-y-6"
+            >
+              <p className="font-body text-sm text-ink leading-[1.8]">
+                This training goes far beyond the physical practice of yoga. Through movement,
+                breathwork, meditation, Tantra philosophy, ritual, nervous system regulation, somatic
+                awareness, and authentic connection, you’ll explore yoga as a living practice that
+                transforms the way you relate to yourself and the world.
+              </p>
+              <p className="font-body text-sm text-ink leading-[1.8]">
+                Held in the lush tropical beauty of Costa Rica, this immersive experience offers the
+                perfect balance of disciplined study, embodied practice, community living, and deep
+                restoration.
+              </p>
+              <p className="font-body text-sm text-ink leading-[1.8] italic">
+                Whether your intention is to become a yoga teacher or simply to deepen your personal
+                practice, this training offers a grounded, integrative, and heart-centered path into
+                embodied living.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+              transition={{ duration: 1.0, ease: 'easeOut', delay: 0.5 }}
+              className="relative aspect-[4/5] overflow-hidden"
+            >
+              <img
+                src="/images/yoga/NE8A7854%201.webp"
+                alt="Yoga class at House of Shakti"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
