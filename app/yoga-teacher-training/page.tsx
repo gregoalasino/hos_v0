@@ -37,7 +37,7 @@ export default function YogaTeacherTrainingPage() {
       <YTTRhythm />
       <QuoteBreak
         size="short"
-        image="/images/yoga/IMG_8669%201.webp"
+        image="/images/yoga/IMG_8664%201.webp"
         quote="Nancy is exceptional and by far one of the best yoga teacher we have gotten to experience globally. Whether it is her practice, her approach, the flow and diversity of the classes, or with how much details she was able to guide us in our practice, it was a truly profound experience to meet her and join her over her classes."
         author="Sacha Revillard"
       />

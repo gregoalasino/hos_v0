@@ -75,10 +75,16 @@ export function QuoteBreak({
             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
           />
 
-          {/* Legibility overlay — soft, weighted to the bottom */}
+          {/* Legibility overlay. Tall bands weight the scrim to the bottom
+              where the quote sits; short strips place the text near the top, so
+              they need a more even scrim to stay readable over light images. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-dark/75 via-dark/30 to-dark/10"
+            className={
+              short
+                ? "absolute inset-0 bg-dark/45"
+                : "absolute inset-0 bg-gradient-to-t from-dark/75 via-dark/30 to-dark/10"
+            }
           />
 
           {/* Quote — for "short" the content sits in normal flow so the band
