@@ -43,9 +43,17 @@ export function QuoteBreak({
   const bandHeight = short
     ? "min-h-[42vh] md:min-h-[46vh]"
     : "min-h-[70vh] lg:min-h-[80vh]";
+  // Long testimonials (full paragraphs) need a smaller type scale than the
+  // punchy one-liners this band was designed for — otherwise the display font
+  // overflows the image. Shrink the size once the quote runs long.
+  const isLong = quote.length > 160;
   const quoteSize = short
-    ? "text-2xl md:text-4xl lg:text-5xl"
-    : "text-3xl md:text-5xl lg:text-6xl";
+    ? isLong
+      ? "text-lg md:text-2xl lg:text-3xl"
+      : "text-2xl md:text-4xl lg:text-5xl"
+    : isLong
+      ? "text-xl md:text-3xl lg:text-4xl"
+      : "text-3xl md:text-5xl lg:text-6xl";
 
   return (
     <section className={`bg-warm-white ${className}`}>
