@@ -42,6 +42,14 @@ export default function YogaTeacherTrainingPage() {
       />
       <YTTTeachers />
       <YTTSanctuary />
+      {/* Wide, low transition band with a guest testimonial (re:center-style strip) */}
+      <QuoteBreak
+        size="short"
+        image="/images/sanctuary/271A0714_websize%201.webp"
+        quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
+        author="House of Shakti"
+        role="Santa Teresa, Costa Rica"
+      />
       <YTTWhoFor />
       <YTTPricing />
       <YTTOutcomes />

@@ -9,7 +9,6 @@ import { Gallery } from "@/components/landing/gallery";
 // TODO: Testimonials section removed from home — file preserved
 // import { Testimonials } from "@/components/landing/testimonials";
 import { HostYourRetreat } from "@/components/landing/HostYourRetreat";
-import { QuoteBreak } from "@/components/landing/QuoteBreak";
 import { Ornament } from "@/components/landing/ornament";
 import { Footer } from "@/components/landing/footer";
 
@@ -21,14 +20,6 @@ export default function Home() {
       {/* Brand statement + scattered photos, right below the hero video */}
       <ReturnToYourself />
       <Pillars />
-      {/* Wide, low transition band with a quote (re:center-style strip) */}
-      <QuoteBreak
-        size="short"
-        image="/images/sanctuary/271A0714_websize%201.webp"
-        quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
-        author="House of Shakti"
-        role="Santa Teresa, Costa Rica"
-      />
       <SeasonalExperiences />
       <HostYourRetreat />
       {/* Rhythm mark — a quiet breath between sections */}
