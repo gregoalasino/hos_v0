@@ -21,7 +21,7 @@ const pillars = [
     link: "/accommodations",
   },
   {
-    title: "Yoga Shala",
+    title: "Yoga & Wellbeing",
     description:
       "A peaceful space where movement, learning and community come together through yoga, workshops, ceremonies and mindful experiences.",
     image: "/images/yoga/NE8A7702%201.webp",

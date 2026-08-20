@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { Ornament } from "./ornament";
 import { TrackArrows } from "./TrackArrows";
@@ -59,40 +59,11 @@ export function SeasonalExperiences() {
   // in, not a replacement for any of them.
   const { trackRef, atStart, atEnd, step, hasOverflow } = useCarousel<HTMLDivElement>();
 
-  // Progress bar (Aman style): fixed-width thumb that translates left→right.
-  // Kept alongside the arrows because the two answer different questions —
-  // the bar says where you are, the arrows move you.
-  const [thumbWidth, setThumbWidth] = useState(100); // % of track
-  const [thumbLeft, setThumbLeft] = useState(0); // % of track
-
   // Drag-to-scroll state (mutable refs, no re-renders).
   const isDragging = useRef(false);
   const dragMoved = useRef(false);
   const dragStartX = useRef(0);
   const dragStartScrollLeft = useRef(0);
-
-  const updateProgress = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    if (scrollWidth <= clientWidth) {
-      setThumbWidth(100);
-      setThumbLeft(0);
-      return;
-    }
-    const widthPct = (clientWidth / scrollWidth) * 100;
-    const max = scrollWidth - clientWidth;
-    const leftPct = (scrollLeft / max) * (100 - widthPct);
-    setThumbWidth(widthPct);
-    setThumbLeft(leftPct);
-  };
-
-  useEffect(() => {
-    updateProgress();
-    const onResize = () => updateProgress();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   // Landing here directly at #seasonal-experiences — arriving from another
   // page via the nav link, or opening a shared link. Two problems to solve:
@@ -243,7 +214,6 @@ export function SeasonalExperiences() {
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             ref={trackRef}
-            onScroll={updateProgress}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={endDrag}
@@ -308,25 +278,6 @@ export function SeasonalExperiences() {
                 </Link>
               </motion.article>
             ))}
-          </motion.div>
-
-          {/* Progress bar — Aman style: fixed-width thumb that travels along a full-width track */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 1.0, ease: "easeOut", delay: 0.6 }}
-            className="mt-12 lg:mt-16"
-          >
-            <div className="relative h-px w-full bg-ink/15">
-              <div
-                className="absolute top-0 h-px bg-ink transition-[left,width] duration-300 ease-out"
-                style={{
-                  width: `${thumbWidth}%`,
-                  left: `${thumbLeft}%`,
-                }}
-                aria-hidden
-              />
-            </div>
           </motion.div>
         </div>
       </div>
