@@ -6,6 +6,7 @@ import { motion, useInView } from 'framer-motion';
 import { MessageCircle, Mail, Phone, ArrowUpRight } from 'lucide-react';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
+import { WHATSAPP_NUMBER, WHATSAPP_URL_PLAIN } from '@/lib/whatsapp';
 
 // /contact — information-only contact page modeled on aman.com/contact-us.
 // No form, no newsletter, no social links (those live in the footer).
@@ -25,9 +26,11 @@ const EMAIL_RETREATS = 'retreats@houseofshaktiyoga.com';
 // TODO: confirm dedicated press email or use general email
 const EMAIL_PRESS = 'press@houseofshaktiyoga.com';
 
-const PHONE_E164 = '+50688365115';
+// Phone and WhatsApp derive from the shared number in lib/whatsapp.ts, so a
+// number change lands here without anyone remembering this page exists.
+const PHONE_E164 = `+${WHATSAPP_NUMBER}`;
 const PHONE_DISPLAY = '+506 8836 5115';
-const WHATSAPP_URL = 'https://wa.me/50688365115';
+const WHATSAPP_URL = WHATSAPP_URL_PLAIN;
 
 // TODO: confirm exact Google Maps link with Nancy
 const MAPS_URL =

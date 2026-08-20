@@ -70,7 +70,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
           {/* Early Bird — burgundy stamp. Stands out tonally without breaking
               the editorial palette: same typography, inverted color values. */}
           {showEarlyBird && eb && (
-            <article className="bg-burgundy text-cream p-8 lg:p-10">
+            <article data-surface="dark" className="bg-burgundy text-cream p-8 lg:p-10">
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream">
                 Early Bird
               </p>

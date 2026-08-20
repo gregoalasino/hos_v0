@@ -14,7 +14,7 @@ export function ShaktiClosingCTA() {
   return (
     <section className="bg-warm-white">
       <div className="w-full md:w-[80%] mx-auto">
-        <div className="relative overflow-hidden bg-dark min-h-[70vh] flex items-center justify-center">
+        <div data-surface="dark" className="relative overflow-hidden bg-dark min-h-[70vh] flex items-center justify-center">
           <img src={IMAGE} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
           <div aria-hidden className="absolute inset-0 bg-dark/55" />
 

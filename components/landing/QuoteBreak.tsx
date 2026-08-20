@@ -177,7 +177,7 @@ export function QuoteBreak({
   return (
     <section className={`bg-warm-white ${className}`}>
       <div className={containerWidth}>
-        <div ref={ref} className={`relative overflow-hidden bg-dark ${bandHeight}`}>
+        <div ref={ref} data-surface="dark" className={`relative overflow-hidden bg-dark ${bandHeight}`}>
           {/* Background image with a slow settle-in */}
           <motion.img
             src={image}

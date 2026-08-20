@@ -67,7 +67,11 @@ function PhaseCard({ phase }: { phase: Phase }) {
     : 'bg-warm-white text-ink border border-dashed border-ink/30';
 
   return (
-    <motion.article variants={item} className={`p-8 md:p-10 flex flex-col ${cardClasses}`}>
+    <motion.article
+      variants={item}
+      data-surface={inPerson ? 'dark' : undefined}
+      className={`p-8 md:p-10 flex flex-col ${cardClasses}`}
+    >
       <div className="flex items-center justify-between gap-4">
         <p
           className={`font-body text-[10px] tracking-[0.25em] uppercase ${

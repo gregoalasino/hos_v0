@@ -132,6 +132,18 @@
   :where(button, [role="button"])[aria-disabled="true"] {
     cursor: not-allowed;
   }
+
+  /* Brand splash gate — the overlay ships in the server HTML on every load
+     (client components SSR), so CSS must hold it invisible until the inline
+     pre-paint script in app/layout.tsx stamps <html data-splash="play">.
+     Default-hidden is the safe polarity: no JavaScript means no splash,
+     never a page permanently covered by its own ceremony. */
+  [data-hos-splash] {
+    display: none;
+  }
+  html[data-splash="play"] [data-hos-splash] {
+    display: flex;
+  }
 }
 
 /* ─── Admin panel scope ──────────────────────────────────────────────
