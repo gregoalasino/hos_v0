@@ -14,11 +14,11 @@ const pillars = [
     link: "/retreats",
   },
   {
-    title: "Accommodations",
+    title: "Stay With Us",
     description:
       "Stay your way. Choose from comfortable accommodations and experience packages for individuals, couples and groups.",
     image: "/images/seccion3/card_accommodations.webp",
-    link: "/accommodations",
+    link: "/stay-with-us",
   },
   {
     title: "Yoga & Wellbeing",

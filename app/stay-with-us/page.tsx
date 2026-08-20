@@ -96,7 +96,7 @@ function AccommodationsHero() {
           <div className="absolute inset-0 hidden md:block">
             <iframe
               src={youtubeEmbedUrl(VIDEO_ID_DESKTOP)}
-              title="Accommodations at House of Shakti"
+              title="Stay With Us at House of Shakti"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen={false}
               tabIndex={-1}
@@ -112,7 +112,7 @@ function AccommodationsHero() {
           <div className="absolute inset-0 md:hidden">
             <iframe
               src={youtubeEmbedUrl(VIDEO_ID_MOBILE)}
-              title="Accommodations at House of Shakti"
+              title="Stay With Us at House of Shakti"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen={false}
               tabIndex={-1}
@@ -365,118 +365,12 @@ function StaysGrid() {
 // ═════════════════════════════════════════════════════════════════════════════
 // EVERY STAY INCLUDES
 // ═════════════════════════════════════════════════════════════════════════════
-const STAY_INTRO =
-  'Every accommodation at House of Shakti has been thoughtfully prepared to offer comfort, simplicity, and a deep connection with nature.';
-
-const STAY_INCLUDES = [
-  'Daily housekeeping',
-  'Fresh towels and premium bed linens',
-  'High-speed Wi-Fi',
-  'Swimming pool',
-  'Access to the yoga shala',
-  'Complimentary parking',
-  'Personalized support throughout your stay — wellness services, tours, transportation, and local experiences',
-  'A serene environment designed for rest and renewal',
-];
-
-// Items that carry a fee. Both require booking ahead, which is why the
-// reservation note lives in the section label rather than on each line.
-const STAY_EXTRAS = [
-  'Regular yoga classes, subject to schedule',
-  'Sauna and ice bath wellness area',
-];
-
-// Surfaced as a closing note: the one exception across the four dwellings.
-const STAY_NOTE =
-  'Air conditioning is available in all accommodations except the Jungle Bungalow, which is naturally ventilated and equipped with a ceiling fan.';
-
-function AllStaysInclude() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-cream py-20 lg:py-28">
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 24 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-        transition={{ duration: 1.0, ease: 'easeOut' }}
-        className="w-[90%] md:w-[80%] max-w-5xl mx-auto"
-      >
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
-          Every stay includes
-        </h2>
-
-        <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-6 mb-16 lg:mb-20">
-          {STAY_INTRO}
-        </p>
-
-        {/* Included list */}
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-          {STAY_INCLUDES.map((item) => (
-            <li key={item} className="flex items-baseline gap-3">
-              <span aria-hidden className="font-body text-sm text-ink select-none">—</span>
-              <span className="font-body text-sm text-ink leading-relaxed">{item}</span>
-            </li>
-          ))}
-        </ul>
-
-        {/* Extras */}
-        <div className="mt-16">
-          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink mb-6">
-            By advance reservation, at extra cost
-          </p>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-            {STAY_EXTRAS.map((item) => (
-              <li key={item} className="flex items-baseline gap-3">
-                <span aria-hidden className="font-body text-sm text-ink select-none">—</span>
-                <span className="font-body text-sm text-ink leading-relaxed">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Closing note */}
-        <p className="font-body text-sm text-ink leading-relaxed max-w-2xl mt-16 pt-8 border-t border-ink/10">
-          {STAY_NOTE}
-        </p>
-      </motion.div>
-    </section>
-  );
-}
-
 // ═════════════════════════════════════════════════════════════════════════════
 // CLOSING NARRATIVE — REMOVED in favor of <SeasonalExperiences /> reused from
 // the home. The "An ode to the jungle." text + image lived here previously;
 // the assets remain in /public so we can revive the block on another page
 // if needed.
 // ═════════════════════════════════════════════════════════════════════════════
-
-// ═════════════════════════════════════════════════════════════════════════════
-// FINAL CTA
-// ═════════════════════════════════════════════════════════════════════════════
-function FinalCTA() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white py-20 lg:py-28">
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 16 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: 1.0, ease: 'easeOut' }}
-        className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
-      >
-        <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
-          When would you like to arrive?
-        </h2>
-
-        <CheckAvailabilityLink className="mt-10" />
-      </motion.div>
-    </section>
-  );
-}
 
 // ═════════════════════════════════════════════════════════════════════════════
 // PAGE
@@ -490,10 +384,8 @@ export default function AccommodationsPage() {
       <AccommodationsHero />
       <AccommodationsIntro />
       <StaysGrid />
-      <AllStaysInclude />
       <SeasonalExperiences />
       <AccommodationsFAQ />
-      <FinalCTA />
       <Footer />
     </main>
   );

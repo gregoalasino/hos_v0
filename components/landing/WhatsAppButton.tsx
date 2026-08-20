@@ -52,7 +52,7 @@ const DOORS: Door[] = [
   {
     title: (l) => tr(l, 'Estadías y Experiencias', 'Stays & Experiences'),
     detail: (l) =>
-      tr(l, 'Alojamiento, reservas y la Shakti Experience', 'Accommodations, bookings & the Shakti Experience'),
+      tr(l, 'Estadías, reservas y la Shakti Experience', 'Stays, bookings & the Shakti Experience'),
     message: (l) =>
       tr(
         l,

@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 
-// Pre-footer moment — same editorial treatment as /retreats and /accommodations:
+// Pre-footer moment — same editorial treatment as /retreats and /stay-with-us:
 // warm-white background, centered heading, two underline-link CTAs.
 // No background image, no dark overlay.
 export function GalleryFinalCTA() {
@@ -28,7 +28,7 @@ export function GalleryFinalCTA() {
             and accommodations final CTAs. */}
         <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-center justify-center mt-10">
           <Link
-            href="/accommodations"
+            href="/stay-with-us"
             className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer"
           >
             Reserve your stay
