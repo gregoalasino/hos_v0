@@ -21,19 +21,28 @@ export default function Home() {
       {/* Brand statement + scattered photos, right below the hero video */}
       <ReturnToYourself />
       <Pillars />
-      {/* Wide, low transition band with a quote (re:center-style strip) */}
+      {/* Guest testimonial — the full-height treatment built for the YTT
+          landing: the photograph carries the section, the words sit centred in
+          it. Scrim strength is measured against this specific image (see
+          QuoteBreak); re-measure if the photograph is swapped. */}
       <QuoteBreak
-        size="short"
-        image="/images/sanctuary/271A0714_websize%201.webp"
+        variant="testimonial"
+        image="/images/home/quote/quote-img.webp"
         quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
         author="House of Shakti"
         role="Santa Teresa, Costa Rica"
       />
       <SeasonalExperiences />
       <HostYourRetreat />
-      {/* Rhythm mark — a quiet breath between sections */}
+      {/* Rhythm mark — a quiet breath between sections. The moon cycle, which is
+          the mark this beat was always meant to carry; `dots-rhythm.png` is a
+          row of flat black dots and read as a stray element rather than as the
+          phases. Sized one step below the ornaments that seal a heading, so it
+          reads as punctuation and not as the start of a new section.
+          No opacity class here: Ornament animates opacity with framer-motion,
+          which writes `opacity: 1` inline and beats any utility set on it. */}
       <div className="bg-warm-white flex justify-center">
-        <Ornament src="/logos/dots-rhythm.png" className="h-3 md:h-4 opacity-40" />
+        <Ornament src="/logos/moon-phase.png" className="h-7 md:h-8" />
       </div>
       <Gallery />
       {/* <Testimonials /> — removed from render, kept in repo */}

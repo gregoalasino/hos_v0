@@ -19,7 +19,7 @@ export function HostYourRetreat() {
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 1.0, ease: "easeOut" }}
-          className="grid grid-cols-1 lg:grid-cols-[7fr_5fr] gap-10 lg:gap-16 items-center"
+          className="grid grid-cols-1 lg:grid-cols-[7fr_5fr] gap-10 lg:gap-16 items-stretch"
         >
           {/* Image — landscape, leading */}
           <Link href="/host-your-retreat" className="group block">
@@ -32,8 +32,11 @@ export function HostYourRetreat() {
             </div>
           </Link>
 
-          {/* Text */}
-          <div>
+          {/* Text — set as a column the full height of the photograph beside it,
+              so the heading and its paragraph hang from the top edge and the
+              button sits on the floor. Centring the block as a whole left the
+              two ends floating at arbitrary heights against the image. */}
+          <div className="flex flex-col">
             <p className="font-body font-normal text-[10px] tracking-[0.25em] uppercase text-burgundy">
               For Teachers &amp; Hosts
             </p>
@@ -51,7 +54,7 @@ export function HostYourRetreat() {
 
             <Link
               href="/host-your-retreat"
-              className="inline-block bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300 mt-9"
+              className="self-start bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300 mt-9 lg:mt-auto"
             >
               Discover more
             </Link>

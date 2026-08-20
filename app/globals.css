@@ -112,6 +112,26 @@
   button:not(.admin-scope button) {
     border-radius: 0 !important;
   }
+
+  /* Pointer cursor on anything clickable.
+     Tailwind v3's Preflight set `cursor: pointer` on buttons; v4 dropped it and
+     defers to the UA default (`cursor: default`), so every <button> on the site
+     silently lost its pointer — the hero's "Check availability" among them.
+     Restored here once, globally, rather than as a utility class per button,
+     so a new button is never shipped without it.
+
+     Scoped to `:where()` so it adds no specificity: a component that genuinely
+     needs another cursor (a drag handle, a loading state) overrides it with a
+     plain utility class and wins. Disabled controls are excluded — a pointer on
+     something that can't be pressed is a false affordance. */
+  :where(button, [role="button"], summary, label[for], a[href]):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  :where(button, [role="button"]):disabled,
+  :where(button, [role="button"])[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* ─── Admin panel scope ──────────────────────────────────────────────
