@@ -15,7 +15,7 @@ export function YTTClosingCTA() {
   return (
     <section className="bg-warm-white">
       <div className="w-full">
-        <div className="relative overflow-hidden bg-dark min-h-[42vh] md:min-h-[46vh] flex items-center justify-center">
+        <div data-surface="dark" className="relative overflow-hidden bg-dark min-h-[42vh] md:min-h-[46vh] flex items-center justify-center">
           <img src={IMAGE} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
           <div aria-hidden className="absolute inset-0 bg-dark/60" />
 

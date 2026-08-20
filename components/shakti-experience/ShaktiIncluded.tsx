@@ -47,7 +47,7 @@ export function ShaktiIncluded() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section className="bg-dark text-cream py-20 lg:py-28">
+    <section data-surface="dark" className="bg-dark text-cream py-20 lg:py-28">
       <div ref={ref} className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-2 lg:gap-20">
         {/* Included */}
         <div>

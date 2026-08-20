@@ -3,6 +3,8 @@
 // append to the RETREATS array — every section of /retreats/[slug] reads its
 // content from here.
 
+import { WHATSAPP_URL_PLAIN } from '@/lib/whatsapp';
+
 export type RetreatHost = {
   image: string;
   name: string;
@@ -339,7 +341,7 @@ const SHAKTI_SADHANA: Retreat = {
   finalCTAPrimaryLabel: 'Reserve your place',
   finalCTAPrimaryHref: '/contact?retreat=shakti-sadhana',
   finalCTASecondaryLabel: 'Ask a question on WhatsApp',
-  finalCTASecondaryHref: 'https://wa.me/50688365115',
+  finalCTASecondaryHref: WHATSAPP_URL_PLAIN,
 };
 
 export const RETREATS: Retreat[] = [SHAKTI_SADHANA];

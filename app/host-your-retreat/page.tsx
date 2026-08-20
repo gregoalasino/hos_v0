@@ -358,7 +358,7 @@ function ActivityColumn({
 
 function HostActivities() {
   return (
-    <section className="bg-dark py-20 lg:py-28">
+    <section data-surface="dark" className="bg-dark py-20 lg:py-28">
       <div className="w-[90%] md:w-[80%] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
         <ActivityColumn
           eyebrow="On-site"
@@ -467,7 +467,7 @@ function HostClosingCTA() {
   return (
     <section className="bg-warm-white">
       <div className="w-full md:w-[80%] mx-auto">
-        <div className="relative overflow-hidden bg-dark min-h-[70vh] flex items-center justify-center">
+        <div data-surface="dark" className="relative overflow-hidden bg-dark min-h-[70vh] flex items-center justify-center">
           <img
             src="/images/sanctuary/271A0759_websize%201.webp"
             alt=""

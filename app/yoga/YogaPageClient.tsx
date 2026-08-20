@@ -408,7 +408,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
         {/* ── Class packs — high-emphasis burgundy banner ──────────────────────
             Buy a pack directly here, then redeem class by class with the code
             we email you. This direct purchase is card-only via Tilopay. */}
-        <div className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
+        <div data-surface="dark" className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 lg:gap-10">
             <div className="max-w-2xl">
               <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight">

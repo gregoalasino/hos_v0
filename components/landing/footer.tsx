@@ -49,6 +49,7 @@ export function Footer() {
     <footer
       ref={ref}
       role="contentinfo"
+      data-surface="dark"
       className="bg-dark text-cream pt-20 lg:pt-32 pb-8 lg:pb-16 px-6 lg:px-0"
     >
       <div className="w-[90%] md:w-[80%] mx-auto">

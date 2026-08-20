@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { LanguageProvider } from '@/contexts/language-context'
 import { SplashScreen } from '@/components/landing/SplashScreen'
+import { WhatsAppButton } from '@/components/landing/WhatsAppButton'
 import { CLOUDBEDS_IMMERSIVE_SRC } from '@/lib/cloudbeds'
 import './globals.css'
 import Script from 'next/script';
@@ -48,9 +49,29 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${krylon.variable} ${chalet.variable}`}>
       <body className="font-body antialiased">
+        {/* Pre-paint splash decision. An inline synchronous script blocks the
+            parser for microseconds and runs BEFORE anything below it paints —
+            the only place the sessionStorage + reduced-motion call can be made
+            without flashing the SSR'd veil at returning visitors while the
+            bundle hydrates. It stamps <html data-splash="play"> only when the
+            splash should run; the CSS gate in globals.css keeps the overlay
+            display:none otherwise, so no JS (or a failed bundle) degrades to
+            no splash instead of a page covered forever. Writing the seen-key
+            here — once per load, outside React — is also what lets the
+            component's own effect stay a pure read, immune to StrictMode's
+            double-invoke in dev. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var k='hos-splash-seen';if(sessionStorage.getItem(k)!=='1'&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.dataset.splash='play';sessionStorage.setItem(k,'1')}}catch(e){}",
+          }}
+        />
         <SplashScreen />
         <LanguageProvider>
           {children}
+          {/* Floating WhatsApp entry point — every public page; the component
+              itself stays out of /admin, /instructor, /login and /booking. */}
+          <WhatsAppButton />
         </LanguageProvider>
         <Analytics />
         <Script

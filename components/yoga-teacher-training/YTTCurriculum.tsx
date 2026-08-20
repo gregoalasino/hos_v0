@@ -92,7 +92,7 @@ export function YTTCurriculum() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="bg-dark text-cream py-20 lg:py-28">
+    <section ref={ref} data-surface="dark" className="bg-dark text-cream py-20 lg:py-28">
       <div className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-2xl">
           <motion.h2
