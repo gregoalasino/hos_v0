@@ -34,9 +34,15 @@ export default function Home() {
       />
       <SeasonalExperiences />
       <HostYourRetreat />
-      {/* Rhythm mark — a quiet breath between sections */}
+      {/* Rhythm mark — a quiet breath between sections. The moon cycle, which is
+          the mark this beat was always meant to carry; `dots-rhythm.png` is a
+          row of flat black dots and read as a stray element rather than as the
+          phases. Sized one step below the ornaments that seal a heading, so it
+          reads as punctuation and not as the start of a new section.
+          No opacity class here: Ornament animates opacity with framer-motion,
+          which writes `opacity: 1` inline and beats any utility set on it. */}
       <div className="bg-warm-white flex justify-center">
-        <Ornament src="/logos/dots-rhythm.png" className="h-3 md:h-4 opacity-40" />
+        <Ornament src="/logos/moon-phase.png" className="h-7 md:h-8" />
       </div>
       <Gallery />
       {/* <Testimonials /> — removed from render, kept in repo */}
