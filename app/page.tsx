@@ -21,10 +21,13 @@ export default function Home() {
       {/* Brand statement + scattered photos, right below the hero video */}
       <ReturnToYourself />
       <Pillars />
-      {/* Wide, low transition band with a quote (re:center-style strip) */}
+      {/* Guest testimonial — the full-height treatment built for the YTT
+          landing: the photograph carries the section, the words sit centred in
+          it. Scrim strength is measured against this specific image (see
+          QuoteBreak); re-measure if the photograph is swapped. */}
       <QuoteBreak
-        size="short"
-        image="/images/sanctuary/271A0714_websize%201.webp"
+        variant="testimonial"
+        image="/images/home/quote/quote-img.webp"
         quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
         author="House of Shakti"
         role="Santa Teresa, Costa Rica"

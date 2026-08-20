@@ -4,6 +4,8 @@ import { motion, Variants, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Ornament } from "./ornament";
+import { TrackArrows } from "./TrackArrows";
+import { useCarousel } from "@/hooks/use-carousel";
 
 const experiences = [
   {
@@ -49,10 +51,17 @@ const cardVariants: Variants = {
 
 export function SeasonalExperiences() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
+  // Stepping the track, and knowing when it has reached either end. The track
+  // stays a plain scroll container underneath, so dragging, swiping, the
+  // trackpad and the keyboard all keep working — the arrows are a second way
+  // in, not a replacement for any of them.
+  const { trackRef, atStart, atEnd, step, hasOverflow } = useCarousel<HTMLDivElement>();
+
   // Progress bar (Aman style): fixed-width thumb that translates left→right.
+  // Kept alongside the arrows because the two answer different questions —
+  // the bar says where you are, the arrows move you.
   const [thumbWidth, setThumbWidth] = useState(100); // % of track
   const [thumbLeft, setThumbLeft] = useState(0); // % of track
 
@@ -63,7 +72,7 @@ export function SeasonalExperiences() {
   const dragStartScrollLeft = useRef(0);
 
   const updateProgress = () => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
     if (scrollWidth <= clientWidth) {
@@ -124,7 +133,7 @@ export function SeasonalExperiences() {
   // pull; on release we restore proximity snap + smooth behavior so the
   // carousel glides softly to the nearest card instead of jerking.
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
     isDragging.current = true;
     dragMoved.current = false;
@@ -137,7 +146,7 @@ export function SeasonalExperiences() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
     const delta = e.pageX - dragStartX.current;
     if (Math.abs(delta) > 5) dragMoved.current = true;
@@ -147,7 +156,7 @@ export function SeasonalExperiences() {
   const endDrag = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
     el.style.cursor = "grab";
     el.style.scrollBehavior = "smooth";
@@ -174,7 +183,7 @@ export function SeasonalExperiences() {
     >
       {/* Container global del proyecto: 90% mobile / 80% desktop */}
       <div className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-3 lg:gap-12">
-        {/* LEFT — heading + intro */}
+        {/* LEFT — heading + intro + track controls */}
         <div className="lg:col-span-1 lg:pr-12">
           {/* Moon phases centered over the title — echoes the "Moon cycles" gathering */}
           <div className="w-fit">
@@ -198,16 +207,42 @@ export function SeasonalExperiences() {
           >
             Explore the experiences currently unfolding at House of Shakti.
           </motion.p>
+
+          {/* Arrows sit with the copy, not floating over the cards, so they
+              never cover a photograph or a title. Hidden outright when every
+              card already fits — a pair of permanently dead controls teaches
+              the reader that the section doesn't respond. */}
+          {hasOverflow && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 1.0, ease: "easeOut", delay: 0.3 }}
+              className="mt-8 lg:mt-10"
+            >
+              <TrackArrows
+                atStart={atStart}
+                atEnd={atEnd}
+                onPrev={() => step(-1)}
+                onNext={() => step(1)}
+              />
+            </motion.div>
+          )}
         </div>
 
         {/* RIGHT — horizontal scroll + progress bar */}
         <div className="lg:col-span-2 mt-12 lg:mt-0">
-          {/* Scroll container */}
+          {/* The track starts on the container's left edge, like every other
+              section, and runs off the right one. That asymmetry is the whole
+              affordance: a card cut by the screen edge says the row continues,
+              where a tidy right margin says it has ended. The gutter cancelled
+              here is exactly 5vw of viewport, 10vw from md, since the container
+              is 90%/80% and centred. On desktop the track stays inside its
+              column, where the cards are already visibly cut by the grid. */}
           <motion.div
             variants={cardsContainerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            ref={scrollRef}
+            ref={trackRef}
             onScroll={updateProgress}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -215,7 +250,7 @@ export function SeasonalExperiences() {
             onMouseLeave={endDrag}
             onClickCapture={handleClickCapture}
             tabIndex={0}
-            aria-label="Seasonal experiences"
+            aria-label="Featured experiences"
             className="
               flex gap-6 lg:gap-8
               overflow-x-auto snap-x snap-proximity scroll-smooth
@@ -224,6 +259,7 @@ export function SeasonalExperiences() {
               [-ms-overflow-style:none]
               [&::-webkit-scrollbar]:hidden
               focus:outline-none
+              -mr-[5vw] md:-mr-[10vw] lg:mr-0
             "
           >
             {experiences.map((exp) => (
@@ -236,7 +272,16 @@ export function SeasonalExperiences() {
                   lg:w-[40vw] lg:max-w-[440px]
                 "
               >
-                <Link href={exp.href} className="group block" draggable={false}>
+                {/* The titles run to one, two and three lines, so left to stack
+                    naturally each "Discover more" landed at its own height.
+                    The cards already stretch to the tallest in the row, so the
+                    column takes that height, the description absorbs the slack
+                    and the link is pushed to the floor: the three line up. */}
+                <Link
+                  href={exp.href}
+                  className="group flex h-full flex-col"
+                  draggable={false}
+                >
                   {/* Image — square */}
                   <div className="relative aspect-square overflow-hidden">
                     <img
@@ -247,17 +292,19 @@ export function SeasonalExperiences() {
                     />
                   </div>
 
-                  <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-tight mt-3">
-                    {exp.title}
-                  </h3>
+                  <div className="flex flex-1 flex-col">
+                    <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-tight mt-3">
+                      {exp.title}
+                    </h3>
 
-                  <p className="font-body text-sm text-ink leading-relaxed mt-3 line-clamp-3">
-                    {exp.description}
-                  </p>
+                    <p className="font-body text-sm text-ink leading-relaxed mt-3 line-clamp-3">
+                      {exp.description}
+                    </p>
 
-                  <span className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70 mt-6">
-                    Discover more
-                  </span>
+                    <span className="mt-auto self-start font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70 pt-6">
+                      Discover more
+                    </span>
+                  </div>
                 </Link>
               </motion.article>
             ))}
