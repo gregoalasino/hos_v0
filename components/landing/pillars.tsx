@@ -85,9 +85,9 @@ export function Pillars() {
           className="grid md:grid-cols-3 gap-8 lg:gap-10"
         >
           {pillars.map((pillar) => (
-            <motion.article key={pillar.title} variants={itemVariants}>
+            <motion.article key={pillar.title} variants={itemVariants} className="h-full">
               {/* Entire card is one link — image, title, description, CTA all clickable */}
-              <Link href={pillar.link} className="group block">
+              <Link href={pillar.link} className="group flex h-full flex-col">
                 {/* Image — static, no hover zoom */}
                 <div className="relative aspect-[4/5] overflow-hidden">
                   <img
@@ -98,8 +98,14 @@ export function Pillars() {
                   />
                 </div>
 
-                {/* Text block */}
-                <div className="mt-6 lg:mt-8">
+                {/* Text block.
+                    The three descriptions run to different lengths — four lines,
+                    two, three — so left to stack naturally each "Discover more"
+                    landed at its own height and the row read as ragged. The
+                    column grows to the tallest card in the row (the grid already
+                    stretches its items), the paragraph takes the slack, and the
+                    link is pushed to the floor, so the three line up. */}
+                <div className="mt-6 lg:mt-8 flex flex-1 flex-col">
                   <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mb-3 lg:mb-4">
                     {pillar.title}
                   </h3>
@@ -108,7 +114,7 @@ export function Pillars() {
                     {pillar.description}
                   </p>
 
-                  <span className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70">
+                  <span className="mt-auto font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70 self-start">
                     Discover more
                   </span>
                 </div>

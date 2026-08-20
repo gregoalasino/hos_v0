@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, isBefore, startOfToday } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   CLOUDBEDS_PROPERTY_CODE,
   cloudbedsReservationUrl,
@@ -22,15 +23,44 @@ export function CheckAvailabilityBar() {
   const [range, setRange] = useState<DateRange | undefined>();
   const [open, setOpen] = useState(false);
 
+  // Two months side by side is what makes a stay pickable: a one-month view
+  // hides the checkout the moment it falls after the 30th, and the reader has
+  // to find the arrow, page over, and hold the arrival in their head. Phones
+  // have no room for the pair, so they page.
+  const isWide = useMediaQuery("(min-width: 768px)");
+
   const from = range?.from;
   const to = range?.to;
+
+  // Range building is handled here rather than left to the picker's default.
+  // Out of the box it treats the first click as a complete `from`–`to` pair on
+  // the same day — a zero-night stay — and, once a pair exists, every later
+  // click only drags the checkout further out. So the panel would shut after a
+  // single click, and there was no way to pick a different arrival at all.
+  //
+  // The rule instead: a click either starts a stay or finishes one. It starts
+  // one whenever there's nothing pending, a stay is already complete, or the
+  // date lands on or before the pending arrival — which is also what keeps a
+  // stay at one night or more, without a separate minimum to enforce.
+  const handleSelect = (_selected: DateRange | undefined, clicked: Date) => {
+    const startsNewStay = !range?.from || !!range.to || !isBefore(range.from, clicked);
+
+    if (startsNewStay) {
+      setRange({ from: clicked, to: undefined });
+      return;
+    }
+
+    setRange({ from: range.from, to: clicked });
+    setOpen(false); // the stay is complete — nothing left to pick
+  };
 
   const handleCheck = () => {
     if (from && to) {
       window.open(cloudbedsReservationUrl(iso(from), iso(to)), "_blank", "noopener,noreferrer");
       return;
     }
-    // No dates chosen — open the immersive overlay if available, else the plain page.
+    // No complete stay chosen — open the immersive overlay if available, else
+    // the plain page.
     const openPopup = window.openImmersiveExperiencePopup;
     if (typeof openPopup === "function") {
       openPopup({ propertyCode: CLOUDBEDS_PROPERTY_CODE });
@@ -39,11 +69,14 @@ export function CheckAvailabilityBar() {
     }
   };
 
+  // Naming the half that's still missing, rather than leaving the placeholder
+  // up: after the first click the reader has picked something, and the field
+  // should say what it's now waiting for.
   const dateLabel =
     from && to
       ? `${pretty(from)} → ${pretty(to)}`
       : from
-      ? `${pretty(from)} → End date`
+      ? `${pretty(from)} → Select checkout`
       : "Start date → End date";
 
   // The pill reads as smoked glass over the footage. Neutral black rather than
@@ -77,13 +110,13 @@ export function CheckAvailabilityBar() {
         <PopoverContent align="start" className="w-auto p-0" sideOffset={12}>
           <Calendar
             mode="range"
-            numberOfMonths={1}
+            numberOfMonths={isWide ? 2 : 1}
             selected={range}
-            onSelect={(r) => {
-              setRange(r);
-              if (r?.from && r?.to) setOpen(false);
-            }}
-            disabled={{ before: new Date() }}
+            onSelect={handleSelect}
+            // Reopening should land on the month being worked in, not back on
+            // today, once the arrival is months out.
+            defaultMonth={from}
+            disabled={{ before: startOfToday() }}
             autoFocus
           />
         </PopoverContent>
@@ -92,7 +125,7 @@ export function CheckAvailabilityBar() {
       <button
         type="button"
         onClick={handleCheck}
-        className="bg-cream text-ink font-body text-xs md:text-sm tracking-[0.08em] uppercase px-5 md:px-7 hover:bg-ink hover:text-cream transition-colors duration-300"
+        className="bg-cream text-ink font-body text-xs md:text-sm tracking-[0.05em] px-5 md:px-7 hover:bg-ink hover:text-cream transition-colors duration-300"
       >
         Check availability
       </button>
