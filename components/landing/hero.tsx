@@ -40,7 +40,7 @@ export function Hero() {
       <div className="w-full mx-auto mt-16 md:mt-20">
         <div
           className="
-            relative overflow-hidden bg-dark
+            relative overflow-hidden bg-black
             h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
           "
         >
@@ -84,10 +84,14 @@ export function Hero() {
             />
           </div>
 
-          {/* Bottom overlay — tagline + Cloudbeds availability bar (à la RecenterLife) */}
+          {/* Bottom overlay — tagline + Cloudbeds availability bar (à la RecenterLife).
+              Neutral black, not `--dark`: that token is #340000, a burgundy, and
+              tinting the whole lower half of the footage with it read as a colour
+              cast over the photography rather than as shade. Same opacities, so
+              the h1 keeps exactly the contrast it had. */}
           <div
             aria-hidden
-            className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-dark/70 via-dark/20 to-transparent pointer-events-none"
+            className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"
           />
           <div className="absolute inset-x-0 bottom-0">
             <div className="w-[85%] md:w-[88%] mx-auto pb-8 md:pb-12">

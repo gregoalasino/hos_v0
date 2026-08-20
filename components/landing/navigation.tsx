@@ -1,24 +1,27 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { useLanguage } from '@/contexts/language-context';
+import { tr, type Lang } from '@/lib/i18n';
+import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 // Single source of truth for the primary nav links. Rendered only inside
 // the drawer (the closed navbar shows just hamburger + logo + lang/CTA,
 // matching the Aman pattern).
-const navItems: { label: string; href: string }[] = [
-  { label: 'Yoga Classes', href: '/yoga' },
-  { label: 'Accommodations', href: '/accommodations' },
-  { label: 'Retreats', href: '/retreats' },
+const navItems: { es: string; en: string; href: string }[] = [
+  { es: 'Clases de Yoga', en: 'Yoga Classes', href: '/yoga' },
+  { es: 'Alojamiento', en: 'Accommodations', href: '/accommodations' },
+  { es: 'Retiros', en: 'Retreats', href: '/retreats' },
   // Anchor into the home page rather than a route of its own — the section
   // lives at <section id="seasonal-experiences"> in seasonal-experiences.tsx.
-  { label: 'Seasonal Experiences', href: '/#seasonal-experiences' },
-  { label: 'Gallery', href: '/gallery' },
-  { label: 'Contact', href: '/contact' },
+  { es: 'Experiencias de Temporada', en: 'Seasonal Experiences', href: '/#seasonal-experiences' },
+  { es: 'Galería', en: 'Gallery', href: '/gallery' },
+  { es: 'Contacto', en: 'Contact', href: '/contact' },
 ];
 
 // ─── Active-route helper ────────────────────────────────────────────────────
@@ -34,33 +37,66 @@ function useActiveRoute() {
   };
 }
 
-// ─── Scroll-based compact state ─────────────────────────────────────────────
-// 80px threshold. rAF-throttled. Also runs once on mount in case the user
-// reloads while already scrolled.
-function useIsCompact(threshold = 80) {
-  const [isCompact, setIsCompact] = useState(false);
+// ─── Scroll-driven navbar state ─────────────────────────────────────────────
+// One listener drives both behaviours, so they can never disagree about where
+// the page is:
+//
+//   compact — past `compactAt`, the bar and logo shrink.
+//   hidden  — reading downward retracts the bar; the smallest move back up
+//             brings it straight back. Above `revealAt` it is always shown, so
+//             the top of the page never opens on a hidden navbar.
+//
+// `DELTA` swallows the sub-pixel jitter of trackpads and iOS rubber-banding,
+// which would otherwise flap the bar open and shut while the reader is holding
+// still.
+const DELTA = 6;
+
+function useNavbarScrollState({ compactAt = 80, revealAt = 140 } = {}) {
+  const [state, setState] = useState({ isCompact: false, isHidden: false });
+
   useEffect(() => {
+    let lastY = window.scrollY;
     let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          setIsCompact(window.scrollY > threshold);
-          ticking = false;
-        });
-        ticking = true;
+
+    const measure = () => {
+      const y = window.scrollY;
+      const isCompact = y > compactAt;
+
+      let isHidden: boolean | null = null;
+      if (y <= revealAt) {
+        isHidden = false;
+      } else if (Math.abs(y - lastY) > DELTA) {
+        isHidden = y > lastY;
       }
+
+      if (Math.abs(y - lastY) > DELTA) lastY = y;
+
+      setState((prev) => {
+        const next = { isCompact, isHidden: isHidden ?? prev.isHidden };
+        return prev.isCompact === next.isCompact && prev.isHidden === next.isHidden
+          ? prev
+          : next;
+      });
+      ticking = false;
     };
-    onScroll();
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(measure);
+    };
+
+    measure();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [threshold]);
-  return isCompact;
+  }, [compactAt, revealAt]);
+
+  return state;
 }
 
 // ─── Logo (image) ───────────────────────────────────────────────────────────
-// Heights are explicitly +25% over the previous pass (Santi's spec).
-//   Compact:  35px / 45px  (was 28 / 36)
-//   Expanded: 45px / 60px  (was 36 / 48)
+//   Compact:  35px / 45px
+//   Expanded: 45px / 60px
 // `sizeOverride` lets the drawer use a fixed mid-size for its own header.
 function HOSLogo({
   isCompact,
@@ -82,81 +118,81 @@ function HOSLogo({
   );
 }
 
-// ─── Language toggle (desktop dropdown) ─────────────────────────────────────
-// UI-only — no functional language switching yet.
-// TODO: implement i18n language switching when ES translations are ready.
-function LanguageToggle() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
+// ─── Language toggle ────────────────────────────────────────────────────────
+// Two small marks and a hairline — the same quiet register as the rest of the
+// bar, and a replacement for the old dropdown, which was a menu of two items
+// that changed nothing. The active language carries full ink; the inactive one
+// is an outline of itself until approached. Present on every breakpoint: on
+// phones it takes the navbar's right zone, which the layout was already
+// reserving as an empty spacer to keep the logo centred.
+function LangToggle() {
+  const { lang, setLang } = useLanguage();
 
-  useEffect(() => {
-    if (!open) return;
-    const onMouseDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onMouseDown);
-    return () => document.removeEventListener('mousedown', onMouseDown);
-  }, [open]);
+  const option = (code: Lang) => (
+    <button
+      type="button"
+      onClick={() => setLang(code)}
+      aria-pressed={lang === code}
+      className={`font-body text-[11px] tracking-[0.18em] uppercase transition-colors duration-300 ${
+        lang === code ? 'text-ink' : 'text-ink/35 hover:text-ink/70'
+      }`}
+    >
+      {code.toUpperCase()}
+    </button>
+  );
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Change language"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="flex items-center gap-1 text-ink hover:opacity-70 transition-opacity duration-300 cursor-pointer"
-      >
-        <span className="font-body text-sm tracking-[0.05em]">English</span>
-        <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-300 ${
-            open ? 'rotate-180' : ''
-          }`}
-          strokeWidth={1.5}
-        />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            role="menu"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute top-full right-0 mt-2 bg-warm-white border border-ink/10 py-2 px-1 min-w-[100px]"
-          >
-            <button
-              role="menuitem"
-              type="button"
-              onClick={() => setOpen(false)}
-              className="block w-full text-left font-body text-sm text-ink px-4 py-2 cursor-pointer hover:bg-cream"
-            >
-              English
-            </button>
-            <button
-              role="menuitem"
-              type="button"
-              onClick={() => setOpen(false)}
-              className="block w-full text-left font-body text-sm text-ink px-4 py-2 cursor-pointer hover:bg-cream"
-            >
-              Español
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div
+      role="group"
+      aria-label={tr(lang, 'Cambiar idioma', 'Change language')}
+      className="flex items-center gap-2.5"
+    >
+      {option('en')}
+      <span aria-hidden className="h-3 w-px bg-ink/25" />
+      {option('es')}
     </div>
+  );
+}
+
+// ─── Reserve CTA ────────────────────────────────────────────────────────────
+// Straight into Cloudbeds, no interstitial page. The immersive loader script
+// (mounted once in app/layout.tsx) opens the booking engine as an overlay, so
+// the reader never leaves the site; the `href` stays as the graceful fallback
+// for when that script is blocked or still loading, and is what a cmd-click
+// opens in a new tab. Same contract as CheckAvailabilityLink on /accommodations.
+function ReserveCta({ className, onNavigate }: { className: string; onNavigate?: () => void }) {
+  const { lang } = useLanguage();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    onNavigate?.();
+    // Let the browser handle modified clicks (new tab, etc.) via the href.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const openPopup = window.openImmersiveExperiencePopup;
+    if (typeof openPopup === 'function') {
+      e.preventDefault();
+      openPopup({ propertyCode: CLOUDBEDS_PROPERTY_CODE });
+    }
+    // else: fall through to the href (new-tab reservation page).
+  };
+
+  return (
+    <a
+      href={CLOUDBEDS_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleClick}
+      className={className}
+    >
+      {tr(lang, 'Reservar', 'Reserve')}
+    </a>
   );
 }
 
 // ─── Drawer ─────────────────────────────────────────────────────────────────
 // Slides in from LEFT. On desktop: 420px wide panel + dimmed backdrop on the
-// remaining area (Aman pattern — lang + Reserve in navbar remain visible to
-// the right). On mobile: full-screen, and the drawer also holds lang + CTA
-// since they're hidden from the mobile navbar bar.
+// remaining area (Aman pattern — lang + Reserve in the navbar remain visible to
+// the right). On mobile: full-screen, and the drawer also holds the CTA, since
+// that is hidden from the mobile navbar.
 function Drawer({
   open,
   onClose,
@@ -166,6 +202,7 @@ function Drawer({
 }) {
   const isActive = useActiveRoute();
   const pathname = usePathname();
+  const { lang } = useLanguage();
 
   // Anchor links (e.g. "/#seasonal-experiences") need special handling: while
   // the drawer is open the body carries `overflow: hidden`, so the browser's
@@ -260,7 +297,7 @@ function Drawer({
             id="primary-drawer"
             role="dialog"
             aria-modal="true"
-            aria-label="Site navigation"
+            aria-label={tr(lang, 'Navegación del sitio', 'Site navigation')}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -273,8 +310,8 @@ function Drawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label="Close menu"
-                  className="text-ink hover:opacity-70 transition-opacity duration-300 cursor-pointer"
+                  aria-label={tr(lang, 'Cerrar menú', 'Close menu')}
+                  className="text-ink hover:opacity-70 transition-opacity duration-300"
                 >
                   <X className="w-[22px] h-[22px]" strokeWidth={1.5} />
                 </button>
@@ -298,13 +335,13 @@ function Drawer({
                     key={item.href}
                     href={item.href}
                     onClick={(e) => handleNavClick(e, item.href)}
-                    className={`block font-display font-light text-ink text-2xl ${
+                    className={`block font-display font-light text-ink text-2xl hover:opacity-70 transition-opacity duration-300 ${
                       isActive(item.href)
                         ? 'underline underline-offset-4 decoration-[0.5px]'
                         : ''
                     }`}
                   >
-                    {item.label}
+                    {tr(lang, item.es, item.en)}
                   </Link>
                 ))}
               </nav>
@@ -312,40 +349,14 @@ function Drawer({
               {/* Spacer */}
               <div className="flex-1" />
 
-              {/* Mobile-only: language toggle + Reserve CTA inside drawer.
-                  Desktop has these in the navbar's right zone (visible above
-                  the backdrop), so they don't repeat here. */}
-              <div className="lg:hidden">
-                {/* Language toggle.
-                    TODO: implement i18n language switching when ES translations
-                    are ready. Currently UI-only. */}
-                <div className="border-t border-ink/10 pt-6 flex items-center gap-4">
-                  <span className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-                    Language
-                  </span>
-                  <button
-                    type="button"
-                    className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px]"
-                  >
-                    English
-                  </button>
-                  <button
-                    type="button"
-                    className="font-body text-sm text-ink/40"
-                  >
-                    Español
-                  </button>
-                </div>
-
-                {/* Reserve — bottom of mobile drawer */}
-                <Link
-                  href="/accommodations"
-                  onClick={onClose}
-                  className="block w-full text-center bg-dark text-cream font-body text-sm py-4 hover:bg-burgundy transition-colors duration-300 mt-8"
-                >
-                  Reserve
-                </Link>
-              </div>
+              {/* Mobile-only: the CTA lives in the navbar on desktop, where it
+                  stays visible above the backdrop, so it doesn't repeat there.
+                  The language toggle is no longer duplicated here either — it
+                  now sits in the navbar on phones too. */}
+              <ReserveCta
+                onNavigate={onClose}
+                className="lg:hidden block w-full text-center bg-dark text-cream font-body text-sm py-4 hover:bg-burgundy transition-colors duration-300 mt-8"
+              />
             </div>
           </motion.div>
         </>
@@ -356,21 +367,28 @@ function Drawer({
 
 // ─── Main component ─────────────────────────────────────────────────────────
 export function Navigation() {
+  const { lang } = useLanguage();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const isCompact = useIsCompact(80);
+  const { isCompact, isHidden } = useNavbarScrollState();
+
+  // The drawer's own controls live in this bar on desktop, so it must never be
+  // retracted while the drawer is open.
+  const retracted = isHidden && !drawerOpen;
 
   const heightClass = isCompact ? 'h-14 lg:h-20' : 'h-20 lg:h-28';
 
   return (
     <>
       <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+        animate={{ y: retracted ? '-100%' : '0%' }}
+        // Long enough to read as the bar withdrawing rather than blinking out.
+        // The curve leaves quickly and arrives slowly, so the return never
+        // overshoots into the reader's line of sight.
+        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
         className={`
           fixed top-0 left-0 right-0 z-50
           bg-warm-white
-          transition-all duration-[400ms] ease-out
+          transition-[height] duration-[400ms] ease-out
           ${heightClass}
         `}
       >
@@ -379,14 +397,14 @@ export function Navigation() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
+            aria-label={tr(lang, 'Abrir menú', 'Open menu')}
             aria-controls="primary-drawer"
             aria-expanded={drawerOpen}
-            className="justify-self-start flex items-center gap-4 lg:gap-5 text-ink hover:opacity-70 transition-opacity duration-300 cursor-pointer"
+            className="justify-self-start flex items-center gap-4 lg:gap-5 text-ink hover:opacity-70 transition-opacity duration-300"
           >
             <Menu className="w-[22px] h-[22px]" strokeWidth={1.5} />
             <span className="hidden lg:inline font-body text-sm tracking-[0.05em]">
-              Menu
+              {tr(lang, 'Menú', 'Menu')}
             </span>
           </button>
 
@@ -398,19 +416,17 @@ export function Navigation() {
             <HOSLogo isCompact={isCompact} />
           </Link>
 
-          {/* RIGHT — language toggle + Reserve (desktop only) */}
+          {/* RIGHT — language toggle everywhere; the Reserve CTA joins it on
+              desktop. On phones the toggle takes the slot the grid was already
+              reserving to keep the logo centred. */}
           <div className="hidden lg:flex items-center gap-6 justify-self-end">
-            <LanguageToggle />
-            <Link
-              href="/accommodations"
-              className="bg-dark text-cream font-body text-sm tracking-[0.05em] px-6 py-2.5 hover:bg-burgundy transition-colors duration-300"
-            >
-              Reserve
-            </Link>
+            <LangToggle />
+            <ReserveCta className="bg-dark text-cream font-body text-sm tracking-[0.05em] px-6 py-2.5 hover:bg-burgundy transition-colors duration-300" />
           </div>
 
-          {/* Mobile spacer to keep the grid balanced (so the logo stays centered) */}
-          <div className="lg:hidden justify-self-end" />
+          <div className="lg:hidden justify-self-end">
+            <LangToggle />
+          </div>
         </div>
       </motion.header>
 

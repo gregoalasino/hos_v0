@@ -46,8 +46,12 @@ export function CheckAvailabilityBar() {
       ? `${pretty(from)} → End date`
       : "Start date → End date";
 
+  // The pill reads as smoked glass over the footage. Neutral black rather than
+  // `--dark` (#340000): a burgundy panel sitting on the video was part of the
+  // same colour cast as the scrim behind it. Black is the darker ground, so a
+  // lower alpha than the old /85 still leaves the cream type the contrast it had.
   return (
-    <div className="inline-flex items-stretch overflow-hidden bg-dark/85 backdrop-blur-sm shadow-lg">
+    <div className="inline-flex items-stretch overflow-hidden bg-black/75 backdrop-blur-sm shadow-lg">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
@@ -88,7 +92,7 @@ export function CheckAvailabilityBar() {
       <button
         type="button"
         onClick={handleCheck}
-        className="bg-cream text-dark font-body text-xs md:text-sm tracking-[0.08em] uppercase px-5 md:px-7 hover:bg-burgundy hover:text-cream transition-colors duration-300"
+        className="bg-cream text-ink font-body text-xs md:text-sm tracking-[0.08em] uppercase px-5 md:px-7 hover:bg-ink hover:text-cream transition-colors duration-300"
       >
         Check availability
       </button>
