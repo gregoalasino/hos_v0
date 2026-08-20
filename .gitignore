@@ -12,3 +12,9 @@ node_modules/
 .claude/worktrees/
 .env.local
 .claire/
+
+# TypeScript incremental build cache
+# Rewritten on every `tsc` / `next build`, so tracking it turns a plain build
+# into a working-tree change — and, on a shared branch, into a conflict in a
+# file nobody edits by hand. Regenerates on demand; nothing needs it in git.
+*.tsbuildinfo
