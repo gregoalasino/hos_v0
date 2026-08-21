@@ -43,7 +43,7 @@ export function YTTSanctuary() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
           >
             <Link
-              href="/accommodations"
+              href="/stay-with-us"
               className="inline-block bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300 mt-9"
             >
               View accommodations

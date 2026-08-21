@@ -111,7 +111,7 @@ export function RetreatSpace({ retreat }: { retreat: Retreat }) {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.4 }}
           >
             <Link
-              href="/accommodations"
+              href="/stay-with-us"
               className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer mt-8"
             >
               Explore the sanctuary

@@ -15,7 +15,7 @@ import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
 // matching the Aman pattern).
 const navItems: { es: string; en: string; href: string }[] = [
   { es: 'Clases de Yoga', en: 'Yoga Classes', href: '/yoga' },
-  { es: 'Alojamiento', en: 'Accommodations', href: '/accommodations' },
+  { es: 'Hospedate con Nosotras', en: 'Stay With Us', href: '/stay-with-us' },
   { es: 'Retiros', en: 'Retreats', href: '/retreats' },
   // Anchor into the home page rather than a route of its own — the section
   // lives at <section id="seasonal-experiences"> in seasonal-experiences.tsx.
@@ -159,7 +159,7 @@ function LangToggle() {
 // (mounted once in app/layout.tsx) opens the booking engine as an overlay, so
 // the reader never leaves the site; the `href` stays as the graceful fallback
 // for when that script is blocked or still loading, and is what a cmd-click
-// opens in a new tab. Same contract as CheckAvailabilityLink on /accommodations.
+// opens in a new tab. Same contract as CheckAvailabilityLink on /stay-with-us.
 function ReserveCta({ className, onNavigate }: { className: string; onNavigate?: () => void }) {
   const { lang } = useLanguage();
 

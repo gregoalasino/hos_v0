@@ -52,7 +52,7 @@ const DOORS: Door[] = [
   {
     title: (l) => tr(l, 'Estadías y Experiencias', 'Stays & Experiences'),
     detail: (l) =>
-      tr(l, 'Alojamiento, reservas y la Shakti Experience', 'Accommodations, bookings & the Shakti Experience'),
+      tr(l, 'Estadías, reservas y la Shakti Experience', 'Stays, bookings & the Shakti Experience'),
     message: (l) =>
       tr(
         l,
@@ -212,6 +212,10 @@ export function WhatsAppButton() {
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
+      // A modal on top of the page claims Escape for itself in the capture
+      // phase; one press should close what the reader is looking at, not
+      // everything that happens to be open underneath it.
+      if (e.defaultPrevented) return;
       if (e.key === 'Escape') {
         setMenuOpen(false);
         tileRef.current?.focus();

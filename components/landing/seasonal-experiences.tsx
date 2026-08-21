@@ -28,7 +28,7 @@ const experiences = [
     description:
       "A private couples experience designed to deepen intimacy, strengthen connection and cultivate presence.",
     image: "/images/seccionSeasonalExperiences/card_couples.webp",
-    href: "/accommodations",
+    href: "/stay-with-us",
   },
 ];
 
