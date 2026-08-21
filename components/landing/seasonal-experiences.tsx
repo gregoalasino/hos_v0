@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Ornament } from "./ornament";
 import { TrackArrows } from "./TrackArrows";
 import { useCarousel } from "@/hooks/use-carousel";
+import { useDragScroll } from "@/hooks/use-drag-scroll";
 
 const experiences = [
   {
@@ -59,11 +60,9 @@ export function SeasonalExperiences() {
   // in, not a replacement for any of them.
   const { trackRef, atStart, atEnd, step, hasOverflow } = useCarousel<HTMLDivElement>();
 
-  // Drag-to-scroll state (mutable refs, no re-renders).
-  const isDragging = useRef(false);
-  const dragMoved = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartScrollLeft = useRef(0);
+  // Drag-to-scroll — the shared hook, so this strip and the activities strip
+  // on /stay-with-us pull identically.
+  const { dragHandlers } = useDragScroll(trackRef);
 
   // Landing here directly at #seasonal-experiences — arriving from another
   // page via the nav link, or opening a shared link. Two problems to solve:
@@ -98,50 +97,6 @@ export function SeasonalExperiences() {
       window.clearTimeout(realign);
     };
   }, []);
-
-  // ── Drag-to-scroll handlers ─────────────────────────────────────────────
-  // While dragging we disable scroll-snap so the user gets a frictionless
-  // pull; on release we restore proximity snap + smooth behavior so the
-  // carousel glides softly to the nearest card instead of jerking.
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = trackRef.current;
-    if (!el) return;
-    isDragging.current = true;
-    dragMoved.current = false;
-    dragStartX.current = e.pageX;
-    dragStartScrollLeft.current = el.scrollLeft;
-    el.style.cursor = "grabbing";
-    el.style.scrollSnapType = "none";
-    el.style.scrollBehavior = "auto"; // direct 1:1 follow while dragging
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-    const el = trackRef.current;
-    if (!el) return;
-    const delta = e.pageX - dragStartX.current;
-    if (Math.abs(delta) > 5) dragMoved.current = true;
-    el.scrollLeft = dragStartScrollLeft.current - delta;
-  };
-
-  const endDrag = () => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    const el = trackRef.current;
-    if (!el) return;
-    el.style.cursor = "grab";
-    el.style.scrollBehavior = "smooth";
-    el.style.scrollSnapType = "x proximity";
-  };
-
-  // Suppress the click that would fire after a drag (prevents accidental nav).
-  const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragMoved.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      dragMoved.current = false;
-    }
-  };
 
   return (
     <section
@@ -214,11 +169,7 @@ export function SeasonalExperiences() {
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             ref={trackRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={endDrag}
-            onMouseLeave={endDrag}
-            onClickCapture={handleClickCapture}
+            {...dragHandlers}
             tabIndex={0}
             aria-label="Featured experiences"
             className="
@@ -256,7 +207,8 @@ export function SeasonalExperiences() {
                   <div className="relative aspect-square overflow-hidden">
                     <img
                       src={exp.image}
-                      alt={exp.title}
+                      alt=""
+                      aria-hidden
                       draggable={false}
                       className="w-full h-full object-cover pointer-events-none"
                     />

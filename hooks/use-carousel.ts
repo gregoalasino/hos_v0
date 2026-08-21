@@ -11,6 +11,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  */
 export function useCarousel<T extends HTMLElement = HTMLDivElement>() {
   const trackRef = useRef<T | null>(null);
+  // The pending fallback-jump timer (see step). Held in a ref so a content
+  // reset can cancel it — a stale timer firing after the track was rebuilt
+  // would fling the new content a step in.
+  const fallbackTimer = useRef<number | null>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
 
@@ -50,6 +54,7 @@ export function useCarousel<T extends HTMLElement = HTMLDivElement>() {
     const distance = first ? first.getBoundingClientRect().width + gap : el.clientWidth * 0.8;
 
     const before = el.scrollLeft;
+    if (fallbackTimer.current !== null) window.clearTimeout(fallbackTimer.current);
     el.scrollBy({ left: direction * distance, behavior: 'smooth' });
 
     // Some environments drop a smooth scroll instead of falling back to a jump,
@@ -60,7 +65,8 @@ export function useCarousel<T extends HTMLElement = HTMLDivElement>() {
     // It has to be an explicit 'instant': these tracks carry `scroll-smooth`,
     // and both assigning scrollLeft and passing 'auto' defer to that CSS
     // property — which is the very thing that just failed.
-    window.setTimeout(() => {
+    fallbackTimer.current = window.setTimeout(() => {
+      fallbackTimer.current = null;
       if (Math.abs(el.scrollLeft - before) < 2) {
         el.scrollTo({
           left: before + direction * distance,
