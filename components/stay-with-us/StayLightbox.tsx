@@ -46,7 +46,7 @@ export function StayLightbox({
   const [current, setCurrent] = useState(initialIndex);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
-  const touchX = useRef<number | null>(null);
+  const touch = useRef<{ x: number; y: number } | null>(null);
   const total = stay.images.length;
 
   const goPrev = useCallback(() => setCurrent((c) => (c - 1 + total) % total), [total]);
@@ -55,12 +55,17 @@ export function StayLightbox({
   // ── Keyboard: Esc closes, arrows walk the gallery ──────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'Escape') {
+        // Claimed in the capture phase so one Escape closes the sheet and
+        // nothing else — anything else listening on window (the WhatsApp
+        // panel) checks defaultPrevented and stands down.
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'ArrowLeft') goPrev();
       else if (e.key === 'ArrowRight') goNext();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [onClose, goPrev, goNext]);
 
   // ── Body scroll lock while open (same contract as the nav drawer) ──────
@@ -89,6 +94,14 @@ export function StayLightbox({
       if (!focusables.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
+      // Clicking a margin of the sheet leaves focus on <body>, which is
+      // neither first nor last — Tab would then walk out into the page
+      // behind. Pull it back in first.
+      if (!panelRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+        return;
+      }
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
@@ -164,13 +177,21 @@ export function StayLightbox({
           <div
             className="relative flex-1 min-h-0 select-none"
             onTouchStart={(e) => {
-              touchX.current = e.touches[0].clientX;
+              touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }}
+            onTouchCancel={() => {
+              touch.current = null;
             }}
             onTouchEnd={(e) => {
-              if (touchX.current === null) return;
-              const dx = e.changedTouches[0].clientX - touchX.current;
-              touchX.current = null;
-              if (Math.abs(dx) < 40) return;
+              if (!touch.current) return;
+              const dx = e.changedTouches[0].clientX - touch.current.x;
+              const dy = e.changedTouches[0].clientY - touch.current.y;
+              touch.current = null;
+              // Below lg the sheet itself is the only thing that scrolls, and
+              // a thumb travelling down the story drifts sideways as it goes.
+              // The gesture only counts as a swipe when it is decidedly
+              // horizontal — otherwise reading the page changed the photo.
+              if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
               if (dx < 0) goNext();
               else goPrev();
             }}
@@ -185,6 +206,10 @@ export function StayLightbox({
                     key={src}
                     src={src}
                     alt={`${stay.title} — photograph ${i + 1} of ${total}`}
+                    // Opacity alone doesn't hide anything from a screen
+                    // reader: the two neighbours stay mounted for the
+                    // crossfade, and without this all three announce.
+                    aria-hidden={i !== current}
                     draggable={false}
                     initial={false}
                     animate={{ opacity: i === current ? 1 : 0 }}
@@ -224,7 +249,7 @@ export function StayLightbox({
                   down beside the arrows. */}
               <p
                 aria-live="polite"
-                className="lg:hidden absolute bottom-3 right-4 font-body text-[11px] tracking-[0.12em] text-ink/60"
+                className="lg:hidden absolute bottom-3 right-3 px-2.5 py-1 bg-black/40 backdrop-blur-[2px] font-body text-[11px] tracking-[0.12em] text-cream"
               >
                 {current + 1} / {total}
               </p>
