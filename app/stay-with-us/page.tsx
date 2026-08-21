@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion, Variants, useInView, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { StayLightbox, type StayData } from '@/components/stay-with-us/StayLightbox';
+import { EnhanceYourExperience } from '@/components/stay-with-us/EnhanceYourExperience';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
@@ -515,6 +516,10 @@ export default function AccommodationsPage() {
       <AccommodationsHero />
       <AccommodationsIntro />
       <StaysGrid />
+      {/* The activities layer — what fills the days once the guest knows
+          where they sleep. Before Featured Experiences, which then reads as
+          the deeper, structured tier of the same offer. */}
+      <EnhanceYourExperience />
       <SeasonalExperiences />
       <AccommodationsFAQ />
       <Footer />
