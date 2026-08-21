@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { motion, Variants, useInView } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, Variants, useInView, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { StayLightbox, type StayData } from '@/components/stay-with-us/StayLightbox';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
@@ -170,18 +171,25 @@ function AccommodationsIntro() {
 // IMAGE CAROUSEL — Aman Amanjena style: arrows right-aligned, fade between
 // images. No dots, no progress bar, no captions.
 //
-// Default crop is 4/3 (landscape) rather than a portrait ratio: at two columns
-// the card has to fit image + copy inside one viewport, otherwise the guest
-// sees a photo and has to scroll to learn which dwelling it belongs to.
-// `aspect` stays overridable for layouts that can afford more height.
+// The photographs are 3:4 portraits, shot and cropped for these cards, so the
+// frame is 3:4 too — the guest sees the full picture, never a crop. Only the active image
+// and its two neighbours are mounted: four dwellings now carry 32 photographs
+// between them (~9MB), and mounting every one would make the page pay for the
+// whole gallery on arrival.
 // ═════════════════════════════════════════════════════════════════════════════
+const ringDist = (a: number, b: number, total: number) =>
+  Math.min(Math.abs(a - b), total - Math.abs(a - b));
+
 function StayCarousel({
   images,
   alt,
-  aspect = 'aspect-[4/3]',
+  onExpand,
+  aspect = 'aspect-[3/4]',
 }: {
   images: string[];
   alt: string;
+  /** Called with the index in view — the card opens its lightbox there. */
+  onExpand: (index: number) => void;
   aspect?: string;
 }) {
   const [current, setCurrent] = useState(0);
@@ -192,19 +200,46 @@ function StayCarousel({
 
   return (
     <div>
-      {/* Image stack with crossfade */}
-      <div className={`relative ${aspect} overflow-hidden bg-ink/5`}>
-        {images.map((src, i) => (
-          <motion.img
-            key={src}
-            src={src}
-            alt={`${alt} — view ${i + 1}`}
-            initial={false}
-            animate={{ opacity: i === current ? 1 : 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ))}
+      {/* Image stack with crossfade. The picture itself opens the expanded
+          view — the biggest surface on the card should be the easiest way in.
+          It stays out of the tab order: the labelled expand control beside it
+          is the same door, so a second stop would just be noise. */}
+      <div
+        className={`relative ${aspect} overflow-hidden bg-ink/5 cursor-zoom-in`}
+        onClick={() => onExpand(current)}
+      >
+        {images.map((src, i) => {
+          if (ringDist(i, current, total) > 1) return null;
+          return (
+            <motion.img
+              key={src}
+              src={src}
+              alt={`${alt} — view ${i + 1}`}
+              loading="lazy"
+              draggable={false}
+              initial={false}
+              animate={{ opacity: i === current ? 1 : 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          );
+        })}
+
+        {/* Expand — the re:center idea: one quiet control in the top corner,
+            carrying the count so the guest knows there is more than what the
+            card shows. Square, per the brand rule. */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onExpand(current);
+          }}
+          aria-label={`View all ${total} photographs of ${alt}`}
+          className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/45 text-cream backdrop-blur-[2px] pl-2.5 pr-3 h-9 hover:bg-black/70 transition-colors duration-300"
+        >
+          <Maximize2 className="h-[15px] w-[15px]" strokeWidth={1.5} aria-hidden />
+          <span className="font-body text-[12px] leading-none">{total}</span>
+        </button>
       </div>
 
       {/* Arrows aligned right (Amanjena-style) */}
@@ -214,7 +249,7 @@ function StayCarousel({
             type="button"
             onClick={goPrev}
             aria-label={`Previous image of ${alt}`}
-            className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
+            className="text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1} />
           </button>
@@ -222,7 +257,7 @@ function StayCarousel({
             type="button"
             onClick={goNext}
             aria-label={`Next image of ${alt}`}
-            className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
+            className="text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronRight className="w-5 h-5" strokeWidth={1} />
           </button>
@@ -233,105 +268,122 @@ function StayCarousel({
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SUITE CARD — compact card used inside the 2×2 grid
+// SUITE CARD — compact card used inside the 2×2 grid. First-glance copy stays
+// one breath long; the full story lives in the lightbox, one "Read more" away.
 // ═════════════════════════════════════════════════════════════════════════════
-type StayData = {
-  // Fact line rendered UNDER the title: capacity · layout. Not an eyebrow —
-  // the guest should read the dwelling's name before its specs.
-  meta: string;
-  title: string;
-  description: string;
-  images: string[];
-};
-
-function StayCard({ meta, title, description, images }: StayData) {
+function StayCard({
+  stay,
+  onExpand,
+}: {
+  stay: StayData;
+  onExpand: (index: number) => void;
+}) {
   return (
-    <article>
-      <StayCarousel images={images} alt={title} />
+    // A column the full height of its row: the four shorts run to different
+    // lengths, so left to stack naturally each "Check availability" landed at
+    // its own height — same fix as the home's Pillars.
+    <article className="flex h-full flex-col">
+      <StayCarousel images={stay.images} alt={stay.title} onExpand={onExpand} />
 
-      {/* Typography matched to home Pillars (compact card pattern).
-          Vertical rhythm is tighter than the Pillars original: the card must
-          read as one unit inside a single viewport, so the copy block stays
-          close to the image it describes. */}
+      {/* Typography matched to home Pillars (compact card pattern). */}
       <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mt-5">
-        {title}
+        {stay.title}
       </h3>
-      <p className="font-body text-xs text-ink mt-2">{meta}</p>
+      <p className="font-body text-xs text-ink mt-2">{stay.meta}</p>
       <p className="font-body text-sm text-ink leading-relaxed mt-3">
-        {description}
+        {stay.short}{' '}
+        <button
+          type="button"
+          onClick={() => onExpand(0)}
+          className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-60 transition-opacity duration-300"
+        >
+          Read more
+        </button>
       </p>
 
-      <CheckAvailabilityLink className="mt-4 lg:mt-5" />
+      <CheckAvailabilityLink className="mt-auto pt-4 lg:pt-5 self-start" />
     </article>
   );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
 // STAYS GRID — 2×2 desktop, single column mobile.
-// The four dwellings, in the order Nancy presents them in the accommodations
-// brief. Capacity + layout ride in the fact line under each title.
+// The four dwellings, in the order Nancy presents them. Capacity + layout ride
+// in the fact line under each title; the full description, bed configurations
+// and capacity live in the lightbox.
 // ═════════════════════════════════════════════════════════════════════════════
+const shots = (dir: string, n: number) =>
+  Array.from({ length: n }, (_, i) => `/images/stay-with-us/${dir}/${dir}-${i + 1}.webp`);
+
 const STAYS: StayData[] = [
   {
     meta: 'Up to 10 guests · Four suites, each with a private bathroom',
-    title: 'Main House',
-    description:
-      'Four spacious suites, each with its own private bathroom, gathered around a shared heart. Room configurations shift to meet each group — triples, doubles, or private queens. Air conditioning in every suite, and Wi-Fi that reaches every corner.',
-    // TODO: replace with curated Main House photos
-    images: [
-      '/images/sanctuary/271A0822_websize%201.webp',
-      '/images/sanctuary/271A0828_websize%201.webp',
-      '/images/sanctuary/271A0829_websize%201.webp',
-      '/images/sanctuary/271A0800_websize%201.webp',
-      '/images/sanctuary/271A0660_websize%201.webp',
-      '/images/sanctuary/271A0692_websize%201.webp',
+    title: 'Main House Suite',
+    short:
+      'Four spacious suites gathered around a shared heart, each with its own private bathroom — an elegant, serene base in a refined natural setting.',
+    long: [
+      'The Main House offers an elegant and serene experience, thoughtfully designed to provide both comfort and privacy within a refined natural setting. It features four spacious suites, each with its own private bathroom.',
+      'Fully equipped with air conditioning in every suite and high-speed Wi-Fi throughout, the Main House blends modern comfort with a peaceful atmosphere — the right environment for rest and connection.',
     ],
+    facts: {
+      label: 'Room configurations may include',
+      items: [
+        'Triple rooms — 3 single beds',
+        'Double rooms — 2 single beds',
+        'Private rooms for single occupancy or couples — 1 queen-size bed each',
+      ],
+    },
+    images: shots('main-house', 6),
   },
   {
     meta: 'Up to 3 guests · One bedroom, kitchen and terrace',
     title: 'La Casita',
-    description:
-      'A one-bedroom home set inside the tropical greenery — queen bed, full kitchen, and a terrace that opens onto the jungle. A single bed can be added in the living area. Built for slow mornings and unhurried work.',
-    // TODO: replace with curated La Casita photos
-    images: [
-      '/images/sanctuary/271A0840_websize%201.webp',
-      '/images/sanctuary/271A0851_websize%201.webp',
-      '/images/sanctuary/271A0870_websize%201.webp',
-      '/images/sanctuary/271A0873_websize%201.webp',
-      '/images/sanctuary/271A0883_websize%201.webp',
+    short:
+      'A one-bedroom home nestled in the tropical greenery — queen bed, full kitchen, and a terrace that opens onto the jungle. Built for slow mornings and unhurried work.',
+    long: [
+      'A charming and intimate home nestled within lush tropical greenery, offering a peaceful and private escape immersed in nature. Thoughtfully designed for comfort and simplicity, it provides a warm, home-like atmosphere ideal for rest, creativity, and slow living.',
+      'The space features one bedroom with a queen-size bed, equipped with air conditioning and ceiling fans for year-round comfort. An additional single bed can be arranged in the living area, allowing for flexible accommodation.',
+      'La Casita includes a fully equipped kitchen, a cozy living and workspace, and a beautiful terrace overlooking the jungle — perfect for slow mornings, quiet reflection, or inspired moments of work and creativity.',
     ],
+    capacity:
+      'Capacity: up to 2 guests without bed sharing, or up to 3 guests with shared accommodation.',
+    images: shots('la-casita', 8),
   },
   {
     meta: 'Up to 2 guests · One bedroom, private bathroom',
     title: 'Jungle Bungalow',
-    description:
+    short:
       'A single room in the heart of the jungle. Queen bed, private bathroom, and a ceiling fan turning through naturally cool air. The most secluded of the four — and the quietest.',
-    // TODO: replace with curated Jungle Bungalow photos
-    images: [
-      '/images/sanctuary/271A0698_websize%201.webp',
-      '/images/sanctuary/271A0704_websize%201.webp',
-      '/images/sanctuary/271A0719_websize%201.webp',
-      '/images/sanctuary/271A0722_websize%201.webp',
+    long: [
+      'An intimate and secluded bungalow nestled in the heart of the jungle, offering a simple yet deeply grounding experience surrounded by nature.',
+      'The bungalow features a queen-size bed, a ceiling fan for gentle natural airflow, and a private bathroom — a comfortable space that keeps a close connection with the surrounding landscape.',
     ],
+    capacity:
+      'Capacity: 1 guest without bed sharing, or up to 2 guests sharing a queen-size bed.',
+    images: shots('jungle-bungalow', 8),
   },
   {
     meta: 'Up to 4 guests · Two bedrooms, two bathrooms',
     title: 'Shakti House',
-    description:
-      'Two queen bedrooms, two full bathrooms, and a kitchen that makes it a real home. The deck reaches out toward jungle and ocean at once — the widest view on the property.',
-    // TODO: replace with curated Shakti House photos
-    images: [
-      '/images/sanctuary/271A0766_websize%201.webp',
-      '/images/sanctuary/271A0778_websize%201.webp',
-      '/images/sanctuary/271A0785_websize%201.webp',
-      '/images/sanctuary/271A0794_websize%201.webp',
+    short:
+      'Two queen bedrooms, two full bathrooms, and a kitchen that makes it a real home. The deck reaches toward jungle and ocean at once — the widest view on the property.',
+    long: [
+      'A beautifully designed private home that blends comfort, spaciousness, and breathtaking natural surroundings. Perfect for guests seeking a more independent stay while remaining fully connected to the retreat experience.',
+      'The house features two peaceful bedrooms with queen-size beds, each equipped with air conditioning and ceiling fans. Two full bathrooms provide additional comfort and privacy.',
+      'A fully equipped kitchen and welcoming living area create a true sense of home, while the expansive deck opens to stunning jungle and ocean views — an ideal setting for relaxation, connection, or simply enjoying the beauty of the landscape.',
     ],
+    capacity:
+      'Capacity: up to 2 guests without bed sharing, or up to 4 guests with shared accommodation.',
+    images: shots('shakti-house', 10),
   },
 ];
 
 function StaysGrid() {
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  // Which dwelling is expanded, and on which photograph it opened.
+  const [expanded, setExpanded] = useState<{ stay: StayData; index: number } | null>(null);
 
   // No top padding — the intro above already closes with py-20/28. Doubling it
   // pushed the first row out of the fold on laptop viewports.
@@ -341,30 +393,39 @@ function StaysGrid() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          /* Asymmetric gaps: rows need more breathing room than columns so the
-             eye groups each image with its own copy (proximity), not with the
-             card sitting below it. */
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-10 gap-y-14 lg:gap-y-20"
+          /* One row of four from lg up: at two columns on a wide monitor each
+             3:4 photograph ran ~1000px tall — a single card filled the screen,
+             and the guest could never see the four dwellings together. At four
+             columns the whole offer reads in one glance, and the full-size
+             photograph already has its place: the lightbox. Tablet keeps two
+             columns (photos land ~400px there); phones keep the single column.
+             Asymmetric gaps below lg: rows need more breathing room than
+             columns so the eye groups each image with its own copy. */
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-6 xl:gap-x-8 gap-y-14 lg:gap-y-20"
         >
           {STAYS.map((stay) => (
-            <StayCard key={stay.title} {...stay} />
+            <StayCard
+              key={stay.title}
+              stay={stay}
+              onExpand={(index) => setExpanded({ stay, index })}
+            />
           ))}
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {expanded && (
+          <StayLightbox
+            stay={expanded.stay}
+            initialIndex={expanded.index}
+            onClose={() => setExpanded(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// CASITA FEATURE — REMOVED. La Casita is now one of the four dwellings in
-// <StaysGrid /> (position 2, per Nancy's accommodations brief), so the
-// standalone asymmetric feature row would have duplicated it. The layout
-// pattern lives on in the retreats hub if we ever need it back here.
-// ═════════════════════════════════════════════════════════════════════════════
-
-// ═════════════════════════════════════════════════════════════════════════════
-// EVERY STAY INCLUDES
-// ═════════════════════════════════════════════════════════════════════════════
 // ═════════════════════════════════════════════════════════════════════════════
 // CLOSING NARRATIVE — REMOVED in favor of <SeasonalExperiences /> reused from
 // the home. The "An ode to the jungle." text + image lived here previously;
