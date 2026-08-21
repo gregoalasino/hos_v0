@@ -258,6 +258,7 @@ function StayCarousel({
               key={src}
               src={src}
               alt={`${alt} — view ${i + 1}`}
+              aria-hidden={i !== current}
               loading="lazy"
               draggable={false}
               initial={false}
@@ -292,7 +293,7 @@ function StayCarousel({
             type="button"
             onClick={goPrev}
             aria-label={`Previous image of ${alt}`}
-            className="text-ink hover:opacity-50 transition-opacity duration-300"
+            className="p-3 -m-3 text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1} />
           </button>
@@ -300,7 +301,7 @@ function StayCarousel({
             type="button"
             onClick={goNext}
             aria-label={`Next image of ${alt}`}
-            className="text-ink hover:opacity-50 transition-opacity duration-300"
+            className="p-3 -m-3 text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronRight className="w-5 h-5" strokeWidth={1} />
           </button>
@@ -423,7 +424,7 @@ const STAYS: StayData[] = [
     meta: 'Up to 2 guests · One bedroom, private bathroom',
     title: 'Jungle Bungalow',
     short:
-      'A single room in the heart of the jungle. Queen bed, private bathroom, and a ceiling fan turning through naturally cool air. The most secluded of the four — and the quietest.',
+      'A single room in the heart of the jungle. Queen bed, private bathroom, and a ceiling fan turning through naturally cool air — secluded, simple, and quiet.',
     long: [
       'An intimate and secluded bungalow nestled in the heart of the jungle, offering a simple yet deeply grounding experience surrounded by nature.',
       'The bungalow features a queen-size bed, a ceiling fan for gentle natural airflow, and a private bathroom — a comfortable space that keeps a close connection with the surrounding landscape.',
@@ -436,7 +437,7 @@ const STAYS: StayData[] = [
     meta: 'Up to 4 guests · Two bedrooms, two bathrooms',
     title: 'Shakti House',
     short:
-      'Two queen bedrooms, two full bathrooms, and a kitchen that makes it a real home. The deck reaches toward jungle and ocean at once — the widest view on the property.',
+      'Two queen bedrooms, two full bathrooms, and a kitchen that makes it a real home. The expansive deck opens onto jungle and ocean views at once.',
     long: [
       'A beautifully designed private home that blends comfort, spaciousness, and breathtaking natural surroundings. Perfect for guests seeking a more independent stay while remaining fully connected to the retreat experience.',
       'The house features two peaceful bedrooms with queen-size beds, each equipped with air conditioning and ceiling fans. Two full bathrooms provide additional comfort and privacy.',
@@ -496,51 +497,6 @@ function StaysGrid() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// OWN RHYTHM — the counter-offer, placed deliberately.
-//
-// It answers a thought the reader can only have AFTER seeing the structured
-// group experiences above it: the retreat, the training, the couples journey.
-// In the page's opening it would have arrived before the question existed, and
-// made the first thing a guest reads be about what they are not doing.
-//
-// It also gives the page back its closing beat — the old "When would you like
-// to arrive?" band was cut, and the FAQ alone was landing straight on the
-// footer.
-// ═════════════════════════════════════════════════════════════════════════════
-function OwnRhythm() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white pb-20 lg:pb-28">
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 16 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: 1.0, ease: 'easeOut' }}
-        className="w-[90%] md:w-[80%] mx-auto"
-      >
-        {/* Hairlines top and bottom, nothing else: the band is an aside, and a
-            filled panel would give it more voice than an aside should have. */}
-        <div className="border-y border-ink/15 py-12 lg:py-16 text-center">
-          {/* Set as a sentence, not in the all-caps it was drafted in: a full
-              sentence in capitals loses the word shapes a reader navigates by,
-              and this one is the page's most persuasive line. */}
-          <p className="font-display font-light text-ink text-2xl md:text-3xl leading-snug">
-            Not ready for a group retreat?
-          </p>
-          <p className="font-body text-sm text-ink leading-relaxed mt-4 max-w-md mx-auto">
-            Book a stay and move at your own rhythm.
-          </p>
-
-          <CheckAvailabilityLink className="mt-8" />
-        </div>
-      </motion.div>
-    </section>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
 // CLOSING NARRATIVE — REMOVED in favor of <SeasonalExperiences /> reused from
 // the home. The "An ode to the jungle." text + image lived here previously;
 // the assets remain in /public so we can revive the block on another page
@@ -560,7 +516,6 @@ export default function AccommodationsPage() {
       <AccommodationsIntro />
       <StaysGrid />
       <SeasonalExperiences />
-      <OwnRhythm />
       <AccommodationsFAQ />
       <Footer />
     </main>
