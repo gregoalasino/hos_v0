@@ -76,23 +76,5 @@ export function useCarousel<T extends HTMLElement = HTMLDivElement>() {
     }, 250);
   }, []);
 
-  /**
-   * Walks the track back to its start and re-measures the edges — for callers
-   * that swap the track's content in place (a group toggle). Cancels any
-   * pending fallback jump first: that timer belongs to content that no longer
-   * exists, and a reset back to the recorded start position is exactly the
-   * "scroll was dropped" signature it fires on.
-   */
-  const resetToStart = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    if (fallbackTimer.current !== null) {
-      window.clearTimeout(fallbackTimer.current);
-      fallbackTimer.current = null;
-    }
-    el.scrollTo({ left: 0, behavior: 'instant' as ScrollBehavior });
-    syncEdges();
-  }, [syncEdges]);
-
-  return { trackRef, atStart, atEnd, step, resetToStart, hasOverflow: !(atStart && atEnd) };
+  return { trackRef, atStart, atEnd, step, hasOverflow: !(atStart && atEnd) };
 }

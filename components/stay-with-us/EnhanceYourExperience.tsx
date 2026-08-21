@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Ornament } from '@/components/landing/ornament';
 import { TrackArrows } from '@/components/landing/TrackArrows';
@@ -15,13 +15,14 @@ import { useDragScroll } from '@/hooks/use-drag-scroll';
 // track in the other two. The page keeps one language instead of learning a
 // new one.
 //
-// The eleven activities split into two real groups, and the guest's question
-// splits the same way — "what can I do at the house?" and "what's out there?"
-// — so the split is a toggle (the navbar's EN|ES register), not one endless
-// ribbon: eleven cards in a single strip is a track nobody finishes, and the
-// group boundary would drift past unseen mid-scroll.
+// All eleven ride one track, in the order the owners present them: everything
+// at the property first, then everything beyond it. Where each happens is a
+// mark on the card, so a guest planning their days can still tell a massage
+// down the path from a morning out on a boat.
 
 type Activity = {
+  /** Where it happens. Rendered as a small mark above the title. */
+  where: 'On site' | 'Off site';
   title: string;
   description: string;
   /** Optional secondary line ("Optional: …"). */
@@ -31,53 +32,58 @@ type Activity = {
 
 const img = (slug: string) => `/images/stay-with-us/activities/activity-${slug}.webp`;
 
-const ON_SITE: Activity[] = [
+const ACTIVITIES: Activity[] = [
   {
+    where: 'On site',
     title: 'Yoga Classes',
     description:
       'Move, breathe, and reconnect through mindful yoga practices designed to support balance, presence, and wellbeing.',
     image: img('yoga'),
   },
   {
+    where: 'On site',
     title: 'Sauna & Ice Bath',
     description:
       'A powerful contrast experience to relax, reset, and reconnect with your body through heat and cold.',
     image: img('sauna-ice-bath'),
   },
   {
+    where: 'On site',
     title: 'Massages',
     description:
       'Relax and reconnect with your body through therapeutic, relaxing, Thai, or deep tissue massage.',
     image: img('massage'),
   },
   {
+    where: 'On site',
     title: 'Sound Healing',
     description:
       'Relax and restore balance through the healing power of sound and vibration.',
     image: img('sound-healing'),
   },
   {
+    where: 'On site',
     title: 'Reiki & Access Bars',
     description:
       'A deeply relaxing experience designed to restore energetic balance and inner calm.',
     image: img('reiki-access-bars'),
   },
   {
+    where: 'On site',
     title: 'Sacred Medicine Ceremony',
     description:
       'A guided and intentional experience for self-exploration, connection, and personal growth.',
     image: img('sacred-medicine'),
   },
   {
+    where: 'On site',
     title: 'Cacao & Fire Ceremony',
     description:
       'A sacred ritual of cacao and fire, inviting connection, gratitude, and heart opening.',
     image: img('cacao-fire-ceremony'),
   },
-];
-
-const OFF_SITE: Activity[] = [
   {
+    where: 'Off site',
     title: 'Boat Tour',
     description:
       "Explore the peninsula's beautiful beaches, snorkel in crystal-clear waters, and enjoy a day in nature.",
@@ -85,18 +91,21 @@ const OFF_SITE: Activity[] = [
     image: img('boat-tour'),
   },
   {
+    where: 'Off site',
     title: 'Jungle Hike',
     description:
       'A refreshing jungle adventure to a hidden freshwater waterfall, just 40 minutes away.',
     image: img('jungle-hike'),
   },
   {
+    where: 'Off site',
     title: 'Surf Lessons',
     description:
       "Learn to surf or improve your skills in Santa Teresa's best spots. Shared and private lessons available.",
     image: img('surf'),
   },
   {
+    where: 'Off site',
     title: 'Horseback Riding',
     description:
       'Discover beaches, jungle, and mountain trails on a beautiful sunset horseback ride. Shared or private options available.',
@@ -104,31 +113,12 @@ const OFF_SITE: Activity[] = [
   },
 ];
 
-const GROUPS = [
-  { key: 'on' as const, label: 'On site', activities: ON_SITE },
-  { key: 'off' as const, label: 'Off site', activities: OFF_SITE },
-];
-
 export function EnhanceYourExperience() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
 
-  const [group, setGroup] = useState<'on' | 'off'>('on');
-  const { trackRef, atStart, atEnd, step, resetToStart, hasOverflow } =
-    useCarousel<HTMLDivElement>();
+  const { trackRef, atStart, atEnd, step, hasOverflow } = useCarousel<HTMLDivElement>();
   const { dragHandlers } = useDragScroll(trackRef);
-
-  const activities = GROUPS.find((g) => g.key === group)!.activities;
-
-  // Switching groups swaps the cards under the same track node, so the
-  // listeners the carousel hook attached survive — but the node's scrollWidth
-  // changes without its border-box moving, which no ResizeObserver reports.
-  // resetToStart walks it back and re-measures, and also cancels any fallback
-  // jump a just-pressed arrow left pending — a stale timer firing after the
-  // swap would fling the fresh group a step in.
-  useEffect(() => {
-    resetToStart();
-  }, [group, resetToStart]);
 
   return (
     <section className="bg-warm-white pb-20 lg:pb-28">
@@ -163,33 +153,20 @@ export function EnhanceYourExperience() {
             Shakti and beyond.
           </motion.p>
 
-          {/* Where — the navbar's EN | ES register: two marks and a hairline.
-              The active group carries full ink; the other is an outline of
-              itself until approached. */}
-          <motion.div
+          {/* How they are booked. Sits with the invitation rather than under
+              the track: the question — "and how do I actually get these?" —
+              arrives while the reader is still looking at the first card, not
+              after the eleventh. A hairline separates it from the invitation
+              above; it is practical information, in a quieter voice. */}
+          <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
-            role="group"
-            aria-label="Choose activities on site or off site"
-            className="flex items-center gap-3.5 mt-8 lg:mt-10"
+            className="font-body text-xs text-ink/75 leading-[1.7] mt-8 lg:mt-10 pt-6 border-t border-ink/15 max-w-full lg:max-w-xs"
           >
-            {GROUPS.map((g, i) => (
-              <span key={g.key} className="flex items-center gap-3.5">
-                {i > 0 && <span aria-hidden className="h-3 w-px bg-ink/25" />}
-                <button
-                  type="button"
-                  onClick={() => setGroup(g.key)}
-                  aria-pressed={group === g.key}
-                  className={`font-body text-[11px] tracking-[0.22em] uppercase transition-colors duration-300 ${
-                    group === g.key ? 'text-ink' : 'text-ink/70 hover:text-ink'
-                  }`}
-                >
-                  {g.label}
-                </button>
-              </span>
-            ))}
-          </motion.div>
+            Add any of these while booking your stay, or arrange them later
+            with our team at reception.
+          </motion.p>
 
           {/* Arrows sit with the copy, never over the photographs. Hidden
               outright when every card already fits. */}
@@ -219,14 +196,12 @@ export function EnhanceYourExperience() {
           {/* The cards are the track's DIRECT children, never wrapped: the
               carousel hook steps by measuring the track's first child plus
               its column-gap, and a wrapper would make one arrow press jump
-              the entire strip. Keying each card by group remounts them on a
-              switch, so the row replays its entrance — a turn of the page
-              rather than a flicker. */}
+              the entire strip. */}
           <div
             ref={trackRef}
             {...dragHandlers}
             role="region"
-            aria-label={group === 'on' ? 'On-site activities' : 'Off-site activities'}
+            aria-label="Activities at House of Shakti and beyond"
             tabIndex={0}
             className="
               flex gap-5 lg:gap-6
@@ -237,12 +212,20 @@ export function EnhanceYourExperience() {
               focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40
             "
           >
-            {activities.map((activity, i) => (
+            {ACTIVITIES.map((activity, i) => (
                 <motion.article
-                  key={`${group}-${activity.title}`}
+                  key={activity.title}
                   initial={{ opacity: 0, y: 16 }}
                   animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-                  transition={{ duration: 0.9, ease: 'easeOut', delay: 0.08 * i }}
+                  // The stagger stops climbing after the sixth card: past that
+                  // they enter off-screen anyway, and an eleventh card waiting
+                  // most of a second is a card that animates in after the
+                  // reader has already scrolled to it.
+                  transition={{
+                    duration: 0.9,
+                    ease: 'easeOut',
+                    delay: 0.08 * Math.min(i, 5),
+                  }}
                   className="
                     flex-shrink-0 snap-start
                     w-[62vw] max-w-[290px]
@@ -260,7 +243,14 @@ export function EnhanceYourExperience() {
                     />
                   </div>
 
-                  <h3 className="font-display font-light text-ink text-base lg:text-lg leading-snug mt-4">
+                  {/* The toggle is gone, but where a thing happens is still
+                      information a guest planning days wants: a massage is
+                      down the path, a boat tour is a morning out. Kept as a
+                      mark on the card rather than a control above the row. */}
+                  <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink/70 mt-4">
+                    {activity.where}
+                  </p>
+                  <h3 className="font-display font-light text-ink text-base lg:text-lg leading-snug mt-2">
                     {activity.title}
                   </h3>
                   <p className="font-body text-sm text-ink leading-relaxed mt-2">
