@@ -135,7 +135,11 @@ function AccommodationsHero() {
 // Sets the expectation that there are four distinct dwellings
 // before the grid below.
 // ═════════════════════════════════════════════════════════════════════════════
-const INTRO_HEADLINE = 'Four ways to stay.';
+const INTRO_HEADLINE = 'More than a stay.';
+
+// What the place actually holds — the claim above states it, these name it.
+// Four words, so they read as a rhythm rather than a feature list.
+const INTRO_LABELS = ['Yoga', 'Wellness', 'Nature', 'Community'];
 
 function AccommodationsIntro() {
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -145,17 +149,56 @@ function AccommodationsIntro() {
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
       <div ref={textRef} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-3xl">
+          {/* The page's h1 — it had none before, only an h2, so the document
+              opened without ever naming itself. */}
           <WordRevealHeading
+            as="h1"
             text={INTRO_HEADLINE}
             inView={textInView}
             className="text-ink text-4xl md:text-5xl lg:text-6xl"
           />
 
+          {/* The second beat of the same phrase, not a competing headline:
+              same display face, a step down in size and weight of colour, so
+              the couplet reads as one breath. */}
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
-            className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 1.0 }}
+            className="font-display font-light text-ink/65 text-2xl md:text-3xl lg:text-4xl leading-[1.15] tracking-[-0.01em] mt-4 lg:mt-5"
+          >
+            A space to reconnect.
+          </motion.p>
+
+          {/* Hairline above rather than a box: the labels sit on the page, not
+              in a container. `gap-y` carries the wrap on a phone, where four
+              tracked words don't fit one line. */}
+          <motion.ul
+            initial={{ opacity: 0, y: 12 }}
+            animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 1.3 }}
+            className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12 pt-8 border-t border-ink/15"
+          >
+            {INTRO_LABELS.map((label, i) => (
+              <li key={label} className="flex items-center gap-3 md:gap-5">
+                {i > 0 && (
+                  <span aria-hidden className="h-3 w-px bg-ink/25 select-none" />
+                )}
+                {/* Tracking eases off on a phone so the four hold one line —
+                    wrapped, the last word reads as an orphan rather than as
+                    the close of a rhythm. */}
+                <span className="font-body text-[10px] md:text-[11px] tracking-[0.2em] md:tracking-[0.28em] uppercase text-ink/80">
+                  {label}
+                </span>
+              </li>
+            ))}
+          </motion.ul>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 1.5 }}
+            className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-10 lg:mt-12"
           >
             The Main House gathers four suites around a shared heart. La Casita and
             the Jungle Bungalow sit deeper in the greenery, each standing alone.
@@ -312,9 +355,9 @@ function StayCard({
           {String(index + 1).padStart(2, '0')}
         </p>
 
-        <h3 className="font-display font-light text-ink text-lg lg:text-3xl leading-snug mt-5 lg:mt-4">
+        <h2 className="font-display font-light text-ink text-lg lg:text-3xl leading-snug mt-5 lg:mt-4">
           {stay.title}
-        </h3>
+        </h2>
         <p className="font-body text-xs text-ink mt-2 lg:mt-3">{stay.meta}</p>
         <p className="font-body text-sm text-ink leading-relaxed lg:leading-[1.8] mt-3 lg:mt-6">
           {stay.short}{' '}
@@ -453,6 +496,51 @@ function StaysGrid() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// OWN RHYTHM — the counter-offer, placed deliberately.
+//
+// It answers a thought the reader can only have AFTER seeing the structured
+// group experiences above it: the retreat, the training, the couples journey.
+// In the page's opening it would have arrived before the question existed, and
+// made the first thing a guest reads be about what they are not doing.
+//
+// It also gives the page back its closing beat — the old "When would you like
+// to arrive?" band was cut, and the FAQ alone was landing straight on the
+// footer.
+// ═════════════════════════════════════════════════════════════════════════════
+function OwnRhythm() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  return (
+    <section className="bg-warm-white pb-20 lg:pb-28">
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={{ duration: 1.0, ease: 'easeOut' }}
+        className="w-[90%] md:w-[80%] mx-auto"
+      >
+        {/* Hairlines top and bottom, nothing else: the band is an aside, and a
+            filled panel would give it more voice than an aside should have. */}
+        <div className="border-y border-ink/15 py-12 lg:py-16 text-center">
+          {/* Set as a sentence, not in the all-caps it was drafted in: a full
+              sentence in capitals loses the word shapes a reader navigates by,
+              and this one is the page's most persuasive line. */}
+          <p className="font-display font-light text-ink text-2xl md:text-3xl leading-snug">
+            Not ready for a group retreat?
+          </p>
+          <p className="font-body text-sm text-ink leading-relaxed mt-4 max-w-md mx-auto">
+            Book a stay and move at your own rhythm.
+          </p>
+
+          <CheckAvailabilityLink className="mt-8" />
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // CLOSING NARRATIVE — REMOVED in favor of <SeasonalExperiences /> reused from
 // the home. The "An ode to the jungle." text + image lived here previously;
 // the assets remain in /public so we can revive the block on another page
@@ -472,6 +560,7 @@ export default function AccommodationsPage() {
       <AccommodationsIntro />
       <StaysGrid />
       <SeasonalExperiences />
+      <OwnRhythm />
       <AccommodationsFAQ />
       <Footer />
     </main>
