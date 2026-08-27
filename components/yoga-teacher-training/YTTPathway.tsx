@@ -3,6 +3,8 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { MapPin, Globe } from 'lucide-react';
+import { useLanguage } from '@/contexts/language-context';
+import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
 
 type Phase = {
   tag: string;
@@ -13,24 +15,9 @@ type Phase = {
   formatLabel: string;
 };
 
-const phases: Phase[] = [
-  {
-    tag: 'Phase One',
-    title: '100-Hour Residential Immersion',
-    place: 'House of Shakti · Costa Rica',
-    body: 'Your journey begins with a 100-hour residential immersion — daily practice, philosophy, and embodiment held in the jungle above Playa Hermosa. On completion you receive a 100-Hour Certificate of Completion.',
-    format: 'in-person',
-    formatLabel: 'In person',
-  },
-  {
-    tag: 'Phase Two',
-    title: '100-Hour Online Training',
-    place: 'Optional · From anywhere in the world',
-    body: 'For those who wish to continue, the experience extends through an in-depth online curriculum designed for integration and professional development — allowing you to study from anywhere in the world.',
-    format: 'online',
-    formatLabel: 'Online',
-  },
-];
+// Text lives in the dictionary; only the structural format keys live here,
+// zipped with it by index at render.
+const PHASE_FORMATS: Phase['format'][] = ['in-person', 'online'];
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -67,11 +54,7 @@ function PhaseCard({ phase }: { phase: Phase }) {
     : 'bg-warm-white text-ink border border-dashed border-ink/30';
 
   return (
-    <motion.article
-      variants={item}
-      data-surface={inPerson ? 'dark' : undefined}
-      className={`p-8 md:p-10 flex flex-col ${cardClasses}`}
-    >
+    <motion.article variants={item} className={`p-8 md:p-10 flex flex-col ${cardClasses}`}>
       <div className="flex items-center justify-between gap-4">
         <p
           className={`font-body text-[10px] tracking-[0.25em] uppercase ${
@@ -109,8 +92,15 @@ function PhaseCard({ phase }: { phase: Phase }) {
 }
 
 export function YTTPathway() {
+  const { lang } = useLanguage();
+  const t = YTT_DICTIONARIES[lang];
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
+
+  const phases: Phase[] = t.pathway.phases.map((phase, i) => ({
+    ...phase,
+    format: PHASE_FORMATS[i],
+  }));
 
   return (
     <section className="bg-warm-white py-20 lg:py-28">
@@ -122,7 +112,7 @@ export function YTTPathway() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            Two pathways, one journey.
+            {t.pathway.heading}
           </motion.h2>
         </div>
 
@@ -144,11 +134,9 @@ export function YTTPathway() {
           className="mt-10 lg:mt-12 border-l-2 border-burgundy pl-6 md:pl-8 max-w-3xl"
         >
           <p className="font-body text-sm md:text-base text-ink leading-[1.8]">
-            Complete both phases to receive your{' '}
-            <span className="text-burgundy">Yoga Alliance Registered 200-Hour Yoga Teacher
-            Training Certificate (RYT 200)</span>{' '}
-            — one of the world’s most widely recognized yoga teaching credentials, recognized
-            internationally.
+            {t.pathway.rytBefore}
+            <span className="text-burgundy">{t.pathway.rytHighlight}</span>
+            {t.pathway.rytAfter}
           </p>
         </motion.div>
       </div>

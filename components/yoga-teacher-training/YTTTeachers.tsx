@@ -2,26 +2,21 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
+import { useLanguage } from '@/contexts/language-context';
+import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
 
-// TODO: swap for the correct portraits of each teacher when available.
-const teachers = [
+// Names, handles and portraits are constants; the bios live in the dictionary
+// (both languages), zipped by index at render.
+const TEACHERS = [
   {
     name: 'Nancy Goodfellow',
     handle: '@wildheart.yogini',
     image: '/images/teachers/nancy.webp',
-    bio: [
-      'Nancy brings together years of experience in yoga, embodiment practices, nervous system regulation, conscious leadership, and transformational retreat facilitation.',
-      'Her teaching style is compassionate, authentic, and deeply experiential, weaving the timeless wisdom of Tantra with modern somatic approaches. She believes yoga is not simply something we practice — it is a way of living.',
-    ],
   },
   {
     name: 'Nayla Tawa',
     handle: '@naylatawa · @thatbreathchick',
-    image: '/images/teachers/rayo_verde-249%201.webp',
-    bio: [
-      'Nayla is an internationally certified breath and mindfulness coach, Yoga Alliance–certified teacher, and motivational speaker with 2,500+ hours of training.',
-      'She studied in India for many months among Himalayan masters and other world-renowned teachers. A survivor of a near-death experience, she now teaches on breath, mindfulness, and resilience.',
-    ],
+    image: '/images/teachers/nayla-profile.webp',
   },
 ];
 
@@ -35,6 +30,8 @@ const item: Variants = {
 };
 
 export function YTTTeachers() {
+  const { lang } = useLanguage();
+  const t = YTT_DICTIONARIES[lang];
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -48,7 +45,7 @@ export function YTTTeachers() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            Meet your teachers
+            {t.teachers.heading}
           </motion.h2>
         </div>
 
@@ -58,10 +55,16 @@ export function YTTTeachers() {
           animate={inView ? 'visible' : 'hidden'}
           className="grid md:grid-cols-2 gap-10 lg:gap-16 mt-14 lg:mt-16"
         >
-          {teachers.map((teacher) => (
+          {TEACHERS.map((teacher, i) => (
             <motion.article key={teacher.name} variants={item}>
               <div className="relative aspect-[4/5] overflow-hidden">
-                <img src={teacher.image} alt={teacher.name} className="w-full h-full object-cover" />
+                <img
+                  src={teacher.image}
+                  alt={teacher.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <h3 className="font-display font-light text-ink text-2xl leading-snug mt-6">
                 {teacher.name}
@@ -70,8 +73,8 @@ export function YTTTeachers() {
                 {teacher.handle}
               </p>
               <div className="mt-5 space-y-4">
-                {teacher.bio.map((para, i) => (
-                  <p key={i} className="font-body text-sm text-ink leading-[1.8]">
+                {t.teachers.bios[i].map((para, j) => (
+                  <p key={j} className="font-body text-sm text-ink leading-[1.8]">
                     {para}
                   </p>
                 ))}

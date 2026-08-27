@@ -10,13 +10,18 @@ import { motion, useInView } from 'framer-motion';
 type GalleryImg = { src: string; aspect: string; alt: string };
 
 const IMAGES: GalleryImg[] = [
-  { src: '/images/yoga/IMG_5615%201.webp',              aspect: 'aspect-square', alt: 'Practice at sunset' },
-  { src: '/images/sanctuary/271A0719_websize%201.webp', aspect: 'aspect-[3/4]',  alt: 'Sanctuary corner' },
-  { src: '/images/yoga/IMG_8693%201.webp',              aspect: 'aspect-[3/4]',  alt: 'Group practice' },
-  { src: '/images/sanctuary/271A0856_websize%201.webp', aspect: 'aspect-[4/3]',  alt: 'Garden moment' },
-  { src: '/images/contrast_therapy/IMG_7067%201.webp',  aspect: 'aspect-square', alt: 'Cold plunge ritual' },
-  { src: '/images/sanctuary/271A0698_websize%201.webp', aspect: 'aspect-[4/5]',  alt: 'Shala in the afternoon' },
-  { src: '/images/yoga/IMG_7491%201.webp',              aspect: 'aspect-[3/4]',  alt: 'Quiet morning practice' },
+  { src: '/images/retreats/retreats-1.webp',  aspect: 'aspect-[2/3]', alt: 'Shared breakfast at the long table' },
+  { src: '/images/retreats/retreats-2.webp',  aspect: 'aspect-[3/2]', alt: 'The shala set for morning practice' },
+  { src: '/images/retreats/retreats-3.webp',  aspect: 'aspect-[3/2]', alt: 'A guest room ready for arrival' },
+  { src: '/images/retreats/retreats-4.webp',  aspect: 'aspect-[2/3]', alt: 'A toast in the open-air lounge' },
+  { src: '/images/retreats/retreats-5.webp',  aspect: 'aspect-[3/4]', alt: 'Stretching on the beach at sunset' },
+  { src: '/images/retreats/retreats-6.webp',  aspect: 'aspect-[2/3]', alt: 'Side stretch on the mats' },
+  { src: '/images/retreats/retreats-7.webp',  aspect: 'aspect-[2/3]', alt: 'Bathing at the waterfall' },
+  { src: '/images/retreats/retreats-8.webp',  aspect: 'aspect-[3/4]', alt: 'Resting on the net above the jungle' },
+  { src: '/images/retreats/retreats-9.webp',  aspect: 'aspect-[3/4]', alt: 'A hammock on the deck' },
+  { src: '/images/retreats/retreats-10.webp', aspect: 'aspect-[2/3]', alt: 'A long lunch together' },
+  { src: '/images/retreats/retreats-11.webp', aspect: 'aspect-[2/3]', alt: 'Fresh fruit laid out for breakfast' },
+  { src: '/images/retreats/retreats-12.webp', aspect: 'aspect-[2/3]', alt: 'Meditation above the canopy' },
 ];
 
 export function RetreatsGallery() {
@@ -123,7 +128,7 @@ export function RetreatsGallery() {
         tabIndex={0}
         className="
           flex items-center gap-6 lg:gap-10
-          h-[420px] sm:h-[480px] lg:h-[600px] xl:h-[640px]
+          h-[420px] sm:h-[500px] lg:h-[620px] xl:h-[680px]
           overflow-x-auto snap-x snap-proximity scroll-smooth
           px-6 lg:px-16 xl:px-24
           cursor-grab select-none
@@ -151,6 +156,8 @@ export function RetreatsGallery() {
                 src={img.src}
                 alt={img.alt}
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover pointer-events-none"
               />
             </div>

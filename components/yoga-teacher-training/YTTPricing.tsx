@@ -2,39 +2,17 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import { Ornament } from '@/components/landing/ornament';
+import { Ornament } from '@/components/shared/ornament';
+import { useLanguage } from '@/contexts/language-context';
+import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { whatsappUrl } from '@/lib/whatsapp-ytt';
 
 // All CTAs on the YTT landing route to Nancy's WhatsApp.
-const NANCY_WHATSAPP = 'https://wa.me/50684904626';
 
-const paymentSchedule = [
-  'A Non-refundable deposit of $500 is required to hold your space (once accepted into program).',
-  '½ Tuition Investment must be paid within 30 days of acceptance. (Unless special payment arrangements were made).',
-  'Full tuition must be paid by February 15, 2025.',
-  'Cancellation Policy: The deposit of $500 is non-refundable once accepted, but may be used for future trainings or retreats.',
-  '75% of the remaining amount will be refunded up until 30 days before the course starts. No refunds given under any circumstances after the commencement of the course.',
-];
+// Payment schedule and tier text live in the dictionary, in both languages.
 
-const tiers = [
-  {
-    tag: 'Early Bird · August',
-    price: 'USD $4,015',
-    detail: 'Private room · 100-Hour Costa Rica immersion',
-    featured: true,
-  },
-  {
-    tag: 'Regular',
-    price: 'USD $4,340',
-    detail: 'Private room · 100-Hour Costa Rica immersion',
-    featured: false,
-  },
-  {
-    tag: 'Training Only',
-    price: 'USD $2,620',
-    detail: 'Training + 1 meal · without accommodation',
-    featured: false,
-  },
-];
+// Which tier is visually featured is structural, not textual.
+const TIER_FEATURED = [true, false, false];
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -46,6 +24,8 @@ const item: Variants = {
 };
 
 export function YTTPricing() {
+  const { lang } = useLanguage();
+  const t = YTT_DICTIONARIES[lang];
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -59,7 +39,7 @@ export function YTTPricing() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]"
           >
-            Costa Rica Immersion — 100 hours.
+            {t.pricing.heading}
           </motion.h2>
         </div>
 
@@ -69,19 +49,19 @@ export function YTTPricing() {
           animate={inView ? 'visible' : 'hidden'}
           className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-14 lg:mt-16"
         >
-          {tiers.map((tier) => (
+          {t.pricing.tiers.map((tier, i) => (
             <motion.article
               key={tier.tag}
               variants={item}
               className={`p-8 md:p-10 flex flex-col ${
-                tier.featured
+                TIER_FEATURED[i]
                   ? 'bg-cream text-dark'
                   : 'border border-cream/20 text-cream'
               }`}
             >
               <p
                 className={`font-body text-[10px] tracking-[0.25em] uppercase ${
-                  tier.featured ? 'text-burgundy' : 'text-cream/60'
+                  TIER_FEATURED[i] ? 'text-burgundy' : 'text-cream/60'
                 }`}
               >
                 {tier.tag}
@@ -89,7 +69,7 @@ export function YTTPricing() {
               <p className="font-display font-light text-3xl md:text-4xl mt-5">{tier.price}</p>
               <p
                 className={`font-body text-sm leading-[1.7] mt-4 ${
-                  tier.featured ? 'text-dark/70' : 'text-cream/70'
+                  TIER_FEATURED[i] ? 'text-dark/70' : 'text-cream/70'
                 }`}
               >
                 {tier.detail}
@@ -105,16 +85,15 @@ export function YTTPricing() {
           className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10"
         >
           <p className="font-body text-sm text-cream/70 leading-[1.7] max-w-md">
-            Optional 100-Hour online program — pricing and schedule available upon request. Please
-            contact us for available payment options.
+            {t.pricing.onlineLine}
           </p>
           <a
-            href={NANCY_WHATSAPP}
+            href={whatsappUrl(t.whatsapp.messagePricing)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block shrink-0 bg-cream text-dark font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy hover:text-cream transition-colors duration-300"
           >
-            Request pricing &amp; dates
+            {t.pricing.requestCta}
           </a>
         </motion.div>
 
@@ -128,10 +107,10 @@ export function YTTPricing() {
           {/* Left — schedule */}
           <div className="lg:border-r lg:border-cream/15 lg:pr-20">
             <h3 className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.15]">
-              Payment Schedule
+              {t.pricing.paymentHeading}
             </h3>
             <ul className="mt-8 space-y-5">
-              {paymentSchedule.map((line) => (
+              {t.pricing.schedule.map((line) => (
                 <li key={line} className="flex gap-4">
                   <span aria-hidden className="mt-[7px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-burgundy" />
                   <span className="font-body text-sm text-cream/85 leading-[1.7]">{line}</span>
@@ -144,15 +123,15 @@ export function YTTPricing() {
           <div className="text-center">
             <Ornament src="/logos/moon-phase.png" className="h-8 md:h-9 mx-auto mb-8 opacity-80" />
             <p className="font-display font-light text-cream text-3xl md:text-4xl leading-[1.2] max-w-md mx-auto">
-              Self-Love investment is within your reach
+              {t.pricing.invitation}
             </p>
             <a
-              href={NANCY_WHATSAPP}
+              href={whatsappUrl(t.whatsapp.message)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-burgundy text-cream font-body text-sm tracking-[0.05em] px-10 py-3.5 hover:bg-cream hover:text-dark transition-colors duration-300 mt-10"
             >
-              Apply Now
+              {t.pricing.applyCta}
             </a>
           </div>
         </motion.div>
@@ -164,7 +143,7 @@ export function YTTPricing() {
           transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
           className="font-display font-light text-cream text-2xl md:text-3xl text-center mt-20 lg:mt-24"
         >
-          Hold your space now with a $500 deposit
+          {t.pricing.closing}
         </motion.p>
       </div>
     </section>

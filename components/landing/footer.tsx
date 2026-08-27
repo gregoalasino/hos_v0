@@ -25,8 +25,6 @@ const MAPS_URL =
 const INSTAGRAM_URL = 'https://www.instagram.com/house.of.shakti/';
 const INSTAGRAM_HANDLE = '@house.of.shakti';
 
-const WHITESPACEZ_URL = 'https://whitespacez.com';
-
 // ─── Stagger variants for the three right-zone columns ──────────────────────
 const columnsContainer: Variants = {
   hidden: { opacity: 0 },
@@ -75,7 +73,7 @@ export function Footer() {
               />
             </Link>
 
-            <p className="font-body italic text-sm text-cream/60 leading-relaxed max-w-xs mt-6">
+            <p className="font-body text-sm text-cream/60 leading-relaxed max-w-xs mt-6">
               A sanctuary in the canopy of Costa Rica.
             </p>
           </motion.div>
@@ -161,23 +159,10 @@ export function Footer() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
-          className="flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
         >
-          <p className="font-body text-xs text-cream/40">
+          {/* Copyright a la misma escala que los enlaces de las columnas. */}
+          <p className="font-body text-sm text-cream/40">
             © {new Date().getFullYear()} House of Shakti. All rights reserved.
-          </p>
-
-          <p className="font-body italic text-xs text-cream/40">
-            A{' '}
-            <a
-              href={WHITESPACEZ_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="not-italic hover:text-cream/70 transition-colors duration-300"
-            >
-              Whitespacez
-            </a>{' '}
-            build.
           </p>
         </motion.div>
       </div>

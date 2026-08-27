@@ -50,7 +50,7 @@ export function RetreatsIntroduction() {
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
-            className="font-body text-sm tracking-[0.15em] text-ink/70 mt-12 lg:mt-16 max-w-2xl uppercase"
+            className="font-body text-sm tracking-[0.05em] text-ink/70 mt-12 lg:mt-16 max-w-2xl"
           >
             Signature Retreats / Hosted Retreats / Yoga Training / Experiences
           </motion.p>
