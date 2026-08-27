@@ -1,69 +1,138 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { motion, Variants, useInView } from 'framer-motion';
+import { TrackArrows } from '@/components/shared/TrackArrows';
+import { useCarousel } from '@/hooks/use-carousel';
+import { useLanguage } from '@/contexts/language-context';
+import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
 
-// House of Shakti Yoga Sanctuary — a short place-setting block between the
-// teachers and the pricing, linking through to the accommodations page.
+// Sixteen frames of the property, all shot 3:2 landscape.
+const FRAMES = Array.from(
+  { length: 16 },
+  (_, i) => `/images/sanctuary/hos-day-${String(i + 1).padStart(2, '0')}.webp`,
+);
+
+const track: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09 } },
+};
+const frame: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1.0, ease: 'easeOut' } },
+};
+
+// House of Shakti Yoga Sanctuary — a place-setting block between the pricing
+// and what the reader has been reading about all the way down the page.
 export function YTTSanctuary() {
+  const { lang } = useLanguage();
+  const t = YTT_DICTIONARIES[lang];
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
+  const { trackRef, atStart, atEnd, step, hasOverflow } = useCarousel();
+
   return (
     <section className="bg-warm-white py-20 lg:py-28">
-      <div
-        ref={ref}
-        className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center"
-      >
-        {/* Text */}
-        <div className="order-2 lg:order-none">
-          <motion.h2
+      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto lg:grid lg:grid-cols-3 lg:gap-12">
+        {/* ── Left — the place, named ─────────────────────────────────── */}
+        {/* items-start is implicit here: the grid's default stretch is overridden
+            by this column's own content flow, so the copy sits at the top of the
+            row rather than floating against the middle of a tall carousel. */}
+        <div className="lg:col-span-1 lg:pr-12 self-start">
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             transition={{ duration: 1.0, ease: 'easeOut' }}
-            className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            House of Shakti Yoga Sanctuary
-          </motion.h2>
+            <img
+              src="/logos/logo-hos-negro.webp"
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="h-12 lg:h-14 w-auto select-none mb-6 lg:mb-8"
+            />
+
+            <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
+              {t.sanctuary.heading}
+            </h2>
+          </motion.div>
 
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
-            className="font-body text-sm text-ink leading-[1.8] mt-6 max-w-xl"
+            className="font-body text-sm text-ink leading-relaxed mt-6 lg:mt-10 max-w-full lg:max-w-xs"
           >
-            Where the jungle meets beach, and ancient wisdom meets modern comfort. We are located in
-            Santiago, Costa Rica just 7 minutes from the beach in Playa Hermosa.
+            {t.sanctuary.body}
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
-          >
-            <Link
-              href="/stay-with-us"
-              className="inline-block bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300 mt-9"
+          {hasOverflow && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+              className="mt-8 lg:mt-10"
             >
-              View accommodations
-            </Link>
-          </motion.div>
+              <TrackArrows
+                atStart={atStart}
+                atEnd={atEnd}
+                onPrev={() => step(-1)}
+                onNext={() => step(1)}
+              />
+            </motion.div>
+          )}
         </div>
 
-        {/* Image */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="relative aspect-[4/5] overflow-hidden order-1 lg:order-none mb-12 lg:mb-0"
-        >
-          <img
-            src="/images/sanctuary/271A0759_websize%201.webp"
-            alt="House of Shakti Yoga Sanctuary"
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
+        {/* ── Right — the walk through ────────────────────────────────── */}
+        <div className="lg:col-span-2 mt-12 lg:mt-0">
+          {/* Same gutter rule as every other track on the page: begins on the
+              container's left edge and runs off the right one, so a frame cut by
+              the screen edge says the row continues. On desktop it stays inside
+              its column, where the grid already cuts the frames visibly. */}
+          <motion.div
+            ref={trackRef}
+            role="group"
+            aria-label={t.sanctuary.trackAria}
+            variants={track}
+            initial="hidden"
+            animate={inView ? 'visible' : 'hidden'}
+            className="
+              flex gap-6 lg:gap-8
+              overflow-x-auto snap-x snap-proximity scroll-smooth
+              select-none
+              [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
+              -mr-[5vw] md:-mr-[10vw] lg:mr-0
+            "
+          >
+            {FRAMES.map((src, i) => (
+              <motion.div
+                key={src}
+                variants={frame}
+                className="
+                  flex-shrink-0 snap-start
+                  w-[82vw] max-w-[420px]
+                  lg:w-[46vw] lg:max-w-[560px]
+                "
+              >
+                <div className="relative aspect-[3/2] overflow-hidden bg-cream">
+                  <img
+                    src={src}
+                    alt=""
+                    aria-hidden
+                    draggable={false}
+                    // Sixteen frames is roughly 3 MB. Only the two that can be
+                    // on screen at once are worth fetching up front; the rest
+                    // arrive as the track is walked.
+                    loading={i < 2 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );

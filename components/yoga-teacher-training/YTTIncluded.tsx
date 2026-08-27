@@ -2,28 +2,8 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-
-const included = [
-  'Accommodation at House of Shakti',
-  'Two nourishing meals daily (brunch & dinner)',
-  'Full 100-Hour Yoga Teacher Training',
-  'Daily yoga, meditation & embodiment practices',
-  'Two breathwork journeys',
-  'Sauna & ice bath experiences',
-  'Boat tour',
-  'Comprehensive training manual',
-  'Certificate of Completion (100 hours)',
-  'Connection with nature & conscious community',
-];
-
-const notIncluded = [
-  'International airfare',
-  'Airport transportation',
-  'Travel insurance',
-  'Additional beverages',
-  'Personal expenses',
-  'Optional excursions',
-];
+import { useLanguage } from '@/contexts/language-context';
+import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
 
 const listContainer: Variants = {
   hidden: { opacity: 0 },
@@ -35,6 +15,8 @@ const listItem: Variants = {
 };
 
 export function YTTIncluded() {
+  const { lang } = useLanguage();
+  const t = YTT_DICTIONARIES[lang];
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -49,7 +31,7 @@ export function YTTIncluded() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            The 100 Hours Costa Rica Immersion includes.
+            {t.included.heading}
           </motion.h2>
 
           <motion.ul
@@ -58,7 +40,7 @@ export function YTTIncluded() {
             animate={inView ? 'visible' : 'hidden'}
             className="mt-10 space-y-4"
           >
-            {included.map((item) => (
+            {t.included.items.map((item) => (
               <motion.li
                 key={item}
                 variants={listItem}
@@ -80,7 +62,7 @@ export function YTTIncluded() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            Not included.
+            {t.included.notHeading}
           </motion.h2>
 
           <motion.ul
@@ -89,7 +71,7 @@ export function YTTIncluded() {
             animate={inView ? 'visible' : 'hidden'}
             className="mt-10 space-y-4"
           >
-            {notIncluded.map((item) => (
+            {t.included.notItems.map((item) => (
               <motion.li
                 key={item}
                 variants={listItem}
@@ -107,8 +89,7 @@ export function YTTIncluded() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
             className="font-body text-xs text-ink/60 leading-[1.7] mt-8 italic"
           >
-            Vegetarian meals are included, and most dietary requirements can be accommodated with
-            advance notice.
+            {t.included.note}
           </motion.p>
         </div>
       </div>
