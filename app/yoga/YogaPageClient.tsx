@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, Variants, useInView } from 'framer-motion';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { YogaClass } from '@/types';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
+import { ClassPacks } from '@/components/yoga/ClassPacks';
+import { SpecialActivities } from '@/components/yoga/SpecialActivities';
+import { MeetOurTeam } from '@/components/yoga/MeetOurTeam';
 
 // ─── YouTube placeholder (same as home hero) ─────────────────────────────────
 const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
@@ -125,7 +128,12 @@ function YogaHero() {
 // ═════════════════════════════════════════════════════════════════════════════
 // NARRATIVE — adapted for the Yoga page (no trailing image)
 // ═════════════════════════════════════════════════════════════════════════════
-const NARRATIVE_HEADLINE = 'Yoga at House of Shakti.';
+const NARRATIVE_HEADLINE = 'Wild by nature, hold by practice.';
+
+// What the page actually holds, named after the claim above states it. Kept as
+// four tracked labels rather than a sentence: a reader scanning for "is there
+// an online option?" finds it here without reading a paragraph to get there.
+const NARRATIVE_LABELS = ['Classes', 'Activities', 'Workshops', 'Online Yoga'];
 
 function YogaNarrative() {
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -137,7 +145,9 @@ function YogaNarrative() {
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
       <div ref={textRef} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-3xl">
-          <motion.h2
+          {/* The page's only h1. The hero above it is a silent video with no
+              copy, so until now the document opened with no heading at all. */}
+          <motion.h1
             variants={headlineContainer}
             initial="hidden"
             animate={textInView ? 'visible' : 'hidden'}
@@ -156,11 +166,11 @@ function YogaNarrative() {
                 >
                   {word}
                   {/* non-breaking space — a regular ASCII space gets collapsed when each word is wrapped in inline-block */}
-                  {i < words.length - 1 ? ' ' : ''}
+                  {i < words.length - 1 ? '\u00A0' : ''}
                 </motion.span>
               </span>
             ))}
-          </motion.h2>
+          </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -168,11 +178,30 @@ function YogaNarrative() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.8 }}
             className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
           >
-            Mornings begin with breath. Afternoons soften into restoration. Our
-            shala opens to the trees, our teachers move at the pace of the body
-            — not the schedule. Whether you are new to practice or have spent
-            years on the mat, you are welcome here.
+            Come as you are. Move at your own pace. Let nature hold the rest.
           </motion.p>
+
+          {/* Hairline above rather than a box: the labels sit on the page, not
+              in a container — the same figure /stay-with-us uses to name what a
+              section holds. `gap-y` carries the wrap on a phone, where four
+              tracked labels don't fit one line. */}
+          <motion.ul
+            initial={{ opacity: 0, y: 12 }}
+            animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 2.1 }}
+            className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12 pt-8 border-t border-ink/15"
+          >
+            {NARRATIVE_LABELS.map((label, i) => (
+              <li key={label} className="flex items-center gap-3 md:gap-5">
+                {i > 0 && (
+                  <span aria-hidden className="h-3 w-px bg-ink/25 select-none" />
+                )}
+                <span className="font-body text-[10px] md:text-[11px] tracking-[0.2em] md:tracking-[0.28em] uppercase text-ink/80">
+                  {label}
+                </span>
+              </li>
+            ))}
+          </motion.ul>
         </div>
       </div>
     </section>
@@ -405,121 +434,6 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
           })}
         </div>
 
-        {/* ── Class packs — high-emphasis burgundy banner ──────────────────────
-            Buy a pack directly here, then redeem class by class with the code
-            we email you. This direct purchase is card-only via Tilopay. */}
-        <div data-surface="dark" className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 lg:gap-10">
-            <div className="max-w-2xl">
-              <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight">
-                Save with a pack of 5, 10 or 20
-              </h3>
-
-              {/* Info callout — what buying here means */}
-              <div className="flex items-start gap-3 mt-5">
-                <Info className="w-4 h-4 flex-shrink-0 text-cream/80 mt-[3px]" strokeWidth={1.75} aria-hidden />
-                <p className="font-body text-sm text-cream/85 leading-relaxed">
-                  Buy your classes now and redeem them whenever you like — one class at a
-                  time. We&apos;ll email you a personal code to book any class for free.
-                  This direct purchase is by card only, processed securely through{' '}
-                  <span className="font-medium text-cream">Tilopay</span>.
-                </p>
-              </div>
-            </div>
-
-            <Link
-              href="/paquetes"
-              className="group inline-flex items-center justify-center gap-2 flex-shrink-0 self-start lg:self-auto bg-cream text-burgundy font-body text-sm tracking-[0.05em] px-7 py-4 hover:bg-warm-white transition-colors duration-200 whitespace-nowrap"
-            >
-              Buy class packs
-              <span className="transition-transform duration-200 group-hover:translate-x-[2px]">→</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// INSTRUCTORS
-// ═════════════════════════════════════════════════════════════════════════════
-// NOTE: placeholder names and bios — replace with real teacher data when ready.
-// Images are non-portrait yoga shots; swap for actual headshots in the same pass.
-const instructors = [
-  {
-    name: 'Luna Hernández',
-    discipline: 'Vinyasa & Hatha',
-    bio: 'Trained between Mysore and Bali, Luna brings a quiet attention to alignment and breath. Her practice favors patience over performance.',
-    image: '/images/yoga/IMG_8693%201.webp', // TODO: replace with actual instructor portrait
-  },
-  {
-    name: 'Daniel Park',
-    discipline: 'Yin & Restorative',
-    bio: 'Daniel teaches from stillness. His sessions favor long holds, slow breath, and the kind of rest the body takes time to find.',
-    image: '/images/yoga/IMG_7526%201.webp', // TODO: replace with actual instructor portrait
-  },
-  {
-    name: 'Ana Patricia Rivas',
-    discipline: 'Meditation & Breathwork',
-    bio: 'A student of Iyengar and pranayama traditions, Ana works between Costa Rica and Mexico. Her teaching is small, daily, and built to last.',
-    image: '/images/yoga/IMG_7491%201.webp', // TODO: replace with actual instructor portrait
-  },
-];
-
-const instructorsContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
-};
-const instructorsItem: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 1.0, ease: 'easeOut' } },
-};
-
-function YogaInstructors() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white py-20 lg:py-28">
-      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mb-16 lg:mb-20"
-        >
-          Our teachers
-        </motion.h2>
-
-        <motion.div
-          variants={instructorsContainer}
-          initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
-          className="grid md:grid-cols-3 gap-8 lg:gap-10"
-        >
-          {instructors.map((instructor) => (
-            <motion.article key={instructor.name} variants={instructorsItem}>
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <img
-                  src={instructor.image}
-                  alt={instructor.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
-                {instructor.name}
-              </h3>
-              {/* Discipline reads as a fact line under the name, not a tag above it */}
-              <p className="font-body text-xs text-ink mt-2">
-                {instructor.discipline}
-              </p>
-              <p className="font-body text-sm text-ink leading-relaxed mt-3">
-                {instructor.bio}
-              </p>
-            </motion.article>
-          ))}
-        </motion.div>
       </div>
     </section>
   );
@@ -763,7 +677,12 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
       <YogaHero />
       <YogaNarrative />
       <WeeklyCalendar initialClasses={initialClasses} />
-      <YogaInstructors />
+      {/* Packs sit outside the calendar now: they carry their own section and
+          container, and the offer is about a habit rather than about this
+          particular week. */}
+      <ClassPacks />
+      <SpecialActivities />
+      <MeetOurTeam />
       <YogaContact />
       <YogaGallery />
       <Footer />
