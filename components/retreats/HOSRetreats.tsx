@@ -25,7 +25,6 @@ const CARDS: RetreatCard[] = [
       '/images/upcoming_retreats/upcoming_retreats.webp',
       '/images/upcoming_retreats/upcoming_retreats_2.webp',
     ],
-    // TODO: point at Santi's dedicated "Upcoming Retreats" landing once it ships.
     href: '/upcoming-retreats',
     ctaLabel: 'See upcoming retreats',
     external: false,
