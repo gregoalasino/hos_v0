@@ -161,7 +161,7 @@ function computeDiscount(code: ReferralCode, subtotal: number, upsells: Upsell[]
 // ─── Step headings ────────────────────────────────────────────────────────────
 const STEP_HEADINGS: Record<number, string> = {
   1: 'Your class',
-  2: 'Add to your practice',
+  2: 'Enhance your practice',
   3: 'Your details',
   4: 'Payment',
 };
@@ -792,8 +792,9 @@ export default function BookingFlow({
                         transition={{ duration: 0.4, ease: 'easeOut' }}
                       >
                         <p className="font-body text-sm text-ink max-w-md">
-                          Pay securely by card. Choose a single class or save with a pack — a pack
-                          also covers this class and sends you a code for future ones.
+                          Pay securely by card now, or settle with Venmo or in cash at the
+                          studio. Choose a single class or save with a pack — a pack also covers
+                          this class and sends you a code for future ones.
                         </p>
 
                         {/* Pack type selector — editorial flat cards, no radius */}

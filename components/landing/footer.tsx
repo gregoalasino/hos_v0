@@ -7,7 +7,7 @@ import { Instagram } from 'lucide-react';
 
 // ─── Static content ─────────────────────────────────────────────────────────
 const sitemapLinks: { label: string; href: string }[] = [
-  { label: 'Yoga classes', href: '/yoga' },
+  { label: 'Yoga & Wellbeing', href: '/yoga' },
   { label: 'Stay With Us', href: '/stay-with-us' },
   { label: 'Retreats', href: '/retreats' },
   { label: 'Host your retreat', href: '/host-your-retreat' },

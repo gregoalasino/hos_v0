@@ -5,10 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, Variants, useInView } from 'framer-motion';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { YogaClass } from '@/types';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
+import { ClassPacks } from '@/components/yoga/ClassPacks';
+import { SpecialActivities } from '@/components/yoga/SpecialActivities';
+import { OnlineClasses } from '@/components/yoga/OnlineClasses';
+import { MeetOurTeam } from '@/components/yoga/MeetOurTeam';
+import { YogaFAQ } from '@/components/yoga/YogaFAQ';
 
 // ─── YouTube placeholder (same as home hero) ─────────────────────────────────
 const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
@@ -125,7 +130,12 @@ function YogaHero() {
 // ═════════════════════════════════════════════════════════════════════════════
 // NARRATIVE — adapted for the Yoga page (no trailing image)
 // ═════════════════════════════════════════════════════════════════════════════
-const NARRATIVE_HEADLINE = 'Yoga at House of Shakti.';
+const NARRATIVE_HEADLINE = 'Wild by nature, hold by practice.';
+
+// What the page actually holds, named after the claim above states it. Kept as
+// four tracked labels rather than a sentence: a reader scanning for "is there
+// an online option?" finds it here without reading a paragraph to get there.
+const NARRATIVE_LABELS = ['Classes', 'Activities', 'Workshops', 'Online Yoga'];
 
 function YogaNarrative() {
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -137,7 +147,9 @@ function YogaNarrative() {
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
       <div ref={textRef} className="w-[90%] md:w-[80%] mx-auto">
         <div className="max-w-3xl">
-          <motion.h2
+          {/* The page's only h1. The hero above it is a silent video with no
+              copy, so until now the document opened with no heading at all. */}
+          <motion.h1
             variants={headlineContainer}
             initial="hidden"
             animate={textInView ? 'visible' : 'hidden'}
@@ -156,11 +168,11 @@ function YogaNarrative() {
                 >
                   {word}
                   {/* non-breaking space — a regular ASCII space gets collapsed when each word is wrapped in inline-block */}
-                  {i < words.length - 1 ? ' ' : ''}
+                  {i < words.length - 1 ? '\u00A0' : ''}
                 </motion.span>
               </span>
             ))}
-          </motion.h2>
+          </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -168,11 +180,29 @@ function YogaNarrative() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.8 }}
             className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
           >
-            Mornings begin with breath. Afternoons soften into restoration. Our
-            shala opens to the trees, our teachers move at the pace of the body
-            — not the schedule. Whether you are new to practice or have spent
-            years on the mat, you are welcome here.
+            Come as you are. Move at your own pace. Let nature hold the rest.
           </motion.p>
+
+          {/* No rule and no container: the labels sit straight on the page and
+              are held by space alone. `gap-y` carries the wrap on a phone,
+              where four tracked labels don't fit one line. */}
+          <motion.ul
+            initial={{ opacity: 0, y: 12 }}
+            animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 2.1 }}
+            className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12"
+          >
+            {NARRATIVE_LABELS.map((label, i) => (
+              <li key={label} className="flex items-center gap-3 md:gap-5">
+                {i > 0 && (
+                  <span aria-hidden className="h-3 w-px bg-ink/25 select-none" />
+                )}
+                <span className="font-body text-[10px] md:text-[11px] tracking-[0.2em] md:tracking-[0.28em] uppercase text-ink/80">
+                  {label}
+                </span>
+              </li>
+            ))}
+          </motion.ul>
         </div>
       </div>
     </section>
@@ -299,7 +329,15 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
   }, [displayClasses, weekDays]);
 
   return (
-    <section ref={sectionRef} className="bg-warm-white py-20 lg:py-28">
+    // Anchor target for the online-classes CTA: those classes are booked on
+    // this same schedule, so the button scrolls here rather than opening a
+    // second surface. scroll-mt clears the fixed navbar, or the heading lands
+    // tucked underneath it.
+    <section
+      ref={sectionRef}
+      id="schedule"
+      className="bg-warm-white py-20 lg:py-28 scroll-mt-20 lg:scroll-mt-24"
+    >
       <div className="w-[90%] md:w-[80%] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -405,156 +443,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
           })}
         </div>
 
-        {/* ── Class packs — high-emphasis burgundy banner ──────────────────────
-            Buy a pack directly here, then redeem class by class with the code
-            we email you. This direct purchase is card-only via Tilopay. */}
-        <div data-surface="dark" className="mt-14 lg:mt-16 relative overflow-hidden bg-burgundy text-cream px-7 py-8 lg:px-10 lg:py-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7 lg:gap-10">
-            <div className="max-w-2xl">
-              <h3 className="font-display font-light text-cream text-2xl lg:text-3xl leading-tight">
-                Save with a pack of 5, 10 or 20
-              </h3>
-
-              {/* Info callout — what buying here means */}
-              <div className="flex items-start gap-3 mt-5">
-                <Info className="w-4 h-4 flex-shrink-0 text-cream/80 mt-[3px]" strokeWidth={1.75} aria-hidden />
-                <p className="font-body text-sm text-cream/85 leading-relaxed">
-                  Buy your classes now and redeem them whenever you like — one class at a
-                  time. We&apos;ll email you a personal code to book any class for free.
-                  This direct purchase is by card only, processed securely through{' '}
-                  <span className="font-medium text-cream">Tilopay</span>.
-                </p>
-              </div>
-            </div>
-
-            <Link
-              href="/paquetes"
-              className="group inline-flex items-center justify-center gap-2 flex-shrink-0 self-start lg:self-auto bg-cream text-burgundy font-body text-sm tracking-[0.05em] px-7 py-4 hover:bg-warm-white transition-colors duration-200 whitespace-nowrap"
-            >
-              Buy class packs
-              <span className="transition-transform duration-200 group-hover:translate-x-[2px]">→</span>
-            </Link>
-          </div>
-        </div>
       </div>
-    </section>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// INSTRUCTORS
-// ═════════════════════════════════════════════════════════════════════════════
-// NOTE: placeholder names and bios — replace with real teacher data when ready.
-// Images are non-portrait yoga shots; swap for actual headshots in the same pass.
-const instructors = [
-  {
-    name: 'Luna Hernández',
-    discipline: 'Vinyasa & Hatha',
-    bio: 'Trained between Mysore and Bali, Luna brings a quiet attention to alignment and breath. Her practice favors patience over performance.',
-    image: '/images/yoga/IMG_8693%201.webp', // TODO: replace with actual instructor portrait
-  },
-  {
-    name: 'Daniel Park',
-    discipline: 'Yin & Restorative',
-    bio: 'Daniel teaches from stillness. His sessions favor long holds, slow breath, and the kind of rest the body takes time to find.',
-    image: '/images/yoga/IMG_7526%201.webp', // TODO: replace with actual instructor portrait
-  },
-  {
-    name: 'Ana Patricia Rivas',
-    discipline: 'Meditation & Breathwork',
-    bio: 'A student of Iyengar and pranayama traditions, Ana works between Costa Rica and Mexico. Her teaching is small, daily, and built to last.',
-    image: '/images/yoga/IMG_7491%201.webp', // TODO: replace with actual instructor portrait
-  },
-];
-
-const instructorsContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
-};
-const instructorsItem: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 1.0, ease: 'easeOut' } },
-};
-
-function YogaInstructors() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white py-20 lg:py-28">
-      <div ref={ref} className="w-[90%] md:w-[80%] mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 1.0, ease: 'easeOut' }}
-          className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15] mb-16 lg:mb-20"
-        >
-          Our teachers
-        </motion.h2>
-
-        <motion.div
-          variants={instructorsContainer}
-          initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
-          className="grid md:grid-cols-3 gap-8 lg:gap-10"
-        >
-          {instructors.map((instructor) => (
-            <motion.article key={instructor.name} variants={instructorsItem}>
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <img
-                  src={instructor.image}
-                  alt={instructor.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-tight mt-6">
-                {instructor.name}
-              </h3>
-              {/* Discipline reads as a fact line under the name, not a tag above it */}
-              <p className="font-body text-xs text-ink mt-2">
-                {instructor.discipline}
-              </p>
-              <p className="font-body text-sm text-ink leading-relaxed mt-3">
-                {instructor.bio}
-              </p>
-            </motion.article>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// CONTACT PROMPT
-// ═════════════════════════════════════════════════════════════════════════════
-function YogaContact() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white py-16 lg:py-20">
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 16 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: 1.0, ease: 'easeOut' }}
-        className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
-      >
-        <h2 className="font-display font-light text-ink text-2xl md:text-3xl leading-[1.15]">
-          Questions before you book?
-        </h2>
-        <p className="font-body text-sm text-ink max-w-md mx-auto mt-4 leading-relaxed">
-          Reach out — we&apos;ll help you find the right class or arrange a
-          private session.
-        </p>
-        <Link
-          href="/contact"
-          className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 mt-8"
-        >
-          Get in touch
-        </Link>
-      </motion.div>
     </section>
   );
 }
@@ -574,14 +463,39 @@ function YogaContact() {
 // ═════════════════════════════════════════════════════════════════════════════
 type GalleryImg = { src: string; aspect: string; alt: string };
 
+// Every `aspect` below is the file's real ratio on disk, within a rounding of
+// well under half a percent — except 18 (1519×1926 = 0.789), which is declared
+// as 4/5 and so gives up about 1.4% of its height. The nearer Tailwind step,
+// 3/4, would cost 5%. Slots share a
+// width and let the aspect set the height, so a mismatch here crops the photo.
+//
+// Order is deliberate, not numeric. Nine of the nineteen are 2:3, and a numeric
+// run would stack them into a flat wall of identical heights. The shorter
+// formats — the two landscapes (13, 17), the square (05), the 4:5 (18) and the
+// 3:4s — are interleaved so the rail alternates tall/short on almost every slot.
+// The one unavoidable short-short pair (13 then 19, since nine tall frames
+// cannot separate ten short ones) is placed where the contrast is widest:
+// a 3:2 landscape against a 3:4 portrait.
 const yogaGalleryImages: GalleryImg[] = [
-  { src: '/images/yoga/IMG_5608%201.webp',  aspect: 'aspect-[3/4]', alt: 'A solitary yoga practice' },
-  { src: '/images/yoga/IMG_8420%201.webp',  aspect: 'aspect-[4/3]', alt: 'Group practice in the shala' },
-  { src: '/images/yoga/IMG_7494%201.webp',  aspect: 'aspect-[3/4]', alt: 'Detail of practice' },
-  { src: '/images/yoga/IMG_8669%201.webp',  aspect: 'aspect-[5/4]', alt: 'Open-air shala wide view' },
-  { src: '/images/yoga/IMG_5615%201.webp',  aspect: 'aspect-[4/3]', alt: 'Practice at sunset' },
-  { src: '/images/yoga/IMG_7538%201.webp',  aspect: 'aspect-[1/1]', alt: 'Movement in soft light' },
-  { src: '/images/yoga/IMG_7491%201.webp',  aspect: 'aspect-[3/4]', alt: 'Quiet morning ritual' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-03.webp', aspect: 'aspect-[2/3]',  alt: 'Practice in the shala' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-13.webp', aspect: 'aspect-[3/2]',  alt: 'The practice space, wide' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-19.webp', aspect: 'aspect-[3/4]',  alt: 'A held posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-08.webp', aspect: 'aspect-[2/3]',  alt: 'Movement in soft light' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-05.webp', aspect: 'aspect-square', alt: 'A detail of the practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-09.webp', aspect: 'aspect-[2/3]',  alt: 'Standing practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-04.webp', aspect: 'aspect-[3/4]',  alt: 'A moment of stillness' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-01.webp', aspect: 'aspect-[2/3]',  alt: 'Practice in the shala' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-18.webp', aspect: 'aspect-[4/5]',  alt: 'Resting between postures' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-15.webp', aspect: 'aspect-[2/3]',  alt: 'A seated posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-11.webp', aspect: 'aspect-[3/4]',  alt: 'Practice on the mat' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-02.webp', aspect: 'aspect-[2/3]',  alt: 'A balancing posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-17.webp', aspect: 'aspect-[3/2]',  alt: 'The shala, wide' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-07.webp', aspect: 'aspect-[2/3]',  alt: 'Movement in soft light' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-06.webp', aspect: 'aspect-[3/4]',  alt: 'A quiet moment of practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-10.webp', aspect: 'aspect-[2/3]',  alt: 'An extended posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-12.webp', aspect: 'aspect-[3/4]',  alt: 'Practice on the mat' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-16.webp', aspect: 'aspect-[2/3]',  alt: 'A detail of the practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-14.webp', aspect: 'aspect-[3/4]',  alt: 'Practice in the shala' },
 ];
 
 function YogaGallery() {
@@ -682,9 +596,17 @@ function YogaGallery() {
     >
       {/*
         Full-bleed scroll. The container has a fixed height tall enough to
-        accommodate the tallest aspect (3/4 portrait at the chosen slot width);
-        flex items-center vertically centers shorter ones, producing the
-        "uneven" rhythm.
+        accommodate the tallest aspect; flex items-center vertically centers
+        shorter ones, producing the "uneven" rhythm.
+
+        The tallest aspect is now 2:3, so a slot renders at width × 1.5 — taller
+        than the 3:4 (× 1.333) this rail was originally sized for. Required
+        height per breakpoint, against the slot widths set below:
+          base 260 × 1.5 = 390  → h-[420px]  ok
+          sm   320 × 1.5 = 480  → was 480, flush to the pixel → h-[520px]
+          lg   400 × 1.5 = 600  → was 600, flush to the pixel → h-[640px]
+          xl   440 × 1.5 = 660  → was 640, overflowed by 20px → h-[700px]
+        Each breakpoint now carries ~40px of slack so rounding cannot clip.
       */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -699,7 +621,7 @@ function YogaGallery() {
         tabIndex={0}
         className="
           flex items-center gap-6 lg:gap-10
-          h-[420px] sm:h-[480px] lg:h-[600px] xl:h-[640px]
+          h-[420px] sm:h-[520px] lg:h-[640px] xl:h-[700px]
           overflow-x-auto snap-x snap-proximity scroll-smooth
           px-6 lg:px-16 xl:px-24
           cursor-grab select-none
@@ -727,6 +649,8 @@ function YogaGallery() {
                 src={img.src}
                 alt={img.alt}
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover pointer-events-none"
               />
             </div>
@@ -763,8 +687,14 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
       <YogaHero />
       <YogaNarrative />
       <WeeklyCalendar initialClasses={initialClasses} />
-      <YogaInstructors />
-      <YogaContact />
+      {/* Packs sit outside the calendar now: they carry their own section and
+          container, and the offer is about a habit rather than about this
+          particular week. */}
+      <ClassPacks />
+      <SpecialActivities />
+      <OnlineClasses />
+      <MeetOurTeam />
+      <YogaFAQ />
       <YogaGallery />
       <Footer />
     </main>

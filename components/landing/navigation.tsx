@@ -14,7 +14,7 @@ import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
 // the drawer (the closed navbar shows just hamburger + logo + lang/CTA,
 // matching the Aman pattern).
 const navItems: { es: string; en: string; href: string }[] = [
-  { es: 'Clases de Yoga', en: 'Yoga Classes', href: '/yoga' },
+  { es: 'Yoga y Bienestar', en: 'Yoga & Wellbeing', href: '/yoga' },
   { es: 'Hospedate con Nosotras', en: 'Stay With Us', href: '/stay-with-us' },
   { es: 'Retiros', en: 'Retreats', href: '/retreats' },
   // Anchor into the home page rather than a route of its own — the section
