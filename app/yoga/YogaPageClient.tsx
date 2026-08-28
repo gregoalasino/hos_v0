@@ -183,15 +183,14 @@ function YogaNarrative() {
             Come as you are. Move at your own pace. Let nature hold the rest.
           </motion.p>
 
-          {/* Hairline above rather than a box: the labels sit on the page, not
-              in a container — the same figure /stay-with-us uses to name what a
-              section holds. `gap-y` carries the wrap on a phone, where four
-              tracked labels don't fit one line. */}
+          {/* No rule and no container: the labels sit straight on the page and
+              are held by space alone. `gap-y` carries the wrap on a phone,
+              where four tracked labels don't fit one line. */}
           <motion.ul
             initial={{ opacity: 0, y: 12 }}
             animate={textInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 1.2, ease: 'easeOut', delay: 2.1 }}
-            className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12 pt-8 border-t border-ink/15"
+            className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12"
           >
             {NARRATIVE_LABELS.map((label, i) => (
               <li key={label} className="flex items-center gap-3 md:gap-5">

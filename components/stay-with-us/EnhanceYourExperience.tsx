@@ -156,13 +156,13 @@ export function EnhanceYourExperience() {
           {/* How they are booked. Sits with the invitation rather than under
               the track: the question — "and how do I actually get these?" —
               arrives while the reader is still looking at the first card, not
-              after the eleventh. A hairline separates it from the invitation
-              above; it is practical information, in a quieter voice. */}
+              after the eleventh. It is practical information, in a quieter
+              voice, and the step down in size and colour is what sets it apart. */}
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
-            className="font-body text-xs text-ink/75 leading-[1.7] mt-8 lg:mt-10 pt-6 border-t border-ink/15 max-w-full lg:max-w-xs"
+            className="font-body text-xs text-ink/75 leading-[1.7] mt-8 lg:mt-10 max-w-full lg:max-w-xs"
           >
             Add any of these while booking your stay, or arrange them later
             with our team at reception.
