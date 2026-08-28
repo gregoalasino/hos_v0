@@ -21,7 +21,7 @@ const experiences = [
     title: "The Awakened Body: Embody Tantra Yoga Teacher Training",
     description:
       "A certified Tantric Yoga Teacher Training designed to deepen your practice, awaken the body, expand awareness, and inspire authentic teaching through embodied practice.",
-    image: "/images/yoga/IMG_8693%201.webp",
+    image: "/images/seccionSeasonalExperiences/yoga-teacher-training-nancy.webp",
     href: "/yoga-teacher-training",
   },
   {
