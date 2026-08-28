@@ -11,7 +11,9 @@ import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { ClassPacks } from '@/components/yoga/ClassPacks';
 import { SpecialActivities } from '@/components/yoga/SpecialActivities';
+import { OnlineClasses } from '@/components/yoga/OnlineClasses';
 import { MeetOurTeam } from '@/components/yoga/MeetOurTeam';
+import { YogaFAQ } from '@/components/yoga/YogaFAQ';
 
 // ─── YouTube placeholder (same as home hero) ─────────────────────────────────
 const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
@@ -328,7 +330,15 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
   }, [displayClasses, weekDays]);
 
   return (
-    <section ref={sectionRef} className="bg-warm-white py-20 lg:py-28">
+    // Anchor target for the online-classes CTA: those classes are booked on
+    // this same schedule, so the button scrolls here rather than opening a
+    // second surface. scroll-mt clears the fixed navbar, or the heading lands
+    // tucked underneath it.
+    <section
+      ref={sectionRef}
+      id="schedule"
+      className="bg-warm-white py-20 lg:py-28 scroll-mt-20 lg:scroll-mt-24"
+    >
       <div className="w-[90%] md:w-[80%] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -440,40 +450,6 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// CONTACT PROMPT
-// ═════════════════════════════════════════════════════════════════════════════
-function YogaContact() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <section className="bg-warm-white py-16 lg:py-20">
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 16 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: 1.0, ease: 'easeOut' }}
-        className="w-[90%] md:w-[80%] max-w-3xl mx-auto text-center"
-      >
-        <h2 className="font-display font-light text-ink text-2xl md:text-3xl leading-[1.15]">
-          Questions before you book?
-        </h2>
-        <p className="font-body text-sm text-ink max-w-md mx-auto mt-4 leading-relaxed">
-          Reach out — we&apos;ll help you find the right class or arrange a
-          private session.
-        </p>
-        <Link
-          href="/contact"
-          className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 mt-8"
-        >
-          Get in touch
-        </Link>
-      </motion.div>
-    </section>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
 // YOGA GALLERY — Aman-style horizontal slider (Amanera reference)
 //
 // Distinct from the home Gallery (masonry).
@@ -488,14 +464,39 @@ function YogaContact() {
 // ═════════════════════════════════════════════════════════════════════════════
 type GalleryImg = { src: string; aspect: string; alt: string };
 
+// Every `aspect` below is the file's real ratio on disk, within a rounding of
+// well under half a percent — except 18 (1519×1926 = 0.789), which is declared
+// as 4/5 and so gives up about 1.4% of its height. The nearer Tailwind step,
+// 3/4, would cost 5%. Slots share a
+// width and let the aspect set the height, so a mismatch here crops the photo.
+//
+// Order is deliberate, not numeric. Nine of the nineteen are 2:3, and a numeric
+// run would stack them into a flat wall of identical heights. The shorter
+// formats — the two landscapes (13, 17), the square (05), the 4:5 (18) and the
+// 3:4s — are interleaved so the rail alternates tall/short on almost every slot.
+// The one unavoidable short-short pair (13 then 19, since nine tall frames
+// cannot separate ten short ones) is placed where the contrast is widest:
+// a 3:2 landscape against a 3:4 portrait.
 const yogaGalleryImages: GalleryImg[] = [
-  { src: '/images/yoga/IMG_5608%201.webp',  aspect: 'aspect-[3/4]', alt: 'A solitary yoga practice' },
-  { src: '/images/yoga/IMG_8420%201.webp',  aspect: 'aspect-[4/3]', alt: 'Group practice in the shala' },
-  { src: '/images/yoga/IMG_7494%201.webp',  aspect: 'aspect-[3/4]', alt: 'Detail of practice' },
-  { src: '/images/yoga/IMG_8669%201.webp',  aspect: 'aspect-[5/4]', alt: 'Open-air shala wide view' },
-  { src: '/images/yoga/IMG_5615%201.webp',  aspect: 'aspect-[4/3]', alt: 'Practice at sunset' },
-  { src: '/images/yoga/IMG_7538%201.webp',  aspect: 'aspect-[1/1]', alt: 'Movement in soft light' },
-  { src: '/images/yoga/IMG_7491%201.webp',  aspect: 'aspect-[3/4]', alt: 'Quiet morning ritual' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-03.webp', aspect: 'aspect-[2/3]',  alt: 'Practice in the shala' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-13.webp', aspect: 'aspect-[3/2]',  alt: 'The practice space, wide' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-19.webp', aspect: 'aspect-[3/4]',  alt: 'A held posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-08.webp', aspect: 'aspect-[2/3]',  alt: 'Movement in soft light' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-05.webp', aspect: 'aspect-square', alt: 'A detail of the practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-09.webp', aspect: 'aspect-[2/3]',  alt: 'Standing practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-04.webp', aspect: 'aspect-[3/4]',  alt: 'A moment of stillness' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-01.webp', aspect: 'aspect-[2/3]',  alt: 'Practice in the shala' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-18.webp', aspect: 'aspect-[4/5]',  alt: 'Resting between postures' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-15.webp', aspect: 'aspect-[2/3]',  alt: 'A seated posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-11.webp', aspect: 'aspect-[3/4]',  alt: 'Practice on the mat' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-02.webp', aspect: 'aspect-[2/3]',  alt: 'A balancing posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-17.webp', aspect: 'aspect-[3/2]',  alt: 'The shala, wide' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-07.webp', aspect: 'aspect-[2/3]',  alt: 'Movement in soft light' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-06.webp', aspect: 'aspect-[3/4]',  alt: 'A quiet moment of practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-10.webp', aspect: 'aspect-[2/3]',  alt: 'An extended posture' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-12.webp', aspect: 'aspect-[3/4]',  alt: 'Practice on the mat' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-16.webp', aspect: 'aspect-[2/3]',  alt: 'A detail of the practice' },
+  { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-14.webp', aspect: 'aspect-[3/4]',  alt: 'Practice in the shala' },
 ];
 
 function YogaGallery() {
@@ -596,9 +597,17 @@ function YogaGallery() {
     >
       {/*
         Full-bleed scroll. The container has a fixed height tall enough to
-        accommodate the tallest aspect (3/4 portrait at the chosen slot width);
-        flex items-center vertically centers shorter ones, producing the
-        "uneven" rhythm.
+        accommodate the tallest aspect; flex items-center vertically centers
+        shorter ones, producing the "uneven" rhythm.
+
+        The tallest aspect is now 2:3, so a slot renders at width × 1.5 — taller
+        than the 3:4 (× 1.333) this rail was originally sized for. Required
+        height per breakpoint, against the slot widths set below:
+          base 260 × 1.5 = 390  → h-[420px]  ok
+          sm   320 × 1.5 = 480  → was 480, flush to the pixel → h-[520px]
+          lg   400 × 1.5 = 600  → was 600, flush to the pixel → h-[640px]
+          xl   440 × 1.5 = 660  → was 640, overflowed by 20px → h-[700px]
+        Each breakpoint now carries ~40px of slack so rounding cannot clip.
       */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -613,7 +622,7 @@ function YogaGallery() {
         tabIndex={0}
         className="
           flex items-center gap-6 lg:gap-10
-          h-[420px] sm:h-[480px] lg:h-[600px] xl:h-[640px]
+          h-[420px] sm:h-[520px] lg:h-[640px] xl:h-[700px]
           overflow-x-auto snap-x snap-proximity scroll-smooth
           px-6 lg:px-16 xl:px-24
           cursor-grab select-none
@@ -641,6 +650,8 @@ function YogaGallery() {
                 src={img.src}
                 alt={img.alt}
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover pointer-events-none"
               />
             </div>
@@ -682,8 +693,9 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
           particular week. */}
       <ClassPacks />
       <SpecialActivities />
+      <OnlineClasses />
       <MeetOurTeam />
-      <YogaContact />
+      <YogaFAQ />
       <YogaGallery />
       <Footer />
     </main>
