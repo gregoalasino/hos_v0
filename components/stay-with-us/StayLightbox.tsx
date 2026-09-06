@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabilityLink';
+import type { StayData } from '@/lib/stays';
 
 // ─── Stay lightbox ───────────────────────────────────────────────────────────
 // One expanded surface per dwelling, opened from the card's expand control,
@@ -15,21 +16,6 @@ import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabi
 // Splitting them into two different modals from the same card would mean two
 // doors to the same decision.
 
-export type StayData = {
-  /** Fact line: capacity · layout. Rendered under the title, never above it. */
-  meta: string;
-  title: string;
-  /** Card copy — short, one breath. */
-  short: string;
-  /** The full story, one string per paragraph. */
-  long: string[];
-  /** Optional bullet list (bed configurations). Rendered after `long`. */
-  facts?: { label: string; items: string[] };
-  /** Optional closing capacity line. */
-  capacity?: string;
-  images: string[];
-};
-
 // Wraparound distance between two indices on a ring of `total`.
 const ringDist = (a: number, b: number, total: number) =>
   Math.min(Math.abs(a - b), total - Math.abs(a - b));
@@ -38,10 +24,13 @@ export function StayLightbox({
   stay,
   initialIndex = 0,
   onClose,
+  booking = true,
 }: {
   stay: StayData;
   initialIndex?: number;
   onClose: () => void;
+  /** Whether the Cloudbeds door closes the story — see StayCard. */
+  booking?: boolean;
 }) {
   const [current, setCurrent] = useState(initialIndex);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -356,7 +345,7 @@ export function StayLightbox({
               </p>
             )}
 
-            <CheckAvailabilityLink className="mt-10" />
+            {booking && <CheckAvailabilityLink className="mt-10" />}
           </div>
         </div>
 
