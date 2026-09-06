@@ -49,12 +49,6 @@ export type Retreat = {
 
   // Hero
   // The hero renders as a full-bleed video (same pattern as home/yoga/stay-with-us).
-  // When `heroVideoIdDesktop` / `heroVideoIdMobile` are omitted, the section falls back
-  // to a shared placeholder. The legacy hero text fields (eyebrow, title, subhead,
-  // location, dates, cupos, image) are kept for reference and possible future use
-  // in other sections, but the new video hero does not display them.
-  heroVideoIdDesktop?: string; // YouTube video ID (horizontal cut)
-  heroVideoIdMobile?: string;  // YouTube video ID (portrait cut)
   heroImage: string;           // kept as legacy / fallback poster; not used by hero today
   heroEyebrow: string;
   heroTitle: string;

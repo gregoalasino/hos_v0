@@ -10,19 +10,10 @@ import { Footer } from '@/components/landing/footer';
 import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
 import { AccommodationsFAQ } from '@/components/accommodations/AccommodationsFAQ';
 import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabilityLink';
+import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 
 // The Cloudbeds immersive loader is mounted once, site-wide, in app/layout.tsx;
 // it exposes window.openImmersiveExperiencePopup, which CheckAvailabilityLink calls.
-
-// ─── YouTube placeholder (same as home & yoga heroes) ────────────────────────
-const VIDEO_ID_DESKTOP = '90FhvO1AvT8';
-const VIDEO_ID_MOBILE = '90FhvO1AvT8'; // TODO: swap when accommodations-specific portrait video lands
-
-const youtubeEmbedUrl = (id: string) =>
-  `https://www.youtube.com/embed/${id}` +
-  `?autoplay=1&mute=1&loop=1&playlist=${id}` +
-  `&controls=0&showinfo=0&modestbranding=1&rel=0` +
-  `&playsinline=1&disablekb=1&iv_load_policy=3&fs=0`;
 
 // ─── Word-by-word reveal variants (same easing as home Introduction) ─────────
 const headlineContainer: Variants = {
@@ -94,37 +85,7 @@ function AccommodationsHero() {
             h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
           "
         >
-          {/* Desktop / landscape */}
-          <div className="absolute inset-0 hidden md:block">
-            <iframe
-              src={youtubeEmbedUrl(VIDEO_ID_DESKTOP)}
-              title="Stay With Us at House of Shakti"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen={false}
-              tabIndex={-1}
-              className="
-                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                pointer-events-none
-                w-[max(100%,177.78vh)] h-[max(100%,56.25vw)] aspect-video border-0
-              "
-            />
-          </div>
-
-          {/* Mobile / portrait — same placeholder until a 9:16 asset lands */}
-          <div className="absolute inset-0 md:hidden">
-            <iframe
-              src={youtubeEmbedUrl(VIDEO_ID_MOBILE)}
-              title="Stay With Us at House of Shakti"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen={false}
-              tabIndex={-1}
-              className="
-                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                pointer-events-none
-                w-[max(100%,177.78vh)] h-[max(100%,56.25vw)] aspect-video border-0
-              "
-            />
-          </div>
+          <HeroVideo {...heroCuts('accomodation')} />
         </div>
       </div>
     </section>

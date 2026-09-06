@@ -15,10 +15,13 @@ export function useMediaQuery(query: string): boolean | null {
 
   useEffect(() => {
     const mql = window.matchMedia(query);
-    setMatches(mql.matches);
-
     const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+    // Subscribe first, read second. The other way round leaves a gap between
+    // the read and the subscription in which a change — a device rotating, an
+    // emulated viewport settling — is never heard, and the stale value sticks
+    // for the life of the component.
     mql.addEventListener('change', onChange);
+    setMatches(mql.matches);
     return () => mql.removeEventListener('change', onChange);
   }, [query]);
 

@@ -2,15 +2,31 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 
-// Full-bleed image hero, matched to the HOS home/retreats framing (80% container
+// Full-bleed video hero, matched to the HOS home/retreats framing (80% container
 // on desktop, edge-to-edge on mobile, mt-* offset for the fixed navbar).
 // Structure mirrors the Trama Viva "Within" hero — oversized display title,
-// a meta row, and a single CTA — but in the House of Shakti palette.
-// TODO: swap the placeholder image for a hero-specific Shakti Experience photo.
-const HERO_IMAGE = '/images/sanctuary/271A0642_websize%201.webp';
+// a meta row, and a single CTA — but in the House of Shakti palette. The clip
+// is the Shakti Experience one, and it also serves Sacred Union: the couples
+// edition lives on this same page, under this same hero.
 
 const meta = ['Santa Teresa, Costa Rica', '4-day immersion', 'Limited spaces'];
+
+// The previous overlay was a burgundy gradient tuned to a dark photograph of
+// the sanctuary. The footage is a beach at full sun, and over that the tint
+// read as a colour cast while the type lost its edge against wet sand. This is
+// the neutral scrim the other text-bearing video heroes carry: black rather
+// than the brand burgundy, holding a near-plateau across the copy and falling
+// away fast so the sky and sea above are untouched.
+const SCRIM =
+  'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.66) 22%, rgba(0,0,0,0.52) 40%, rgba(0,0,0,0.42) 56%, rgba(0,0,0,0.24) 70%, rgba(0,0,0,0.08) 84%, rgba(0,0,0,0) 96%)';
+
+// Video is a moving background: a frame that reads well now can wash out a
+// second later. A soft shadow on the type holds legibility through the bright
+// frames without darkening the whole picture.
+const TEXT_SHADOW =
+  '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function ShaktiHero() {
   return (
@@ -22,22 +38,13 @@ export function ShaktiHero() {
             h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
           "
         >
-          {/* Background image */}
-          <img
-            src={HERO_IMAGE}
-            alt="House of Shakti sanctuary"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <HeroVideo {...heroCuts('shakti-experience')} />
 
-          {/* Legibility overlay — soft, from the bottom */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-dark/70 via-dark/25 to-dark/10"
-          />
+          <div aria-hidden className="absolute inset-0" style={{ backgroundImage: SCRIM }} />
 
           {/* Content */}
           <div className="absolute inset-0 flex items-end">
-            <div className="w-[85%] md:w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20">
+            <div className={`w-[85%] md:w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20 ${TEXT_SHADOW}`}>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -71,7 +78,7 @@ export function ShaktiHero() {
               >
                 <Link
                   href="/contact"
-                  className="inline-block bg-cream text-dark font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy hover:text-cream transition-colors duration-300"
+                  className="inline-block bg-cream text-dark font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy hover:text-cream transition-colors duration-300 [text-shadow:none]"
                 >
                   Reserve your place
                 </Link>

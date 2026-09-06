@@ -1,26 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useMediaQuery, usePrefersReducedMotion } from '@/hooks/use-media-query';
+import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 
-// The same two cuts the Yoga Teacher Training hero uses — 1440×1080 for
-// desktop, 810×1080 for portrait phones — reused rather than duplicated. Only
-// one is ever fetched; see the breakpoint gate below.
-const VIDEO_DESKTOP = '/videos/ytt-hero-desktop-c.mp4';
-const VIDEO_MOBILE = '/videos/hero-mobile-c.mp4';
-
-// First frame of each cut, so the hero is composed on first paint rather than
-// opening on a black box while several megabytes arrive. These are the LCP
-// element; the video fades over them once it can play.
-const POSTER_DESKTOP = '/videos/ytt-hero-desktop-poster.jpg';
-const POSTER_MOBILE = '/videos/hero-mobile-poster.jpg';
+// The retreats clip, shared with the hub and every retreat page: this is one of
+// their subpages, and it should open on the same footage rather than borrow
+// the training's sunset as it did while that was the only self-hosted cut.
 
 // Neutral, bottom-weighted scrim, carried over from the training hero: black
-// rather than the brand burgundy, because a warm tint over a sunset muddies it
+// rather than the brand burgundy, because a warm tint over footage muddies it
 // while neutral black only lowers the luminance beneath the type. It holds a
-// near-plateau across the copy and then falls away fast, leaving the sky and
-// sun — the part doing the emotional work — untouched.
+// near-plateau across the copy and then falls away fast, leaving the top of
+// the frame — the part doing the emotional work — untouched.
 const SCRIM =
   'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.66) 22%, rgba(0,0,0,0.52) 40%, rgba(0,0,0,0.42) 56%, rgba(0,0,0,0.24) 70%, rgba(0,0,0,0.08) 84%, rgba(0,0,0,0) 96%)';
 
@@ -31,17 +22,6 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function UpcomingHero() {
-  const [videoReady, setVideoReady] = useState(false);
-
-  // `null` on the server and on the first client render. Holding the video back
-  // until this resolves means a phone never starts fetching the desktop cut,
-  // and a desktop never settles for the portrait one.
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-  const reducedMotion = usePrefersReducedMotion();
-
-  const playVideo = isDesktop !== null && reducedMotion === false;
-  const videoSrc = isDesktop ? VIDEO_DESKTOP : VIDEO_MOBILE;
-
   return (
     <section className="bg-warm-white">
       <div className="w-full md:w-[80%] mx-auto mt-16 md:mt-20">
@@ -51,42 +31,7 @@ export function UpcomingHero() {
             h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)]
           "
         >
-          {/* Poster layer — always present, so there is never an empty frame. */}
-          <picture>
-            <source media="(max-width: 767px)" srcSet={POSTER_MOBILE} />
-            <img
-              src={POSTER_DESKTOP}
-              alt=""
-              aria-hidden
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-cover select-none"
-            />
-          </picture>
-
-          {/* Video layer — mounts only once the breakpoint is known, and only
-              when the visitor hasn't asked for reduced motion. Fades in over the
-              poster so the swap is a settle, not a cut. */}
-          {playVideo && (
-            <video
-              key={videoSrc}
-              src={videoSrc}
-              poster={isDesktop ? POSTER_DESKTOP : POSTER_MOBILE}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              controls={false}
-              disablePictureInPicture
-              disableRemotePlayback
-              aria-hidden
-              tabIndex={-1}
-              onCanPlay={() => setVideoReady(true)}
-              className={`absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-1000 ease-out ${
-                videoReady ? 'opacity-100' : 'opacity-0'
-              }`}
-            />
-          )}
+          <HeroVideo {...heroCuts('retreats', { landscape: 0.5, portrait: 0.5 })} />
 
           <div aria-hidden className="absolute inset-0" style={{ backgroundImage: SCRIM }} />
 
