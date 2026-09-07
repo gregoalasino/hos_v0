@@ -40,7 +40,7 @@ export default async function ResultadoPage({
   return (
     <>
       <Navigation />
-      <main className="bg-warm-white min-h-screen">
+      <main id="main-content" className="bg-warm-white min-h-screen">
         <section className="w-[90%] md:w-[80%] max-w-2xl mx-auto pt-36 pb-28">
           <div className="border border-ink/15 bg-white p-10 md:p-14">
             <div

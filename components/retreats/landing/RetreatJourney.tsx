@@ -68,6 +68,8 @@ export function RetreatJourney({ retreat }: { retreat: Retreat }) {
               alt=""
               aria-hidden
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           )}
         </motion.div>

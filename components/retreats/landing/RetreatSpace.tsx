@@ -160,6 +160,8 @@ export function RetreatSpace({ retreat }: { retreat: Retreat }) {
                     aria-hidden
                     draggable={false}
                     className="w-full h-full object-cover pointer-events-none"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               </motion.div>

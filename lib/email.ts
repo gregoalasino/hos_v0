@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { BUSINESS } from '@/lib/business';
 
 // Email is optional infrastructure: if RESEND_API_KEY is not set, sends are
 // skipped (not thrown) so local dev and the pack flow keep working. The admin
@@ -76,7 +77,7 @@ function packCodeHtml({
         <p style="font-size:15px; line-height:1.6; margin-top:28px;">See you on the mat,<br/>House of Shakti</p>
       </div>
       <div style="border-top:1px solid #ececec; padding:20px 40px;">
-        <p style="margin:0; font-size:11px; color:#a6896d;">Santa Teresa · Puntarenas · Costa Rica</p>
+        <p style="margin:0; font-size:11px; color:#a6896d;">${BUSINESS.address.locality} · ${BUSINESS.address.region} · ${BUSINESS.address.countryName}</p>
       </div>
     </div>
   </div>`;

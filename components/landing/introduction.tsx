@@ -2,7 +2,7 @@
 
 import { motion, useInView, Variants } from "framer-motion";
 import { useRef } from "react";
-import { Ornament } from "./ornament";
+import { Ornament } from "@/components/shared/ornament";
 
 const HEADLINE = "We are not in the business of more.";
 

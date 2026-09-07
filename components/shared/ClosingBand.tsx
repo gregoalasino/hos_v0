@@ -64,6 +64,8 @@ export function ClosingBand({
               aria-hidden
               draggable={false}
               className="absolute inset-0 w-full h-full object-cover select-none"
+              loading="lazy"
+              decoding="async"
             />
           </picture>
 

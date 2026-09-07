@@ -269,6 +269,7 @@ export function StayLightbox({
                     loading="lazy"
                     draggable={false}
                     className="absolute inset-0 w-full h-full object-cover"
+                    decoding="async"
                   />
                 </button>
               ))}

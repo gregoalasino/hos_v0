@@ -45,7 +45,10 @@ export function RetreatHosts({ retreat }: { retreat: Retreat }) {
           {retreat.hosts.map((host) => (
             <motion.article key={host.name} variants={itemVariants}>
               <div className="relative aspect-[3/4] overflow-hidden">
-                <img src={host.image} alt={host.name} className="w-full h-full object-cover" />
+                <img src={host.image} alt={host.name} className="w-full h-full object-cover"
+  loading="lazy"
+  decoding="async"
+/>
               </div>
 
               <div className="mt-6">

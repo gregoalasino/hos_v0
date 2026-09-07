@@ -1,4 +1,5 @@
 import { format, addMinutes } from 'date-fns';
+import { BUSINESS, EMAIL_DOMAIN } from '@/lib/business';
 
 type ICSParams = {
   uid: string;
@@ -27,14 +28,20 @@ export function generateICS(params: ICSParams): string {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${uid}@houseofshakti.com`,
+    // Canonical domain — this used to read `houseofshakti.com`, which is not a
+    // domain the business owns and disagreed with every address on the site.
+    `UID:${uid}@${EMAIL_DOMAIN}`,
     `DTSTAMP:${now}`,
     `DTSTART:${formatICSDate(startsAt)}`,
     `DTEND:${formatICSDate(endsAt)}`,
     `SUMMARY:${title}`,
     `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
     `LOCATION:${location}`,
-    organizerName ? `ORGANIZER;CN=${organizerName}:mailto:info@houseofshakti.com` : '',
+    // Reservations is the mailbox that actually handles bookings; `info@` was
+    // invented and lived on the wrong domain. Still TODO_CONFIRM in business.ts.
+    organizerName
+      ? `ORGANIZER;CN=${organizerName}:mailto:${BUSINESS.email.reservations}`
+      : '',
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
     'END:VEVENT',

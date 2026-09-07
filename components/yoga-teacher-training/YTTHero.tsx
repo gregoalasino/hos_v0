@@ -76,6 +76,8 @@ export function YTTHero() {
               aria-hidden
               draggable={false}
               className="absolute inset-0 w-full h-full object-cover select-none"
+              fetchPriority="high"
+              decoding="async"
             />
           </picture>
 

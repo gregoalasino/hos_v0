@@ -28,6 +28,8 @@ export function HostYourRetreat() {
                 src="/images/card_host_your_retreat.webp"
                 alt="Host your retreat at House of Shakti"
                 className="w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.02]"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </Link>

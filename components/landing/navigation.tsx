@@ -114,6 +114,7 @@ function HOSLogo({
       alt="House of Shakti"
       draggable={false}
       className={`${sizeClass} w-auto select-none transition-all duration-[400ms] ease-out`}
+      decoding="async"
     />
   );
 }
@@ -329,7 +330,10 @@ function Drawer({
               </div>
 
               {/* Nav links */}
-              <nav className="mt-12 space-y-6">
+              <nav
+                aria-label={tr(lang, 'Secciones del sitio', 'Site sections')}
+                className="mt-12 space-y-6"
+              >
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
@@ -392,7 +396,14 @@ export function Navigation() {
           ${heightClass}
         `}
       >
-        <div className="h-full w-full px-4 sm:px-6 lg:px-12 grid grid-cols-3 items-center">
+        {/* A <nav> landmark, not a <div>: this bar is the site's primary
+            navigation and there was no navigation landmark anywhere in the
+            document — the drawer's own <nav> only mounts once it is opened.
+            Same element box, same classes, nothing moves. */}
+        <nav
+          aria-label={tr(lang, 'Navegación principal', 'Main navigation')}
+          className="h-full w-full px-4 sm:px-6 lg:px-12 grid grid-cols-3 items-center"
+        >
           {/* LEFT — hamburger (+ "Menu" text on desktop) */}
           <button
             type="button"
@@ -427,7 +438,7 @@ export function Navigation() {
           <div className="lg:hidden justify-self-end">
             <LangToggle />
           </div>
-        </div>
+        </nav>
       </motion.header>
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

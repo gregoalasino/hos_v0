@@ -193,7 +193,14 @@ const editorialInput = [
 // state in demos when the Supabase backend isn't fully wired up.
 //
 // Default: off. Set to 'true' in .env.local to enable. Always leave OFF in prod.
-const DEMO_MODE = process.env.NEXT_PUBLIC_BOOKING_DEMO_MODE === 'true';
+// Double-gated on purpose. The env var alone was one stray Vercel setting away
+// from a production site that cheerfully confirms bookings which never reach
+// the database — and nobody would notice until a guest arrived for a class
+// with a reference number nobody has. `NODE_ENV` is set to 'production' by
+// `next build`, so this can only ever arm in dev and preview.
+const DEMO_MODE =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_BOOKING_DEMO_MODE === 'true';
 
 function mockBookingReference(): string {
   const d = new Date();
@@ -531,6 +538,8 @@ export default function BookingFlow({
                             src={classImage}
                             alt={className}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </motion.div>
 

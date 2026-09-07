@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { YTTHero } from '@/components/yoga-teacher-training/YTTHero';
@@ -17,11 +18,12 @@ import { YTTOutcomes } from '@/components/yoga-teacher-training/YTTOutcomes';
 import { YTTFaq } from '@/components/yoga-teacher-training/YTTFaq';
 import { YTTClosingCTA } from '@/components/yoga-teacher-training/YTTClosingCTA';
 
-export const metadata: Metadata = {
-  title: 'The Awakened Body — Yoga Teacher Training · House of Shakti',
+export const metadata: Metadata = buildMetadata({
+  path: '/yoga-teacher-training',
+  title: 'The Awakened Body — Yoga Teacher Training',
   description:
-    'A Tantric Yoga Intensive in Santa Teresa, Costa Rica — a 100-hour immersion with an optional 100-hour online program, leading to a Yoga Alliance Registered 200-Hour Yoga Teacher Training (RYT 200). November 21 – December 4, 2026.',
-};
+    'A 100-hour Tantra yoga teacher training in Santa Teresa, Costa Rica, leading to Yoga Alliance RYT 200. November 21 – December 4, 2026.',
+});
 
 // Anchor targets, kept so the links already circulating — /yoga-teacher-training
 // #curriculum and the rest — still land on the right section. The offset clears
@@ -30,7 +32,7 @@ const ANCHOR = 'scroll-mt-20 lg:scroll-mt-28';
 
 export default function YogaTeacherTrainingPage() {
   return (
-    <main className="bg-warm-white overflow-hidden">
+    <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <YTTHero />
 

@@ -91,7 +91,7 @@ function YogaHero() {
 // ═════════════════════════════════════════════════════════════════════════════
 // NARRATIVE — adapted for the Yoga page (no trailing image)
 // ═════════════════════════════════════════════════════════════════════════════
-const NARRATIVE_HEADLINE = 'Wild by nature, hold by practice.';
+const NARRATIVE_HEADLINE = 'Wild by nature, held by practice.';
 
 // What the page actually holds, named after the claim above states it. Kept as
 // four tracked labels rather than a sentence: a reader scanning for "is there
@@ -643,7 +643,7 @@ function YogaGallery() {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function YogaPageClient({ initialClasses }: { initialClasses: SerializedClass[] }) {
   return (
-    <main className="bg-warm-white overflow-hidden">
+    <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <YogaHero />
       <YogaNarrative />

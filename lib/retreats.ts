@@ -47,6 +47,15 @@ export type RetreatPricing = {
 export type Retreat = {
   slug: string;
 
+  // Machine-readable dates, for the Event structured data on the detail page.
+  // TODO_CONFIRM: the retreat's dates exist today only as display copy
+  // (`heroEyebrow`, e.g. "July 18 – 24 · 2026"). Parsing that back into a
+  // timestamp would be guessing at the one field schema.org marks required on
+  // an Event, so `lib/schema.ts` emits no Event until these are filled in.
+  // Format: ISO 8601, e.g. '2026-07-18' and '2026-07-24'.
+  startDate?: string;
+  endDate?: string;
+
   // Hero
   // The hero renders as a full-bleed video (same pattern as home/yoga/stay-with-us).
   heroImage: string;           // kept as legacy / fallback poster; not used by hero today

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { ShaktiHero } from '@/components/shakti-experience/ShaktiHero';
@@ -12,11 +13,12 @@ import { ShaktiPlace } from '@/components/shakti-experience/ShaktiPlace';
 import { ShaktiClosingCTA } from '@/components/shakti-experience/ShaktiClosingCTA';
 import { ShaktiFaq } from '@/components/shakti-experience/ShaktiFaq';
 
-export const metadata: Metadata = {
-  title: 'Shakti Experience · House of Shakti',
+export const metadata: Metadata = buildMetadata({
+  path: '/shakti-experience',
+  title: 'Shakti Experience',
   description:
-    'An invitation to return to the body. Yoga, breathwork, sauna and ice bath, massage and time in nature at House of Shakti in Santa Teresa, Costa Rica — a full week, a few days, or a stay designed around you.',
-};
+    'A packaged stay at House of Shakti, Santa Teresa: yoga, breathwork, sauna and ice bath, massage and time in nature. A week, a few days, or your own.',
+});
 
 // ─── Shakti Experience ───────────────────────────────────────────────────────
 // A packaged stay — or one designed around the guest — rather than a guided
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
 // pricing language.
 export default function ShaktiExperiencePage() {
   return (
-    <main className="bg-warm-white overflow-hidden">
+    <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <ShaktiHero />
       <ShaktiIntro />

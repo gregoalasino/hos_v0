@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async redirects() {
     return [
       // "Accommodations" became "Stay With Us" before launch, so there is no
@@ -15,9 +12,6 @@ const nextConfig = {
       // stays reachable for the links that went out with it.
       { source: '/gallery', destination: '/about', permanent: true },
     ]
-  },
-  images: {
-    unoptimized: true,
   },
   async headers() {
     // Static media is served with `public, max-age=0, must-revalidate` by
