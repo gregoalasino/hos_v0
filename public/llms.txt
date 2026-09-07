@@ -47,4 +47,4 @@ WhatsApp and phone: +506 8560 5115
 Instagram: https://www.instagram.com/house.of.shakti/
 Location: Santa Teresa, Puntarenas, Costa Rica
 
-The site is in English. A Spanish version is in preparation.
+The site is in English and in Spanish. Every page has a Spanish twin under /es (for example /es/yoga, /es/stay-with-us), server-rendered and linked from the English page through hreflang.

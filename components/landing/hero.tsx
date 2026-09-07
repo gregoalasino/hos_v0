@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { CheckAvailabilityBar } from "./CheckAvailabilityBar";
 import { HeroVideo, heroCuts } from "@/components/shared/HeroVideo";
 
 export function Hero() {
+  const t = useTranslations("home.hero");
   return (
     <section className="bg-warm-white">
       {/*
@@ -44,7 +46,7 @@ export function Hero() {
                 transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
                 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[1.02] tracking-[-0.01em] max-w-3xl"
               >
-                Immersed in nature, awakened to essence.
+                {t("headline")}
               </motion.h1>
 
               <motion.div

@@ -1,6 +1,6 @@
-// Shared payment-method config used by the booking flow, the confirmation
-// screen and the admin bookings view. Keeps labels + in-person instructions in
-// one place so client and admin stay in sync.
+// Shared payment-method config used by the booking flow and the admin
+// bookings view. The labels here are the admin's (English); the guest-facing
+// names and hints come from the message catalogue.
 
 export type PaymentMethod = 'card' | 'cash' | 'venmo';
 
@@ -28,10 +28,6 @@ export function paymentMethodLabel(method: PaymentMethod | null | undefined): st
   return method ? PAYMENT_METHOD_LABELS[method] : PAYMENT_METHOD_LABELS.card;
 }
 
-// Short instruction shown on the confirmation screen for in-person payments.
-export function paymentInstructions(method: 'cash' | 'venmo'): string {
-  if (method === 'venmo') {
-    return `Send your payment on Venmo to ${VENMO_HANDLE} and include your booking reference in the note. Your spot is held — we'll confirm once the payment is received.`;
-  }
-  return "Pay in cash at the studio reception before your class. Your spot is held until then.";
-}
+// The in-person payment instructions the confirmation screen shows live in
+// the message catalogue (booking.confirmation.venmoInstructions /
+// cashInstructions), in the reader's language, with VENMO_HANDLE filled in.

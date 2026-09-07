@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { X } from 'lucide-react';
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
  * replaced by a subtle "Booked" label.
  */
 export function BookingHeader({ step, totalSteps, isConfirmation }: Props) {
+  const t = useTranslations('booking.header');
   const router = useRouter();
 
   return (
@@ -25,7 +27,7 @@ export function BookingHeader({ step, totalSteps, isConfirmation }: Props) {
         <button
           onClick={() => router.push('/yoga')}
           className="p-2 -ml-2 text-ink hover:opacity-70 transition-opacity duration-300 cursor-pointer"
-          aria-label="Close"
+          aria-label={t('close')}
         >
           <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
@@ -42,12 +44,12 @@ export function BookingHeader({ step, totalSteps, isConfirmation }: Props) {
         {/* RIGHT — step indicator (or Booked label on confirmation) */}
         {isConfirmation ? (
           <span className="font-body text-xs tracking-[0.25em] uppercase text-ink">
-            Booked
+            {t('booked')}
           </span>
         ) : (
           <div className="flex items-center gap-3">
             <span className="font-body text-xs tracking-[0.1em] text-ink">
-              {step} / {totalSteps}
+              {t('stepOf', { step, total: totalSteps })}
             </span>
             <div className="flex items-center gap-1">
               {Array.from({ length: totalSteps }).map((_, i) => {

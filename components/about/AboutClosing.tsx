@@ -1,17 +1,15 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { motion, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { ABOUT_DICTIONARIES } from '@/lib/i18n-about';
+import { useMessages } from 'next-intl';
 
 // Pre-footer moment, the treatment /retreats and /stay-with-us close with:
 // warm-white, one centred line, two editorial underline links. No
 // photograph, no dark overlay — the letter has been read; this is the way on.
 export function AboutClosing() {
-  const { lang } = useLanguage();
-  const t = ABOUT_DICTIONARIES[lang].closing;
+  const t = useMessages().about.closing;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

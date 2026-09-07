@@ -2,18 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { intlTag } from '@/lib/dates';
 import type { Retreat } from '@/lib/retreats';
 
 function formatPrice(amount: number): string {
-  // "$1,100 USD"
+  // "$1,100 USD" — the same figure in both languages; prices are quoted in USD.
   return `$${amount.toLocaleString('en-US')} USD`;
 }
 
-function formatExpiresAt(iso: string): string {
-  // "June 1, 2026"
+function formatExpiresAt(iso: string, tag: string): string {
+  // "June 1, 2026" / "1 de junio de 2026"
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString(tag, { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 /**
@@ -28,6 +30,8 @@ function daysUntil(expiresAtISO: string): number {
 }
 
 export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
+  const t = useTranslations('retreatLanding.investment');
+  const tag = intlTag(useLocale());
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -56,7 +60,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
           className="mb-16 lg:mb-20"
         >
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
-            Reserve your place.
+            {t('heading')}
           </h2>
         </motion.div>
 
@@ -72,18 +76,16 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
           {showEarlyBird && eb && (
             <article data-surface="dark" className="bg-burgundy text-cream p-8 lg:p-10">
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream">
-                Early Bird
+                {t('earlyBird')}
               </p>
               <p className="font-body text-xs text-cream mt-3">
-                Available until {formatExpiresAt(eb.expiresAt)}
+                {t('availableUntil', { date: formatExpiresAt(eb.expiresAt, tag) })}
               </p>
 
               {/* Subtle countdown */}
               {remaining !== null && (
                 <p className="font-display text-sm italic text-cream mt-3">
-                  {remaining === 0
-                    ? 'Last day'
-                    : `${remaining} ${remaining === 1 ? 'day' : 'days'} remaining`}
+                  {remaining === 0 ? t('lastDay') : t('daysRemaining', { count: remaining })}
                 </p>
               )}
 
@@ -106,7 +108,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
                   transition-colors duration-300 cursor-pointer
                 "
               >
-                Reserve at this price
+                {t('reserveAtThisPrice')}
               </Link>
             </article>
           )}
@@ -114,7 +116,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
           {/* Regular */}
           <article className="border-[0.5px] border-ink/20 p-8 lg:p-10">
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-              Regular Price
+              {t('regularPrice')}
             </p>
             <p className="font-display font-light text-ink text-5xl lg:text-6xl mt-8">
               {formatPrice(pricing.regular.amount)}
@@ -130,7 +132,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
                 transition-colors duration-300 cursor-pointer
               "
             >
-              Reserve at regular price
+              {t('reserveAtRegularPrice')}
             </Link>
           </article>
         </motion.div>
@@ -144,7 +146,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
         >
           <div>
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-              Payment Methods
+              {t('paymentMethods')}
             </p>
             <ul className="space-y-3 mt-4">
               {pricing.paymentMethods.map((method) => (
@@ -158,7 +160,7 @@ export function RetreatInvestment({ retreat }: { retreat: Retreat }) {
 
           <div>
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-              Payment Terms
+              {t('paymentTerms')}
             </p>
             <ul className="space-y-3 mt-4">
               {pricing.paymentTerms.map((term) => (

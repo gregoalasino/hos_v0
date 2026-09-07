@@ -1,7 +1,7 @@
 'use client';
 
-import { IntroArrangement, type IntroCopy } from '@/components/shared/IntroArrangement';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
+import { IntroArrangement } from '@/components/shared/IntroArrangement';
 
 // ─── Intro ───────────────────────────────────────────────────────────────────
 // The page's opening statement, in the home's own arrangement — the centred
@@ -14,11 +14,7 @@ const POOL = Array.from(
   (_, i) => `/images/shakti-experience/introduction/intro-slider-${i + 1}.webp`,
 );
 
-const COPY: IntroCopy = {
-  en: SHAKTI_DICTIONARIES.en.intro,
-  es: SHAKTI_DICTIONARIES.es.intro,
-};
-
 export function ShaktiIntro() {
-  return <IntroArrangement copy={COPY} pool={POOL} />;
+  const copy = useMessages().shaktiExperience.intro;
+  return <IntroArrangement copy={copy} pool={POOL} />;
 }

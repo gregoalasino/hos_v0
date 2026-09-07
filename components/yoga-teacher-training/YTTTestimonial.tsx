@@ -2,8 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 const IMAGE_DESKTOP = '/images/testimonial/testimonial-desktop.webp';
 const IMAGE_MOBILE = '/images/testimonial/testimonial-mobile.webp';
@@ -27,8 +26,7 @@ const SCRIM = 'rgba(0,0,0,0.55)';
 const TEXT_SHADOW = '[text-shadow:0_1px_2px_rgba(0,0,0,0.35),0_2px_18px_rgba(0,0,0,0.28)]';
 
 export function YTTTestimonial() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

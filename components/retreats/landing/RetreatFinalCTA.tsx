@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import type { Retreat } from '@/lib/retreats';
 
 // Pre-footer moment — mirrors the accommodations FinalCTA exactly:

@@ -2,8 +2,7 @@
 
 import { AboutChapter } from '@/components/about/AboutChapter';
 import { Ornament } from '@/components/shared/ornament';
-import { useLanguage } from '@/contexts/language-context';
-import { ABOUT_DICTIONARIES } from '@/lib/i18n-about';
+import { useMessages } from 'next-intl';
 
 // Nancy first, then the house — the order the words were written in: the
 // house "was born from the same vision", and the vision is hers.
@@ -15,8 +14,7 @@ const PHOTO_NANCY = '/images/teachers/nancy.webp';
 const PHOTO_HOUSE = '/images/home/introduction/home-introduction-01.webp';
 
 export function AboutChapters() {
-  const { lang } = useLanguage();
-  const t = ABOUT_DICTIONARIES[lang];
+  const t = useMessages().about;
 
   return (
     <>

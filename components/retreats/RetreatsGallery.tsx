@@ -2,29 +2,33 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useMessages, useTranslations } from 'next-intl';
 
 // Same horizontal-slider gallery pattern as /yoga.
 // Same-width slots, varied aspect ratios → different heights, vertically
 // centered. Drag-to-scroll, scroll-driven opacity, Aman-style progress bar.
+// Alt texts live in the catalogue under retreats.gallery.alts, in this order.
 
-type GalleryImg = { src: string; aspect: string; alt: string };
+type GalleryImg = { src: string; aspect: string };
 
 const IMAGES: GalleryImg[] = [
-  { src: '/images/retreats/retreats-1.webp',  aspect: 'aspect-[2/3]', alt: 'Shared breakfast at the long table' },
-  { src: '/images/retreats/retreats-2.webp',  aspect: 'aspect-[3/2]', alt: 'The shala set for morning practice' },
-  { src: '/images/retreats/retreats-3.webp',  aspect: 'aspect-[3/2]', alt: 'A guest room ready for arrival' },
-  { src: '/images/retreats/retreats-4.webp',  aspect: 'aspect-[2/3]', alt: 'A toast in the open-air lounge' },
-  { src: '/images/retreats/retreats-5.webp',  aspect: 'aspect-[3/4]', alt: 'Stretching on the beach at sunset' },
-  { src: '/images/retreats/retreats-6.webp',  aspect: 'aspect-[2/3]', alt: 'Side stretch on the mats' },
-  { src: '/images/retreats/retreats-7.webp',  aspect: 'aspect-[2/3]', alt: 'Bathing at the waterfall' },
-  { src: '/images/retreats/retreats-8.webp',  aspect: 'aspect-[3/4]', alt: 'Resting on the net above the jungle' },
-  { src: '/images/retreats/retreats-9.webp',  aspect: 'aspect-[3/4]', alt: 'A hammock on the deck' },
-  { src: '/images/retreats/retreats-10.webp', aspect: 'aspect-[2/3]', alt: 'A long lunch together' },
-  { src: '/images/retreats/retreats-11.webp', aspect: 'aspect-[2/3]', alt: 'Fresh fruit laid out for breakfast' },
-  { src: '/images/retreats/retreats-12.webp', aspect: 'aspect-[2/3]', alt: 'Meditation above the canopy' },
+  { src: '/images/retreats/retreats-1.webp',  aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-2.webp',  aspect: 'aspect-[3/2]' },
+  { src: '/images/retreats/retreats-3.webp',  aspect: 'aspect-[3/2]' },
+  { src: '/images/retreats/retreats-4.webp',  aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-5.webp',  aspect: 'aspect-[3/4]' },
+  { src: '/images/retreats/retreats-6.webp',  aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-7.webp',  aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-8.webp',  aspect: 'aspect-[3/4]' },
+  { src: '/images/retreats/retreats-9.webp',  aspect: 'aspect-[3/4]' },
+  { src: '/images/retreats/retreats-10.webp', aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-11.webp', aspect: 'aspect-[2/3]' },
+  { src: '/images/retreats/retreats-12.webp', aspect: 'aspect-[2/3]' },
 ];
 
 export function RetreatsGallery() {
+  const t = useTranslations('retreats.gallery');
+  const alts = useMessages().retreats.gallery.alts;
   const sectionRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
@@ -112,7 +116,7 @@ export function RetreatsGallery() {
   return (
     <section
       ref={sectionRef}
-      aria-label="Retreats gallery"
+      aria-label={t('aria')}
       className="bg-warm-white py-20 lg:py-28"
     >
       <motion.div
@@ -154,7 +158,7 @@ export function RetreatsGallery() {
             <div className={`w-full ${img.aspect} overflow-hidden`}>
               <img
                 src={img.src}
-                alt={img.alt}
+                alt={alts[i] ?? ''}
                 draggable={false}
                 loading="lazy"
                 decoding="async"

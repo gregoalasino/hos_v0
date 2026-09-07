@@ -1,20 +1,22 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { motion, useInView, Variants } from 'framer-motion';
 import { Instagram } from 'lucide-react';
 import { BUSINESS } from '@/lib/business';
 
 // ─── Static content ─────────────────────────────────────────────────────────
-const sitemapLinks: { label: string; href: string }[] = [
-  { label: 'Yoga & Wellbeing', href: '/yoga' },
-  { label: 'Stay With Us', href: '/stay-with-us' },
-  { label: 'Retreats', href: '/retreats' },
-  { label: 'Host your retreat', href: '/host-your-retreat' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-];
+// Labels live in the catalogue under footer.links, keyed by `id`.
+const sitemapLinks = [
+  { id: 'yoga', href: '/yoga' },
+  { id: 'stay', href: '/stay-with-us' },
+  { id: 'retreats', href: '/retreats' },
+  { id: 'host', href: '/host-your-retreat' },
+  { id: 'about', href: '/about' },
+  { id: 'contact', href: '/contact' },
+] as const;
 
 // Address, map link and social handle all come from lib/business.ts — the same
 // record the contact page, the calendar invitations and the structured data
@@ -40,6 +42,7 @@ const columnItem: Variants = {
 
 // ─── Footer ─────────────────────────────────────────────────────────────────
 export function Footer() {
+  const t = useTranslations('footer');
   const ref = useRef<HTMLElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-50px' });
 
@@ -76,7 +79,7 @@ export function Footer() {
             </Link>
 
             <p className="font-body text-sm text-cream/60 leading-relaxed max-w-xs mt-6">
-              A sanctuary in the canopy of Costa Rica.
+              {t('tagline')}
             </p>
           </motion.div>
 
@@ -90,7 +93,7 @@ export function Footer() {
             {/* Column 1 — Sitemap */}
             <motion.div variants={columnItem}>
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
-                Explore
+                {t('explore')}
               </p>
               <ul className="space-y-3">
                 {sitemapLinks.map((link) => (
@@ -99,7 +102,7 @@ export function Footer() {
                       href={link.href}
                       className="font-body text-sm text-cream/80 hover:text-cream transition-colors duration-300"
                     >
-                      {link.label}
+                      {t(`links.${link.id}`)}
                     </Link>
                   </li>
                 ))}
@@ -109,7 +112,7 @@ export function Footer() {
             {/* Column 2 — Visit */}
             <motion.div variants={columnItem}>
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
-                Visit
+                {t('visit')}
               </p>
               <address className="not-italic space-y-1">
                 {addressLines.map((line) => (
@@ -127,14 +130,14 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="inline-block font-body text-sm text-cream/80 hover:text-cream underline underline-offset-4 decoration-[0.5px] transition-colors duration-300 mt-4"
               >
-                View on Google Maps
+                {t('maps')}
               </a>
             </motion.div>
 
             {/* Column 3 — Follow */}
             <motion.div variants={columnItem}>
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/50 mb-6 lg:mb-8">
-                Follow
+                {t('follow')}
               </p>
               <a
                 href={INSTAGRAM_URL}
@@ -164,7 +167,7 @@ export function Footer() {
         >
           {/* Copyright a la misma escala que los enlaces de las columnas. */}
           <p className="font-body text-sm text-cream/40">
-            © {new Date().getFullYear()} House of Shakti. All rights reserved.
+            © {new Date().getFullYear()} House of Shakti. {t('rights')}
           </p>
         </motion.div>
       </div>

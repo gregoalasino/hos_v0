@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next';
-import { canonicalUrl } from '@/lib/seo';
+import { ACTIVE_LOCALES, canonicalUrl, languageAlternates } from '@/lib/seo';
 import { listRetreatSlugs } from '@/lib/retreats';
 
 // ─── Sitemap ─────────────────────────────────────────────────────────────────
-// The public site only. Everything behind auth, every API handler, the booking
-// flow and the two 308 redirects configured in next.config.mjs are left out:
-// a sitemap that lists a redirect asks a crawler to spend budget discovering
-// it is a redirect.
+// The public site only, in both languages. Everything behind auth, every API
+// handler, the booking flow and the two 308 redirects configured in
+// next.config.mjs are left out: a sitemap that lists a redirect asks a crawler
+// to spend budget discovering it is a redirect.
 //
 // Deliberately excluded, and why:
 //   /admin/*, /instructor/*  — private, and blocked in robots.ts
@@ -16,9 +16,9 @@ import { listRetreatSlugs } from '@/lib/retreats';
 //   /clases                  — redirect('/yoga')
 //   /gallery, /accommodations — 308 redirects
 //
-// When the Spanish routes land, `ACTIVE_LOCALES` in lib/seo.ts grows an entry
-// and this file gains a nested loop over it; the route list itself does not
-// change.
+// Every page appears once per locale — `/yoga` and `/es/yoga` — and each entry
+// names its alternates, the same hreflang set the page itself emits, so a
+// crawler learns the pairing from the sitemap as well as from the markup.
 
 type Entry = {
   path: string;
@@ -48,19 +48,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // then" — is true.
   const lastModified = new Date();
 
-  const pages = ROUTES.map((route) => ({
-    url: canonicalUrl(route.path),
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
+  const entries: Entry[] = [
+    ...ROUTES,
+    ...listRetreatSlugs().map((slug) => ({
+      path: `/retreats/${slug}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
+  ];
 
-  const retreats = listRetreatSlugs().map((slug) => ({
-    url: canonicalUrl(`/retreats/${slug}`),
-    lastModified,
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
-
-  return [...pages, ...retreats];
+  return entries.flatMap((route) =>
+    ACTIVE_LOCALES.map((locale) => ({
+      url: canonicalUrl(route.path, locale),
+      lastModified,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
+      alternates: { languages: languageAlternates(route.path) },
+    })),
+  );
 }

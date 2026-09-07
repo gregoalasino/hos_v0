@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 // The home's framing — full-bleed edge to edge on every device, the copy
@@ -33,6 +34,7 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function HostHero() {
+  const t = useTranslations('hostYourRetreat.hero');
   return (
     <section className="bg-warm-white">
       {/* Hero + navbar together fill 100vh on any device. Navbar is h-16
@@ -81,7 +83,7 @@ export function HostHero() {
                   decoding="async"
                 />
                 <span className="font-body text-[11px] md:text-xs tracking-[0.26em] uppercase text-cream">
-                  Santa Teresa, Costa Rica
+                  {t('location')}
                 </span>
               </motion.p>
 
@@ -91,7 +93,7 @@ export function HostHero() {
                 transition={{ duration: 1.1, ease: 'easeOut', delay: 0.12 }}
                 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[1.02] tracking-[-0.01em] max-w-3xl"
               >
-                Bring your vision to life
+                {t('headline')}
               </motion.h1>
 
               {/* The second beat of the same phrase, not a competing line:
@@ -104,7 +106,7 @@ export function HostHero() {
                 transition={{ duration: 1.0, ease: 'easeOut', delay: 0.24 }}
                 className="font-display font-light text-cream/80 text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-[-0.01em] mt-4 md:mt-5"
               >
-                Your retreat, our space
+                {t('subline')}
               </motion.p>
             </div>
           </div>

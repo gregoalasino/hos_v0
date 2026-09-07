@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Smartphone, ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { VENMO_HANDLE, venmoProfileUrl } from '@/lib/payment-methods';
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
  * payment in /admin/reservas. "Cancel" creates nothing.
  */
 export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: Props) {
+  const t = useTranslations('booking.venmo');
   return (
     <AnimatePresence>
       {open && (
@@ -42,7 +44,7 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-label="Pay with Venmo"
+              aria-label={t('title')}
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -53,13 +55,13 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
               <div className="flex justify-between items-center px-6 py-4 border-b border-ink/10">
                 <span className="inline-flex items-center gap-2 font-body text-[10px] tracking-[0.25em] uppercase text-ink">
                   <Smartphone width={14} height={14} strokeWidth={1.5} />
-                  Pay with Venmo
+                  {t('title')}
                 </span>
                 <button
                   type="button"
                   onClick={onCancel}
                   disabled={isLoading}
-                  aria-label="Close"
+                  aria-label={t('close')}
                   className="p-1.5 text-ink hover:opacity-70 transition-opacity duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <X width={18} height={18} strokeWidth={1.5} />
@@ -69,27 +71,26 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
               {/* Body */}
               <div className="px-6 py-6">
                 <p className="font-body text-sm text-ink leading-relaxed">
-                  Send your payment on Venmo to the account below, then confirm. Your spot is
-                  held as <span className="font-medium">pending</span> until we verify the payment.
+                  {t.rich('intro', { em: (chunks) => <span className="font-medium">{chunks}</span> })}
                 </p>
 
                 {/* Account + amount */}
                 <div className="mt-6 border-y border-ink/10 divide-y divide-ink/10">
                   <div className="flex items-center justify-between py-4">
                     <span className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
-                      Venmo account
+                      {t('account')}
                     </span>
                     <span className="font-body text-sm font-medium text-ink">{VENMO_HANDLE}</span>
                   </div>
                   <div className="flex items-center justify-between py-4">
                     <span className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
-                      Amount
+                      {t('amount')}
                     </span>
-                    <span className="font-display font-light text-ink text-xl">${amount} USD</span>
+                    <span className="font-display font-light text-ink text-xl">{t('amountValue', { amount })}</span>
                   </div>
                   <div className="flex items-center justify-between py-4 gap-4">
                     <span className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50 flex-shrink-0">
-                      Add to note
+                      {t('note')}
                     </span>
                     <span className="font-body text-sm text-ink text-right truncate">{note}</span>
                   </div>
@@ -103,7 +104,7 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
                   className="inline-flex items-center gap-2 mt-5 font-body text-xs tracking-[0.15em] uppercase text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-200 cursor-pointer"
                 >
                   <ExternalLink width={14} height={14} strokeWidth={1.5} />
-                  Open Venmo
+                  {t('open')}
                 </a>
 
                 {/* Actions */}
@@ -114,7 +115,7 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
                     disabled={isLoading}
                     className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="button"
@@ -131,7 +132,7 @@ export function VenmoModal({ open, amount, note, isLoading, onPaid, onCancel }: 
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
                     ) : (
-                      "I've paid"
+                      t('paid')
                     )}
                   </button>
                 </div>

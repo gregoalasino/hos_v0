@@ -3,6 +3,8 @@
 import { createServiceClient } from '@/lib/supabase/server';
 import { createPayment } from '@/lib/tilopay';
 import { confirmPackPayment } from '@/app/actions/packs';
+import { tilopayReturnUrl } from '@/lib/tilopay-return';
+import type { AppLocale } from '@/i18n/routing';
 
 export type CheckoutPackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
 
@@ -26,6 +28,12 @@ export type CheckoutInput = {
   personalData: PersonalData;
   packType: CheckoutPackType;
   paymentMethod: CheckoutPaymentMethod;
+  /**
+   * The language the booking was made in. Only used to build Tilopay's return
+   * URL, so the receipt page and the pack-code email come back in the same
+   * language; it is not stored.
+   */
+  locale?: AppLocale;
 };
 
 type CheckoutResult =
@@ -50,7 +58,7 @@ const PACK_COUNT: Record<Exclude<CheckoutPackType, 'dropin'>, number> = {
 //    class for free (upsells charged) and the pack code is emailed.
 export async function startBookingCheckout(input: CheckoutInput): Promise<CheckoutResult> {
   const supabase = await createServiceClient();
-  const { classId, upsellIds, personalData, packType, paymentMethod } = input;
+  const { classId, upsellIds, personalData, packType, paymentMethod, locale = 'en' } = input;
   const isOffline = paymentMethod === 'cash' || paymentMethod === 'venmo';
 
   // ── Validate class ──────────────────────────────────────────────────────────
@@ -72,8 +80,7 @@ export async function startBookingCheckout(input: CheckoutInput): Promise<Checko
     upsellsTotal = (rows ?? []).reduce((a, u) => a + Number(u.price_usd), 0);
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-  const redirect = `${siteUrl}/api/tilopay/callback`;
+  const redirect = tilopayReturnUrl(locale);
   const classPrice = Number(clase.price_dropin_usd);
 
   // ── Reserve a spot (atomic) ─────────────────────────────────────────────────
@@ -314,10 +321,15 @@ export async function confirmBookingPaid(bookingId: string, tx: string | null): 
 
 // Called by the callback when a pack-order payment is approved: generate the
 // pack code + email, consume one credit, and confirm the linked booking.
-export async function confirmPackAndBooking(packPurchaseId: string, tx: string | null): Promise<void> {
+// The locale is the one the pack was bought in — the code email goes out in it.
+export async function confirmPackAndBooking(
+  packPurchaseId: string,
+  tx: string | null,
+  locale: AppLocale = 'en',
+): Promise<void> {
   const supabase = await createServiceClient();
 
-  const res = await confirmPackPayment(packPurchaseId);
+  const res = await confirmPackPayment(packPurchaseId, locale);
   if (!res.ok || !res.code) return;
 
   const { data: booking } = await supabase

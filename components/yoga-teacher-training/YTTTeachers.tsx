@@ -2,8 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 // Names, handles and portraits are constants; the bios live in the dictionary
 // (both languages), zipped by index at render.
@@ -30,8 +29,7 @@ const item: Variants = {
 };
 
 export function YTTTeachers() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

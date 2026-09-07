@@ -1,12 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
-import { useLanguage } from '@/contexts/language-context';
-import { tr, type Lang } from '@/lib/i18n';
+import { usePathname } from '@/i18n/navigation';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 // ─── Floating WhatsApp button ────────────────────────────────────────────────
@@ -36,52 +35,19 @@ const DWELL_MS = 4800;
 
 // The button is for guests. Inside the admin panel, the instructor portal,
 // the login screen and the booking flow it would be furniture at best and, in
-// a checkout, a distraction floating over the payment form.
+// a checkout, a distraction floating over the payment form. (The admin and
+// the portal have their own document now and never mount this; the prefixes
+// stay so the list still reads as the full rule.) Compared against the
+// locale-less pathname, so `/es/booking/…` is excluded like `/booking/…`.
 const EXCLUDED_PREFIXES = ['/admin', '/instructor', '/login', '/booking'];
 
 // ─── The three doors ─────────────────────────────────────────────────────────
 // Same conversation, three prepared opening lines. The message is the routing:
 // nothing else distinguishes the doors on the team's side, and since every
 // page now shares one number (see lib/whatsapp.ts) that is true site-wide.
-type Door = {
-  title: (lang: Lang) => string;
-  detail: (lang: Lang) => string;
-  message: (lang: Lang) => string;
-};
-
-const DOORS: Door[] = [
-  {
-    title: (l) => tr(l, 'Estadías y Experiencias', 'Stays & Experiences'),
-    detail: (l) =>
-      tr(l, 'Estadías, reservas y la Shakti Experience', 'Stays, bookings & the Shakti Experience'),
-    message: (l) =>
-      tr(
-        l,
-        '¡Hola! Quisiera consultar por alojamiento, reservas o experiencias en House of Shakti.',
-        "Hi! I'd like to ask about accommodations, bookings or experiences at House of Shakti.",
-      ),
-  },
-  {
-    title: (l) => tr(l, 'Yoga y Bienestar', 'Yoga & Wellbeing'),
-    detail: (l) => tr(l, 'Clases, packs y sesiones de bienestar', 'Classes, packs & wellness sessions'),
-    message: (l) =>
-      tr(
-        l,
-        '¡Hola! Quisiera consultar por clases de yoga y sesiones de bienestar en House of Shakti.',
-        "Hi! I'd like to ask about yoga classes and wellbeing sessions at House of Shakti.",
-      ),
-  },
-  {
-    title: (l) => tr(l, 'Organizá tu retiro', 'Host Your Retreat'),
-    detail: (l) => tr(l, 'Traé a tu grupo a House of Shakti', 'Bring your group to House of Shakti'),
-    message: (l) =>
-      tr(
-        l,
-        '¡Hola! Quisiera consultar por organizar mi retiro en House of Shakti.',
-        "Hi! I'd like to ask about hosting my retreat at House of Shakti.",
-      ),
-  },
-];
+// Title, detail and opening line of each live in the catalogue under
+// whatsapp.doors, in the reader's language.
+const DOORS = ['stays', 'wellbeing', 'host'] as const;
 
 // Whether the tile is currently over a band tagged `data-surface="dark"`.
 // Vertical position is tested at the tile's midpoint so the swap happens
@@ -128,7 +94,7 @@ function WhatsAppGlyph() {
  * landing.
  */
 export function WhatsAppButton() {
-  const { lang } = useLanguage();
+  const t = useTranslations('whatsapp');
   const pathname = usePathname();
 
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -286,7 +252,7 @@ export function WhatsAppButton() {
             // The accessible name is always the whole invitation, whether or
             // not the label happens to be unfurled — the visual state is
             // decoration, and the button should never announce as just a mark.
-            aria-label={tr(lang, 'Escribinos por WhatsApp', 'Chat with us on WhatsApp')}
+            aria-label={t('aria')}
             // Hover means a mouse. Touch browsers synthesize a sticky
             // mouseenter on tap that nothing ever clears, which would leave
             // the label wedged open on phones — so the pointer type is
@@ -321,8 +287,8 @@ export function WhatsAppButton() {
                     {/* Tones, not colours: both halves inherit whatever the
                         tile is currently set to, so the inversion carries the
                         label with it and there is nothing to keep in sync. */}
-                    <span className="opacity-60">{tr(lang, '¿Consultas?', 'Questions?')}</span>{' '}
-                    <span>{tr(lang, 'Escribinos', 'Chat with us')}</span>
+                    <span className="opacity-60">{t('questions')}</span>{' '}
+                    <span>{t('chat')}</span>
                   </span>
                 </motion.span>
               )}
@@ -365,7 +331,7 @@ export function WhatsAppButton() {
               <motion.nav
                 key="doors"
                 id="whatsapp-doors"
-                aria-label={tr(lang, 'Escribinos por WhatsApp', 'Chat with us on WhatsApp')}
+                aria-label={t('aria')}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
@@ -384,24 +350,24 @@ export function WhatsAppButton() {
                     rather than as quiet. 70% clears it at 4.65:1 and still sits a clear
                     step below the full-ink titles at 11:1, so the hierarchy survives. */}
                 <p className="font-body text-[11px] tracking-[0.22em] uppercase text-ink/70 px-5 pt-4 pb-3 border-b border-ink/10">
-                  {tr(lang, '¿En qué podemos ayudarte?', 'How can we help?')}
+                  {t('help')}
                 </p>
 
                 <ul className="divide-y divide-ink/10">
                   {DOORS.map((door) => (
-                    <li key={door.title('en')}>
+                    <li key={door}>
                       <a
-                        href={whatsappUrl(door.message(lang))}
+                        href={whatsappUrl(t(`doors.${door}.message`))}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setMenuOpen(false)}
                         className="block px-5 py-4 hover:bg-ink/[0.04] transition-colors duration-300"
                       >
                         <span className="block font-body text-sm text-ink leading-snug">
-                          {door.title(lang)}
+                          {t(`doors.${door}.title`)}
                         </span>
                         <span className="block font-body text-[13px] text-ink/75 leading-snug mt-1">
-                          {door.detail(lang)}
+                          {t(`doors.${door}.detail`)}
                         </span>
                       </a>
                     </li>

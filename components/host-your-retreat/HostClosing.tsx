@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 // ─── Closing band ────────────────────────────────────────────────────────────
 // The page's last word before the footer: full-bleed, the photograph shown as
@@ -24,6 +25,7 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.4),0_2px_18px_rgba(0,0,0,0.3)]';
 
 export function HostClosing() {
+  const t = useTranslations('hostYourRetreat.closing');
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -64,12 +66,10 @@ export function HostClosing() {
             className={`relative w-[85%] max-w-3xl mx-auto text-center py-16 md:py-20 ${TEXT_SHADOW}`}
           >
             <h2 className="font-display font-light text-cream text-3xl md:text-5xl leading-[1.15] text-balance">
-              A space to gather. A place to reconnect.
+              {t('heading')}
             </h2>
             <p className="font-body text-sm md:text-base text-cream/85 leading-[1.8] mt-6 max-w-2xl mx-auto">
-              From intimate retreats to yoga trainings and transformational
-              experiences, we&apos;re here to support you in creating something
-              meaningful.
+              {t('body')}
             </p>
           </motion.div>
         </div>

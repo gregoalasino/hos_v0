@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/check-messages.mjs && next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:messages": "node scripts/check-messages.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -50,6 +51,7 @@
     "input-otp": "1.4.2",
     "lucide-react": "^0.564.0",
     "next": "16.1.6",
+    "next-intl": "^4.14.2",
     "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-day-picker": "9.13.2",

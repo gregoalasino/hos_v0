@@ -3,8 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { LoopingClip } from '@/components/shared/LoopingClip';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 // The outcomes live in the dictionary, in both languages.
 
@@ -20,8 +19,7 @@ const listItem: Variants = {
 };
 
 export function YTTOutcomes() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

@@ -1,9 +1,12 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import InstructorLayout from '@/components/instructor/InstructorLayout';
+import { BackofficeDocument, BACKOFFICE_METADATA } from '@/components/backoffice/BackofficeDocument';
 
-export const metadata = {
+export const metadata: Metadata = {
+  ...BACKOFFICE_METADATA,
   title: 'Portal Instructor — House of Shakti',
 };
 
@@ -43,12 +46,16 @@ export default async function InstructorPortalLayout({
     };
   }).from('instructors').select('id, name, email').eq('email', user.email ?? '').single();
 
+  // A root layout (see BackofficeDocument): the portal lives outside the
+  // public site's locale segment.
   return (
-    <InstructorLayout
-      instructorName={instructor?.name ?? user.user_metadata?.full_name ?? 'Instructor'}
-      instructorEmail={instructor?.email ?? user.email ?? ''}
-    >
-      {children}
-    </InstructorLayout>
+    <BackofficeDocument>
+      <InstructorLayout
+        instructorName={instructor?.name ?? user.user_metadata?.full_name ?? 'Instructor'}
+        instructorEmail={instructor?.email ?? user.email ?? ''}
+      >
+        {children}
+      </InstructorLayout>
+    </BackofficeDocument>
   );
 }

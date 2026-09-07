@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { StayCarousel } from '@/components/stay-with-us/StayCarousel';
 import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabilityLink';
 import type { StayData } from '@/lib/stays';
@@ -33,6 +34,7 @@ export function StayCard({
   /** The title's heading level — h2 where the cards are the page, h3 under a section heading. */
   titleAs?: 'h2' | 'h3';
 }) {
+  const t = useTranslations('stayWithUs.cards');
   return (
     <article className="flex h-full flex-col lg:grid lg:grid-cols-12 lg:items-center lg:gap-x-14">
       {/* One column narrower from xl: the container keeps growing with the
@@ -62,7 +64,7 @@ export function StayCard({
             onClick={() => onExpand(0)}
             className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-60 transition-opacity duration-300"
           >
-            Read more
+            {t('readMore')}
           </button>
         </p>
 

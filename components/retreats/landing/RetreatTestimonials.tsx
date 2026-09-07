@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Retreat } from '@/lib/retreats';
 
 // One testimonial at a time. Editorial 2-column layout:
@@ -14,6 +15,7 @@ export function RetreatTestimonials({ retreat }: { retreat: Retreat }) {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const sectionInView = useInView(sectionRef, { once: true, margin: '-100px' });
 
+  const labels = useTranslations('retreatLanding.testimonials');
   const [current, setCurrent] = useState(0);
   const total = retreat.testimonials.length;
   const t = retreat.testimonials[current];
@@ -32,7 +34,7 @@ export function RetreatTestimonials({ retreat }: { retreat: Retreat }) {
           className="text-center mb-16 lg:mb-20"
         >
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
-            Voices from those who have arrived.
+            {labels('heading')}
           </h2>
         </motion.div>
 
@@ -83,7 +85,7 @@ export function RetreatTestimonials({ retreat }: { retreat: Retreat }) {
                 <button
                   type="button"
                   onClick={goPrev}
-                  aria-label="Previous testimonial"
+                  aria-label={labels('previous')}
                   className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
                 >
                   <ChevronLeft className="w-5 h-5" strokeWidth={1} />
@@ -91,7 +93,7 @@ export function RetreatTestimonials({ retreat }: { retreat: Retreat }) {
                 <button
                   type="button"
                   onClick={goNext}
-                  aria-label="Next testimonial"
+                  aria-label={labels('next')}
                   className="text-ink hover:opacity-50 transition-opacity duration-300 cursor-pointer"
                 >
                   <ChevronRight className="w-5 h-5" strokeWidth={1} />
@@ -107,7 +109,7 @@ export function RetreatTestimonials({ retreat }: { retreat: Retreat }) {
                 <motion.img
                   key={entry.image}
                   src={entry.image}
-                  alt={`Portrait of ${entry.author}`}
+                  alt={labels('portrait', { author: entry.author })}
                   initial={false}
                   animate={{ opacity: i === current ? 1 : 0 }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}

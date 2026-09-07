@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import type { Retreat } from '@/lib/retreats';
 
 // ─── Word-by-word reveal variants (matches home Introduction exactly) ────────
@@ -31,6 +32,7 @@ function MetadataPair({ label, value }: { label: string; value: string }) {
 export function RetreatManifesto({ retreat }: { retreat: Retreat }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
+  const t = useTranslations('retreatLanding.manifesto');
 
   const words = retreat.manifestoHeading.split(' ');
 
@@ -80,10 +82,10 @@ export function RetreatManifesto({ retreat }: { retreat: Retreat }) {
           className="mt-16 lg:mt-20 max-w-3xl"
         >
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8">
-            <MetadataPair label="Dates" value={retreat.heroEyebrow} />
-            <MetadataPair label="Duration" value={retreat.heroDates} />
-            <MetadataPair label="Location" value={retreat.heroLocation} />
-            <MetadataPair label="Group" value={retreat.heroCupos} />
+            <MetadataPair label={t('dates')} value={retreat.heroEyebrow} />
+            <MetadataPair label={t('duration')} value={retreat.heroDates} />
+            <MetadataPair label={t('location')} value={retreat.heroLocation} />
+            <MetadataPair label={t('group')} value={retreat.heroCupos} />
           </div>
         </motion.div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useLocale, useTranslations } from 'next-intl';
 import { StayCard } from '@/components/stay-with-us/StayCard';
 import { StayLightbox } from '@/components/stay-with-us/StayLightbox';
 import { pickStays, type StayData } from '@/lib/stays';
@@ -13,11 +14,11 @@ import { pickStays, type StayData } from '@/lib/stays';
 // room; the whole conversation happens on WhatsApp, further down. This is the
 // shop window.
 //
-// Three of the four, in the order the owners list them for hosts. Shakti House
-// stays out of this window on their call.
-const STAYS = pickStays(['main-house', 'jungle-bungalow', 'la-casita']);
-
 export function HostStays() {
+  const t = useTranslations('hostYourRetreat.stays');
+  // Three of the four, in the order the owners list them for hosts. Shakti
+  // House stays out of this window on their call.
+  const stays = pickStays(['main-house', 'jungle-bungalow', 'la-casita'], useLocale());
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -34,11 +35,10 @@ export function HostStays() {
           className="max-w-2xl mb-14 lg:mb-20"
         >
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
-            Where your group stays
+            {t('heading')}
           </h2>
           <p className="font-body text-sm text-ink leading-[1.8] mt-6 max-w-xl">
-            Our property features a variety of lodging options to suit your
-            group&apos;s preferences.
+            {t('intro')}
           </p>
         </motion.div>
 
@@ -51,7 +51,7 @@ export function HostStays() {
              and story side by side, sides alternating down the page. */
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-x-8 gap-y-14 lg:gap-y-28"
         >
-          {STAYS.map((stay, i) => (
+          {stays.map((stay, i) => (
             <StayCard
               key={stay.slug}
               stay={stay}

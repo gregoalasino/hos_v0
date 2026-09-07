@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { Instagram } from 'lucide-react';
+import { useMessages, useTranslations } from 'next-intl';
 import { Ornament } from '@/components/shared/ornament';
 
 // ─── Meet our team ───────────────────────────────────────────────────────────
@@ -15,81 +16,15 @@ import { Ornament } from '@/components/shared/ornament';
 // its own, and set inline with hairline separators so Eliana's ten items wrap
 // as quiet running text instead of a ten-line ladder beside Gabriela's three.
 
-type Member = {
-  name: string;
-  /** Secondary to the name — rendered as a small mark on the same line. */
-  country: string;
-  disciplines: string[];
-  /** Handle only; the URL and the leading @ are composed at render. */
-  instagram: string;
-  image: string;
-};
-
-const MEMBERS: Member[] = [
-  {
-    name: 'Nancy Goodfellow',
-    country: 'USA',
-    disciplines: ['Tantra Yoga Master Teacher', 'Breathwork', 'Embodiment Coach'],
-    instagram: 'wildheart.yogini',
-    image: '/images/yoga/our-team/nancy-usa.jpg',
-  },
-  {
-    name: 'Antonia Paz',
-    country: 'Chile',
-    disciplines: [
-      'Yoga Teacher',
-      'Holistic Therapist',
-      'Thai Massage',
-      'Reiki',
-      'Sound Healing',
-      'Yoga Therapy',
-      'Psychedelic-Assisted Therapy',
-    ],
-    instagram: 'anto.yogini',
-    image: '/images/yoga/our-team/antonia-chile.jpg',
-  },
-  {
-    name: 'Gabriela',
-    country: 'Sweden',
-    disciplines: ['Health Coach & Nutrition', 'Yoga Teacher', 'Meditation'],
-    instagram: 'flowwithgabriella',
-    image: '/images/yoga/our-team/gabriela-suecia.jpg',
-  },
-  {
-    name: 'Eliana Martínez',
-    country: 'Argentina',
-    disciplines: [
-      'Ontological Coach',
-      'Nervous System & Trauma Practitioner',
-      'Somatic Therapist',
-      'Psychedelic-Assisted Therapy',
-      'Breathwork',
-      'Yoga Teacher',
-      'Meditation',
-      'Cryotherapy',
-      'Reiki',
-      'Access Bars',
-    ],
-    instagram: 'eli.mar.lov',
-    image: '/images/yoga/our-team/eliana-argentina.jpg',
-  },
-  {
-    name: 'Miguel del Mar',
-    country: 'Spain',
-    disciplines: [
-      'Breathwork',
-      'Sound Healing',
-      'Craniosacral',
-      'Meditation',
-      'Massage Therapist',
-      'Thai Yoga Massage Teacher',
-      'Healing Retreats',
-      'Medicine Guide',
-    ],
-    instagram: 'miguel_mypath_school',
-    image: '/images/yoga/our-team/miguel.jpg',
-  },
-];
+// Country and disciplines live in the catalogue under yoga.team.members,
+// keyed by `id`; the name, the handle and the portrait are here.
+const MEMBERS = [
+  { id: 'nancy', name: 'Nancy Goodfellow', instagram: 'wildheart.yogini', image: '/images/yoga/our-team/nancy-usa.jpg' },
+  { id: 'antonia', name: 'Antonia Paz', instagram: 'anto.yogini', image: '/images/yoga/our-team/antonia-chile.jpg' },
+  { id: 'gabriela', name: 'Gabriela', instagram: 'flowwithgabriella', image: '/images/yoga/our-team/gabriela-suecia.jpg' },
+  { id: 'eliana', name: 'Eliana Martínez', instagram: 'eli.mar.lov', image: '/images/yoga/our-team/eliana-argentina.jpg' },
+  { id: 'miguel', name: 'Miguel del Mar', instagram: 'miguel_mypath_school', image: '/images/yoga/our-team/miguel.jpg' },
+] as const;
 
 // Five people into three columns leaves two hanging on the left of the second
 // row, reading as a gap someone forgot to fill. Widening the last two to close
@@ -112,6 +47,8 @@ const item: Variants = {
 };
 
 export function MeetOurTeam() {
+  const t = useTranslations('yoga.team');
+  const copy = useMessages().yoga.team.members;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -129,7 +66,7 @@ export function MeetOurTeam() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            Meet Our Team
+            {t('heading')}
           </motion.h2>
         </div>
 
@@ -139,9 +76,7 @@ export function MeetOurTeam() {
           transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
           className="font-body text-sm text-ink leading-relaxed mt-6 lg:mt-8 max-w-2xl"
         >
-          Meet the people who hold the space at House of Shakti — teachers and
-          facilitators bringing their knowledge, presence, and unique practices
-          to our community.
+          {t('intro')}
         </motion.p>
 
         <motion.div
@@ -174,17 +109,17 @@ export function MeetOurTeam() {
               <h3 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug mt-5 lg:mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span>{member.name}</span>
                 <span className="font-body text-[10px] tracking-[0.25em] uppercase text-ink/70">
-                  {member.country}
+                  {copy[member.id].country}
                 </span>
               </h3>
 
               {/* Inline list items, not flex children: a separator glued to the
                   word before it keeps a dot from opening a wrapped line. */}
               <ul className="font-body text-xs text-ink/75 leading-[1.9] mt-3">
-                {member.disciplines.map((discipline, j) => (
+                {copy[member.id].disciplines.map((discipline, j) => (
                   <li key={discipline} className="inline">
                     {discipline}
-                    {j < member.disciplines.length - 1 && (
+                    {j < copy[member.id].disciplines.length - 1 && (
                       <span aria-hidden className="text-ink/30 px-1.5">
                         ·
                       </span>
@@ -197,7 +132,7 @@ export function MeetOurTeam() {
                 href={`https://www.instagram.com/${member.instagram}/`}
                 // Five links whose only text is a handle: without this a screen
                 // reader announces five bare handles with no destination.
-                aria-label={`${member.name} on Instagram`}
+                aria-label={t('instagram', { name: member.name })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 font-body text-[11px] tracking-[0.05em] text-ink/70 hover:text-burgundy transition-colors duration-300 mt-4"

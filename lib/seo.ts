@@ -2,50 +2,51 @@
 // One helper behind every page's `metadata`, so canonicals, Open Graph and
 // language alternates can never drift page by page.
 //
-// ── Built for the Spanish phase that follows ─────────────────────────────────
-// The site is English-only today, but the next phase adds routes under `/es`.
-// Everything that will differ between the two lives in this file and nowhere
-// else, so that phase is an edit here rather than a rewrite of twelve pages:
-//
-//   1. Add `'es'` to `ACTIVE_LOCALES`. Every page's `alternates.languages`
-//      grows an `es-CR` entry and the sitemap picks it up, automatically.
-//   2. Pass `locale: 'es'` from the Spanish pages. The helper already threads
-//      it through `openGraph.locale`, the canonical and the alternates.
+// The site is bilingual: English at the bare path, Spanish under `/es`, both
+// server-rendered and both indexable. Everything that differs between the two
+// lives in this file and nowhere else — a page passes its English path and the
+// locale it is rendering in, and gets back a self-referencing canonical, the
+// full hreflang set and the right `og:locale`.
 //
 // No page component needs to know how a locale becomes a URL — `localizedPath`
-// is the only place that decides.
+// is the only place that decides, and it agrees with i18n/routing.ts by
+// construction: English is the default locale and carries no prefix, every
+// other locale is its code.
 
 import type { Metadata } from 'next';
 import { BUSINESS, absoluteUrl } from '@/lib/business';
+import type { AppLocale } from '@/i18n/routing';
 
-export type Locale = 'en' | 'es';
+export type Locale = AppLocale;
 
 /**
- * Locales currently published. English only for now; adding `'es'` here is
- * what turns the alternates and the sitemap bilingual.
+ * Locales published. Both are live: every page renders in each, the
+ * alternates name both, and the sitemap lists both.
  */
-export const ACTIVE_LOCALES: readonly Locale[] = ['en'] as const;
+export const ACTIVE_LOCALES: readonly Locale[] = ['en', 'es'] as const;
 
 export const DEFAULT_LOCALE: Locale = 'en';
 
 /** Open Graph and hreflang codes, per locale. */
 const LOCALE_META: Record<Locale, { og: string; hreflang: string }> = {
   en: { og: 'en_US', hreflang: 'en' },
-  // Costa Rican Spanish — the audience is here, and `es-CR` is a valid
-  // hreflang that still matches generic `es` queries.
-  es: { og: 'es_CR', hreflang: 'es-CR' },
+  // Generic Spanish, not `es-CR`: the copy is neutral Latin American Spanish
+  // written for readers arriving from anywhere in the Spanish-speaking world,
+  // and a bare `es` is what matches all of them. `es_ES` is the Open Graph
+  // code the platforms actually recognise for Spanish.
+  es: { og: 'es_ES', hreflang: 'es' },
 };
 
 /**
  * Where a given page lives for a given locale.
  *
  * English keeps the bare path (no `/en` prefix — it is the default and a
- * prefix would force a redirect on every existing inbound link). Spanish will
- * live under `/es`. This is the single place that mapping is expressed.
+ * prefix would force a redirect on every existing inbound link). Spanish lives
+ * under `/es`. This is the single place that mapping is expressed.
  */
 export function localizedPath(path: string, locale: Locale = DEFAULT_LOCALE): string {
   const clean = path === '/' ? '' : path.replace(/\/$/, '');
-  return locale === 'en' ? clean || '/' : `/es${clean}`;
+  return locale === DEFAULT_LOCALE ? clean || '/' : `/${locale}${clean}`;
 }
 
 /** Absolute canonical for a page in a locale. */
@@ -56,15 +57,27 @@ export function canonicalUrl(path: string, locale: Locale = DEFAULT_LOCALE): str
 /**
  * The `alternates.languages` map: one entry per published locale plus
  * `x-default`, which points at English as the version to serve when no
- * language matches.
+ * language matches. The same map, page by page, feeds the sitemap.
  */
-function languageAlternates(path: string): Record<string, string> {
+export function languageAlternates(path: string): Record<string, string> {
   const languages: Record<string, string> = {};
   for (const locale of ACTIVE_LOCALES) {
     languages[LOCALE_META[locale].hreflang] = canonicalUrl(path, locale);
   }
   languages['x-default'] = canonicalUrl(path, DEFAULT_LOCALE);
   return languages;
+}
+
+/**
+ * `og:locale` for the page being rendered, and `og:locale:alternate` for every
+ * other published locale — so a share of `/es/yoga` is tagged Spanish and still
+ * announces that an English version exists.
+ */
+export function openGraphLocale(locale: Locale): { locale: string; alternateLocale: string[] } {
+  return {
+    locale: LOCALE_META[locale].og,
+    alternateLocale: ACTIVE_LOCALES.filter((l) => l !== locale).map((l) => LOCALE_META[l].og),
+  };
 }
 
 export type PageImage = {
@@ -82,6 +95,27 @@ export const DEFAULT_OG_IMAGE: PageImage = {
   height: 630,
 };
 
+/**
+ * The favicon set, shared by every root layout (the public site, the admin
+ * panel, the instructor portal) so the tab icon is the same everywhere.
+ *
+ * `favicon.svg` used to head this list, but it was not a vector: a 512px
+ * <rect> filled with a pattern pointing at an embedded base64 raster, 88 KB
+ * of PNG wearing an SVG costume, served on every page. The PNG beside it was
+ * 2287×1693 and not square, so every browser and every home screen was
+ * squashing a landscape image into a square slot.
+ *
+ * Both are replaced by square icons cut from the same artwork: the mark's
+ * real bounding box, centred with breathing room. 156 KB became 23 KB.
+ */
+export const SITE_ICONS: NonNullable<Metadata['icons']> = {
+  icon: [{ url: '/favicon.png', type: 'image/png', sizes: '192x192' }],
+  shortcut: '/favicon.png',
+  // iOS composites transparency onto black, so the touch icon carries the
+  // brand cream behind the mark rather than a transparent background.
+  apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+};
+
 export type BuildMetadataInput = {
   /** Site-relative path, English form, e.g. `/stay-with-us`. */
   path: string;
@@ -91,6 +125,7 @@ export type BuildMetadataInput = {
   description: string;
   /** Defaults to the site card. */
   image?: PageImage;
+  /** The locale the page is rendering in — the `[locale]` segment. */
   locale?: Locale;
   /**
    * Bypass the root layout's `%s | House of Shakti` template. Used by the home
@@ -108,6 +143,8 @@ export function buildMetadata({
   locale = DEFAULT_LOCALE,
   absoluteTitle = false,
 }: BuildMetadataInput): Metadata {
+  // Self-referencing: the Spanish page's canonical is the Spanish URL. The
+  // alternates below are what tie the two versions together.
   const canonical = canonicalUrl(path, locale);
 
   // The root layout's `%s | House of Shakti` template applies to <title> only.
@@ -126,7 +163,7 @@ export function buildMetadata({
     openGraph: {
       type: 'website',
       siteName: BUSINESS.name,
-      locale: LOCALE_META[locale].og,
+      ...openGraphLocale(locale),
       url: canonical,
       title: socialTitle,
       description,

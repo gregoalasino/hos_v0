@@ -2,7 +2,8 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import type { Retreat } from '@/lib/retreats';
 
 // Section layout mirrors home Seasonal Experiences:
@@ -20,6 +21,7 @@ const cardVariants: Variants = {
 };
 
 export function RetreatSpace({ retreat }: { retreat: Retreat }) {
+  const t = useTranslations('retreatLanding.space');
   const sectionRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
@@ -114,7 +116,7 @@ export function RetreatSpace({ retreat }: { retreat: Retreat }) {
               href="/stay-with-us"
               className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer mt-8"
             >
-              Explore the sanctuary
+              {t('explore')}
             </Link>
           </motion.div>
         </div>
@@ -132,7 +134,7 @@ export function RetreatSpace({ retreat }: { retreat: Retreat }) {
             onMouseUp={endDrag}
             onMouseLeave={endDrag}
             tabIndex={0}
-            aria-label="The space"
+            aria-label={t('aria')}
             className="
               flex gap-6 lg:gap-8
               overflow-x-auto snap-x snap-proximity scroll-smooth

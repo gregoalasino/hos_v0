@@ -1,8 +1,9 @@
 'use client';
 
 import { format } from 'date-fns';
-import { enUS } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Upsell, ReferralCode } from '@/types';
+import { dateFnsLocale } from '@/lib/dates';
 
 type Props = {
   className: string;
@@ -28,11 +29,12 @@ type Props = {
  */
 export function BookingSummary({
   className, instructor, classDate, durationMinutes,
-  priceUsd, priceLabel = 'Class', selectedUpsells, appliedCode, discountAmount, total, isFree, bare = false,
+  priceUsd, priceLabel, selectedUpsells, appliedCode, discountAmount, total, isFree, bare = false,
 }: Props) {
+  const t = useTranslations('booking.summary');
+  const locale = dateFnsLocale(useLocale());
   const endTime = new Date(classDate.getTime() + durationMinutes * 60000);
-  const dateStr =
-    format(classDate, 'EEE d MMM');
+  const dateStr = format(classDate, t('dateFormat'), { locale });
   const timeStr = `${format(classDate, 'HH:mm')} — ${format(endTime, 'HH:mm')}`;
 
   return (
@@ -42,12 +44,12 @@ export function BookingSummary({
       </h2>
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-5 mt-6">
-        <MetaPair label="DATE" value={dateStr} />
-        <MetaPair label="TIME" value={timeStr} />
-        <MetaPair label="INSTRUCTOR" value={instructor} />
+        <MetaPair label={t('date')} value={dateStr} />
+        <MetaPair label={t('time')} value={timeStr} />
+        <MetaPair label={t('instructor')} value={instructor} />
         <MetaPair
-          label="DURATION"
-          value={`${durationMinutes} minutes`}
+          label={t('duration')}
+          value={t('minutes', { count: durationMinutes })}
         />
       </div>
 
@@ -56,19 +58,19 @@ export function BookingSummary({
       {/* Line items */}
       <div className="space-y-2">
         <LineRow
-          label={priceLabel}
-          amount={isFree ? 'Free' : `$${priceUsd}`}
+          label={priceLabel ?? t('classLabel')}
+          amount={isFree ? t('free') : `$${priceUsd}`}
         />
         {selectedUpsells.map((u) => (
           <LineRow
             key={u.id}
             label={u.name}
-            amount={u.priceUsd === 0 ? 'Included' : `+$${u.priceUsd}`}
+            amount={u.priceUsd === 0 ? t('included') : `+$${u.priceUsd}`}
           />
         ))}
         {appliedCode && discountAmount > 0 && (
           <LineRow
-            label={`Code ${appliedCode.code}`}
+            label={t('code', { code: appliedCode.code })}
             amount={`−$${discountAmount}`}
             tone="burgundy"
           />
@@ -78,10 +80,10 @@ export function BookingSummary({
       {/* Total */}
       <div className="mt-6 pt-6 border-t border-ink/10 flex justify-between items-baseline">
         <span className="font-body text-sm tracking-[0.1em] uppercase text-ink">
-          Total
+          {t('total')}
         </span>
         <span className="font-display text-2xl lg:text-3xl font-light text-ink">
-          {total === 0 ? 'Free' : `$${total}`}
+          {total === 0 ? t('free') : `$${total}`}
         </span>
       </div>
     </div>

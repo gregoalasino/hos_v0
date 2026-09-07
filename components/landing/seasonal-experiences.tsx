@@ -2,36 +2,20 @@
 
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from '@/i18n/navigation';
 import { Ornament } from "@/components/shared/ornament";
 import { TrackArrows } from "@/components/shared/TrackArrows";
 import { useCarousel } from "@/hooks/use-carousel";
 import { useDragScroll } from "@/hooks/use-drag-scroll";
 
+// The cards, in order. Their words live in the catalogue under
+// home.featured.items, keyed by `id`.
 const experiences = [
-  {
-    title: "Shakti Experience",
-    description:
-      "A curated journey of movement, nature, wellness and connection. Designed to help you reconnect with yourself and the essence of House of Shakti.",
-    image: "/images/seccionSeasonalExperiences/card_shakti_experience.webp",
-    href: "/shakti-experience",
-  },
-  {
-    eyebrow: "Yoga Teacher Training",
-    title: "The Awakened Body: Embody Tantra Yoga Teacher Training",
-    description:
-      "A certified Tantric Yoga Teacher Training designed to deepen your practice, awaken the body, expand awareness, and inspire authentic teaching through embodied practice.",
-    image: "/images/seccionSeasonalExperiences/yoga-teacher-training-nancy.webp",
-    href: "/yoga-teacher-training",
-  },
-  {
-    title: "Sacred Union: A Journey for Two",
-    description:
-      "A private couples experience designed to deepen intimacy, strengthen connection and cultivate presence.",
-    image: "/images/seccionSeasonalExperiences/card_couples.webp",
-    href: "/stay-with-us",
-  },
-];
+  { id: "shakti", image: "/images/seccionSeasonalExperiences/card_shakti_experience.webp", href: "/shakti-experience" },
+  { id: "ytt", image: "/images/seccionSeasonalExperiences/yoga-teacher-training-nancy.webp", href: "/yoga-teacher-training" },
+  { id: "couples", image: "/images/seccionSeasonalExperiences/card_couples.webp", href: "/stay-with-us" },
+] as const;
 
 const cardsContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -51,6 +35,8 @@ const cardVariants: Variants = {
 };
 
 export function SeasonalExperiences() {
+  const t = useTranslations("home.featured");
+  const tButtons = useTranslations("common.buttons");
   const sectionRef = useRef<HTMLElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
@@ -121,7 +107,7 @@ export function SeasonalExperiences() {
               transition={{ duration: 1.0, ease: "easeOut" }}
               className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
             >
-              Featured Experiences
+              {t("heading")}
             </motion.h2>
           </div>
 
@@ -131,7 +117,7 @@ export function SeasonalExperiences() {
             transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
             className="font-body text-sm text-ink leading-relaxed mt-6 lg:mt-10 max-w-full lg:max-w-xs"
           >
-            Explore the experiences currently unfolding at House of Shakti.
+            {t("intro")}
           </motion.p>
 
           {/* Arrows sit with the copy, not floating over the cards, so they
@@ -171,7 +157,7 @@ export function SeasonalExperiences() {
             ref={trackRef}
             {...dragHandlers}
             tabIndex={0}
-            aria-label="Featured experiences"
+            aria-label={t("trackAria")}
             className="
               flex gap-6 lg:gap-8
               overflow-x-auto snap-x snap-proximity scroll-smooth
@@ -185,7 +171,7 @@ export function SeasonalExperiences() {
           >
             {experiences.map((exp) => (
               <motion.article
-                key={exp.title}
+                key={exp.id}
                 variants={cardVariants}
                 className="
                   flex-shrink-0 snap-start
@@ -218,15 +204,15 @@ export function SeasonalExperiences() {
 
                   <div className="flex flex-1 flex-col">
                     <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-tight mt-3">
-                      {exp.title}
+                      {t(`items.${exp.id}.title`)}
                     </h3>
 
                     <p className="font-body text-sm text-ink leading-relaxed mt-3 line-clamp-3">
-                      {exp.description}
+                      {t(`items.${exp.id}.description`)}
                     </p>
 
                     <span className="mt-auto self-start font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70 pt-6">
-                      Discover more
+                      {tButtons("discoverMore")}
                     </span>
                   </div>
                 </Link>

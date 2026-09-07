@@ -1,8 +1,7 @@
 'use client';
 
 import { ClosingBand } from '@/components/shared/ClosingBand';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 const IMAGE_DESKTOP = '/images/pre-footer/pre-footer-desktop.webp';
@@ -23,8 +22,7 @@ const SCRIM = 'rgba(0,0,0,0.50)';
 // same shore and the same sunset as the hero film — the page closes where it
 // opened. The band itself is the shared ClosingBand.
 export function YTTClosingCTA() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   return (
     <ClosingBand
       image={IMAGE_DESKTOP}

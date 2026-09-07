@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 
 // The retreats clip, shared with the hub and every retreat page: this is one of
@@ -22,6 +23,7 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function UpcomingHero() {
+  const t = useTranslations('upcomingRetreats.hero');
   return (
     <section className="bg-warm-white">
       <div className="w-full md:w-[80%] mx-auto mt-16 md:mt-20">
@@ -47,7 +49,7 @@ export function UpcomingHero() {
                 transition={{ duration: 1.1, ease: 'easeOut', delay: 0.12 }}
                 className="font-display font-light text-cream text-4xl md:text-6xl lg:text-7xl leading-[1.0] tracking-[-0.01em] max-w-4xl"
               >
-                Upcoming Retreats Hosted at House of Shakti
+                {t('headline')}
               </motion.h1>
 
               <motion.p
@@ -56,7 +58,7 @@ export function UpcomingHero() {
                 transition={{ duration: 1.0, ease: 'easeOut', delay: 0.24 }}
                 className="font-body text-sm md:text-base text-cream/85 leading-[1.7] mt-6 max-w-xl"
               >
-                Where nature, practice and connection meet.
+                {t('subline')}
               </motion.p>
             </div>
           </div>

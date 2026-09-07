@@ -1,0 +1,1707 @@
+{
+  "ytt": {
+    "hero": {
+      "location": "Santa Teresa, Costa Rica",
+      "dates": "21 de noviembre – 4 de diciembre, 2026",
+      "title": "The Awakened Body: Formación de Profesores de Tantra Yoga",
+      "subtitle": "Una inmersión de 100 horas, con un programa online opcional de 100 horas, que conduce a una Formación de Profesores de Yoga de 200 horas registrada en Yoga Alliance — guiada por Nancy Goodfellow.",
+      "cta": "Reserva tu lugar"
+    },
+    "intro": {
+      "headline": "Encarna la sabiduría del Tantra — el yoga como camino de presencia, sanación y vida consciente.",
+      "paragraphs": [
+        "Esta formación va mucho más allá de la práctica física del yoga. A través del movimiento, el breathwork, la meditación, la filosofía del Tantra, el ritual, la regulación del sistema nervioso, la conciencia somática y la conexión auténtica, explorarás el yoga como una práctica viva que transforma tu manera de relacionarte contigo y con el mundo.",
+        "En medio de la exuberante belleza tropical de Costa Rica, esta experiencia inmersiva ofrece el equilibrio perfecto entre estudio disciplinado, práctica encarnada, vida en comunidad y descanso profundo.",
+        "Ya sea que tu intención sea enseñar yoga o simplemente profundizar tu práctica personal, esta formación ofrece un camino sólido, integrador y centrado en el corazón hacia una vida encarnada."
+      ],
+      "trackAria": "Escenas de la formación"
+    },
+    "different": {
+      "heading": "Más que una formación tradicional de profesores.",
+      "sub": "En lugar de centrarse únicamente en posturas y secuencias, esta inmersión explora el yoga como un camino completo de vida encarnada. Aquí aprenderás a:",
+      "cards": [
+        {
+          "title": "Presencia sobre rendimiento",
+          "body": "Moverte desde la presencia, no desde el rendimiento."
+        },
+        {
+          "title": "Enseñar desde la experiencia",
+          "body": "Enseñar desde la experiencia vivida, no desde la memorización."
+        },
+        {
+          "title": "Cuerpo, respiración y sistema nervioso",
+          "body": "Cultivar una relación con tu cuerpo, tu respiración y tu sistema nervioso que sostenga una transformación duradera."
+        },
+        {
+          "title": "Sabiduría ancestral, práctica moderna",
+          "body": "Tender un puente entre la sabiduría del Tantra, las prácticas somáticas modernas y el liderazgo consciente."
+        }
+      ]
+    },
+    "pathway": {
+      "heading": "Dos caminos, un mismo viaje.",
+      "phases": [
+        {
+          "tag": "Fase uno",
+          "title": "Inmersión residencial de 100 horas",
+          "place": "House of Shakti · Costa Rica",
+          "formatLabel": "Presencial",
+          "body": "Tu viaje comienza con una inmersión residencial de 100 horas: práctica diaria, filosofía y encarnación en la selva sobre Playa Hermosa. Al completarla recibes un Certificado de 100 Horas."
+        },
+        {
+          "tag": "Fase dos",
+          "title": "Formación online de 100 horas",
+          "place": "Opcional · Desde cualquier parte del mundo",
+          "formatLabel": "Online",
+          "body": "Para quienes deseen continuar, la experiencia se extiende con un plan de estudios online en profundidad, diseñado para la integración y el desarrollo profesional — estudiando desde cualquier parte del mundo."
+        }
+      ],
+      "rytBefore": "Completa ambas fases para recibir tu ",
+      "rytHighlight": "Certificado de Formación de Profesores de Yoga de 200 Horas registrado en Yoga Alliance (RYT 200)",
+      "rytAfter": " — una de las credenciales de enseñanza de yoga más reconocidas del mundo, con validez internacional."
+    },
+    "curriculum": {
+      "heading": "Seis módulos. 100 horas de estudio encarnado.",
+      "sub": "Abre cualquier módulo para ver qué incluye.",
+      "modules": [
+        {
+          "title": "La visión tántrica",
+          "focus": "Filosofía y cosmovisión",
+          "hours": "15 h",
+          "points": [
+            "Qué es el Tantra: disipar mitos, entrar en la tradición real",
+            "Shivaísmo de Cachemira y filosofía no dual",
+            "Spanda, el pulso divino; Shakti y Shiva, la polaridad cósmica dentro del cuerpo",
+            "Los tattvas: los 36 elementos de la realidad; karma, dharma y la vida despierta"
+          ]
+        },
+        {
+          "title": "El cuerpo vivo",
+          "focus": "Anatomía encarnada y fisiología tántrica",
+          "hours": "20 h",
+          "points": [
+            "Los koshas desde una mirada tántrica",
+            "Prana, nadis y el cuerpo sutil",
+            "El sistema de chakras, más allá de lo básico",
+            "Kundalini: teoría, señales de despertar, facilitación segura; conciencia somática"
+          ]
+        },
+        {
+          "title": "Prácticas de la corriente sagrada",
+          "focus": "Asana avanzada y movimiento",
+          "hours": "35 h",
+          "points": [
+            "El asana como ritual: moverse con intención",
+            "Secuenciación avanzada a través de un arco tántrico",
+            "Trabajo con la polaridad en el cuerpo",
+            "Ajuste y contacto como transmisión sagrada"
+          ]
+        },
+        {
+          "title": "La respiración como portal",
+          "focus": "Pranayama y breathwork",
+          "hours": "15 h",
+          "points": [
+            "Pranayama clásico: nadi shodhana, kapalabhati, bhastrika",
+            "Breathwork tántrico: la respiración como activación de Shakti",
+            "Respiración circular y estados ampliados de conciencia",
+            "Facilitar breathwork en grupo: seguridad y sostén del espacio"
+          ]
+        },
+        {
+          "title": "Sonido, mantra y meditación",
+          "focus": "Tecnologías internas",
+          "hours": "5 h",
+          "points": [
+            "El mantra como medicina vibracional: bija mantras, sonidos semilla",
+            "Nada yoga: el yoga del sonido sagrado",
+            "Meditación tántrica: pratyahara, dharana, dhyana",
+            "Visualización guiada y viajes internos"
+          ]
+        },
+        {
+          "title": "La enseñanza despierta",
+          "focus": "Sostener el espacio sagrado",
+          "hours": "10 h",
+          "points": [
+            "Ética al enseñar prácticas avanzadas y devocionales",
+            "Facilitación informada en trauma en contextos tántricos",
+            "Diseño de rituales y aperturas y cierres ceremoniales",
+            "Construir tu propuesta: retiros, intensivos, inmersiones"
+          ]
+        }
+      ]
+    },
+    "testimonial": {
+      "quote": "Nancy es excepcional y, por lejos, una de las mejores profesoras de yoga que hemos tenido la oportunidad de conocer en el mundo. Ya sea por su práctica, su enfoque, la fluidez y diversidad de sus clases, o por el nivel de detalle con el que supo guiar nuestra práctica, conocerla y practicar con ella fue una experiencia profundamente transformadora.",
+      "author": "Sacha Revillard"
+    },
+    "included": {
+      "heading": "La inmersión de 100 horas en Costa Rica incluye.",
+      "items": [
+        "Alojamiento en House of Shakti",
+        "Dos comidas nutritivas al día (brunch y cena)",
+        "Formación completa de 100 horas",
+        "Yoga, meditación y prácticas de encarnación a diario",
+        "Dos viajes de breathwork",
+        "Experiencias de sauna y baño de hielo",
+        "Paseo en barco",
+        "Manual completo de la formación",
+        "Certificado de finalización (100 horas)",
+        "Conexión con la naturaleza y comunidad consciente"
+      ],
+      "notHeading": "No incluye.",
+      "notItems": [
+        "Vuelos internacionales",
+        "Traslados al aeropuerto",
+        "Seguro de viaje",
+        "Bebidas adicionales",
+        "Gastos personales",
+        "Excursiones opcionales"
+      ],
+      "note": "Las comidas son vegetarianas, y la mayoría de los requerimientos alimentarios pueden acomodarse avisando con anticipación."
+    },
+    "rhythm": {
+      "heading": "Tu día a día",
+      "eyebrow": "De lunes a sábado",
+      "blocks": [
+        {
+          "time": "8:00 AM – 11:30 AM",
+          "title": "Práctica de la mañana",
+          "detail": "Breathwork · Tantra Vinyasa · Meditación"
+        },
+        {
+          "time": "11:30 AM",
+          "title": "Brunch y silencio noble",
+          "detail": ""
+        },
+        {
+          "time": "2:00 PM – 6:00 PM",
+          "title": "Laboratorio de asana y metodología de enseñanza",
+          "detail": "Clases teóricas · Talleres · Prácticas de encarnación"
+        },
+        {
+          "time": "6:00 PM",
+          "title": "Cena y satsang",
+          "detail": ""
+        },
+        {
+          "time": "7:30 PM",
+          "title": "Integración de la noche",
+          "detail": "Sauna y baño de hielo · Ritual · Reflexión grupal alrededor del fuego"
+        }
+      ],
+      "footnote": "*2.º y 3.er domingo: ¡día libre para disfrutar!",
+      "trackAria": "Momentos del ritmo diario"
+    },
+    "teachers": {
+      "heading": "Conoce a tus maestras",
+      "bios": [
+        [
+          "Nancy reúne años de experiencia en yoga, prácticas de encarnación, regulación del sistema nervioso, liderazgo consciente y facilitación de retiros transformacionales.",
+          "Su estilo de enseñanza es compasivo, auténtico y profundamente vivencial, entretejiendo la sabiduría atemporal del Tantra con enfoques somáticos modernos. Cree que el yoga no es simplemente algo que practicamos: es una forma de vivir."
+        ],
+        [
+          "Nayla es coach internacional certificada en respiración y mindfulness, profesora certificada por Yoga Alliance y oradora motivacional con más de 2,500 horas de formación.",
+          "Estudió en la India durante muchos meses junto a maestros del Himalaya y otros referentes de renombre mundial. Sobreviviente de una experiencia cercana a la muerte, hoy enseña sobre respiración, mindfulness y resiliencia."
+        ]
+      ]
+    },
+    "sanctuary": {
+      "heading": "House of Shakti Yoga Sanctuary",
+      "body": "Donde la selva se encuentra con el mar y la sabiduría ancestral con el confort moderno. Estamos en Santa Teresa, Costa Rica, a solo 7 minutos de la playa en Playa Hermosa.",
+      "trackAria": "El santuario de House of Shakti"
+    },
+    "whoFor": {
+      "heading": "¿Para quién es esta formación?",
+      "intro": "Esta inmersión está diseñada para:",
+      "audience": [
+        {
+          "lead": "Futuros profesores de yoga",
+          "detail": "que quieren comenzar a compartir y enseñar la práctica"
+        },
+        {
+          "lead": "Profesores de yoga",
+          "detail": "que buscan profundizar sus conocimientos y refinar su forma de enseñar"
+        },
+        {
+          "lead": "Practicantes comprometidos",
+          "detail": "listos para llevar su práctica a un nivel más profundo"
+        },
+        {
+          "lead": "Facilitadores de retiros, coaches, terapeutas y profesionales del bienestar",
+          "detail": "que desean integrar prácticas encarnadas en su trabajo"
+        },
+        {
+          "lead": "Cualquier persona",
+          "detail": "interesada en desarrollar una relación más consciente, encarnada y conectada consigo misma y con los demás"
+        }
+      ],
+      "closing": "No se requiere experiencia previa enseñando."
+    },
+    "pricing": {
+      "heading": "Inmersión en Costa Rica — 100 horas.",
+      "tiers": [
+        {
+          "tag": "Precio anticipado · Agosto",
+          "price": "USD $4,015",
+          "detail": "Habitación privada · Inmersión de 100 horas en Costa Rica"
+        },
+        {
+          "tag": "Regular",
+          "price": "USD $4,340",
+          "detail": "Habitación privada · Inmersión de 100 horas en Costa Rica"
+        },
+        {
+          "tag": "Solo formación",
+          "price": "USD $2,620",
+          "detail": "Formación + 1 comida · sin alojamiento"
+        }
+      ],
+      "onlineLine": "Programa online opcional de 100 horas: precios y fechas disponibles a pedido. Contáctanos para conocer las opciones de pago.",
+      "requestCta": "Consultar precios y fechas",
+      "paymentHeading": "Plan de pagos",
+      "schedule": [
+        "Se requiere un depósito no reembolsable de $500 para asegurar tu lugar (una vez aceptada tu postulación).",
+        "La mitad de la inversión debe abonarse dentro de los 30 días posteriores a la aceptación (salvo acuerdos de pago especiales).",
+        "El total debe estar abonado para el 21 de noviembre de 2026.",
+        "Política de cancelación: el depósito de $500 no es reembolsable una vez aceptada la postulación, pero puede usarse para futuras formaciones o retiros.",
+        "Se reembolsará el 75% del monto restante hasta 30 días antes del inicio. No se realizan reembolsos bajo ninguna circunstancia una vez comenzado el curso."
+      ],
+      "invitation": "Invertir en ti está a tu alcance",
+      "applyCta": "Postúlate ahora",
+      "closing": "Asegura tu lugar con un depósito de $500"
+    },
+    "outcomes": {
+      "heading": "Al final de este viaje vas a…",
+      "items": [
+        "Desarrollar una comprensión profunda del Tantra como filosofía viva.",
+        "Construir una práctica personal sostenible y con sentido.",
+        "Aprender a regular tu sistema nervioso a través de prácticas encarnadas.",
+        "Cultivar confianza para guiar clases de yoga y experiencias transformacionales.",
+        "Profundizar tu relación con la respiración, el movimiento y la meditación.",
+        "Fortalecer tu voz auténtica y tu liderazgo.",
+        "Experimentar mayor presencia, resiliencia y autoconocimiento.",
+        "Unirte a una comunidad global de practicantes y profesores.",
+        "Recibir tu certificación de Yoga Alliance, reconocida internacionalmente, al completar ambas fases."
+      ]
+    },
+    "closing": {
+      "heading": "Acompáñanos en Costa Rica en una experiencia inolvidable",
+      "body": "Te invitamos a expandir los límites de tus capacidades, convocar la compasión, el coraje y la confianza de tu maestro interior, y dar un salto hacia la expresión libre y luminosa de tu propia voz auténtica: el regalo más valioso que tienes para compartir con el mundo.",
+      "cta": "Comienza tu formación"
+    },
+    "faq": {
+      "heading": "Todo lo que te puedes estar preguntando.",
+      "items": [
+        {
+          "q": "¿Necesito tener experiencia en yoga?",
+          "a": "No. Esta formación está abierta a cualquier persona con un interés sincero en profundizar su práctica. Una práctica personal constante y una mente abierta son todo lo que se necesita; no se requiere experiencia previa enseñando."
+        },
+        {
+          "q": "¿Esta formación es solo para futuros profesores?",
+          "a": "Para nada. Muchas personas participan para profundizar su práctica personal, cultivar el autoconocimiento e integrar el yoga más plenamente en su vida. Recibe a futuros profesores, practicantes comprometidos, facilitadores de retiros, coaches, terapeutas y a cualquiera que busque una forma de vivir más consciente y encarnada."
+        },
+        {
+          "q": "¿Recibiré un certificado?",
+          "a": "Sí. Al completar la inmersión en Costa Rica recibes un Certificado de 100 Horas. Quienes completan además el programa online de 100 horas reciben el Certificado de Formación de Profesores de Yoga de 200 Horas registrado en Yoga Alliance (RYT 200)."
+        },
+        {
+          "q": "¿La certificación tiene validez internacional?",
+          "a": "Sí. Al completar con éxito ambas fases, puedes registrarte en Yoga Alliance como RYT 200, una de las credenciales de enseñanza de yoga más reconocidas del mundo."
+        },
+        {
+          "q": "¿A qué aeropuerto debo volar?",
+          "a": "Al Aeropuerto Internacional Juan Santamaría (SJO), Costa Rica. Recibirás información detallada de viaje después de registrarte."
+        },
+        {
+          "q": "¿Pueden adaptarse a requerimientos alimentarios?",
+          "a": "Sí. Las comidas son vegetarianas, y la mayoría de los requerimientos alimentarios pueden acomodarse avisando con anticipación."
+        }
+      ]
+    },
+    "whatsapp": {
+      "aria": "¿Tienes preguntas? Escríbenos por WhatsApp",
+      "q": "¿Tienes preguntas?",
+      "cta": "Escríbenos.",
+      "message": "¡Hola! Me gustaría saber más sobre The Awakened Body, la Formación de Profesores de Tantra Yoga en House of Shakti.",
+      "messagePricing": "¡Hola! Me gustaría conocer los precios y las fechas del programa online opcional de 100 horas de la Formación The Awakened Body en House of Shakti."
+    },
+    "meta": {
+      "title": "The Awakened Body — Yoga Teacher Training",
+      "description": "Una formación de profesores de Tantra yoga de 100 horas en Santa Teresa, Costa Rica, con certificación Yoga Alliance RYT 200. Del 21 de noviembre al 4 de diciembre de 2026."
+    }
+  },
+  "shaktiExperience": {
+    "hero": {
+      "title": "Shakti Experience",
+      "subtitle": "Una invitación a volver al lugar que siempre ha sido tuyo: el cuerpo.",
+      "cta": "Reserva tu lugar"
+    },
+    "intro": {
+      "headline": "Shakti es la energía de la vida, el movimiento y la transformación.",
+      "paragraphs": [
+        "Vive en la naturaleza, en el cuerpo, en la creatividad y en nuestra capacidad de sentir y disfrutar.",
+        "Este retiro es una invitación a bajar el ritmo, descansar, respirar y reconectar contigo, lejos del ruido y las exigencias de la vida cotidiana.",
+        "Un espacio para relajarte, nutrir el cuerpo, disfrutar de la naturaleza, moverte con suavidad y, simplemente, darte permiso para hacer una pausa."
+      ],
+      "trackAria": "Escenas de la Shakti Experience"
+    },
+    "moreThanAStay": {
+      "heading": "Más que una estadía.",
+      "intro": "Todo lo que necesitas para bajar el ritmo, recargar energía y sentirte bien.",
+      "trackAria": "Lo que incluye la Shakti Experience",
+      "items": [
+        {
+          "slug": "yoga",
+          "title": "Yoga",
+          "description": "Clases de yoga diseñadas para crear espacio en el cuerpo y apoyar el bienestar general, adaptadas al nivel y a las intenciones de cada participante."
+        },
+        {
+          "slug": "breathwork",
+          "title": "Breathwork",
+          "description": "Prácticas de respiración guiadas para liberar tensión y crear espacio para relajarte."
+        },
+        {
+          "slug": "sauna-icebath",
+          "title": "Sauna y baño de hielo",
+          "description": "Una experiencia restauradora de calor y frío para refrescar el cuerpo y los sentidos."
+        },
+        {
+          "slug": "sound-healing",
+          "title": "Sanación con sonido",
+          "description": "Relájate entre sonidos y vibraciones que calman."
+        },
+        {
+          "slug": "massage",
+          "title": "Masajes",
+          "description": "Masajes restauradores a cargo de terapeutas especializados, para una relajación y una renovación profundas."
+        },
+        {
+          "slug": "nourishing-food",
+          "title": "Comida nutritiva",
+          "description": "Desayuno incluido. Comidas frescas y saludables, pensadas para nutrirte y darte energía."
+        },
+        {
+          "slug": "time-in-nature",
+          "title": "Tiempo en la naturaleza",
+          "description": "Espacio para disfrutar la belleza, los sonidos y los ritmos de Costa Rica."
+        },
+        {
+          "slug": "time-to-rest",
+          "title": "Tiempo para descansar",
+          "description": "Tiempo sin estructura para bajar el ritmo, hacer menos y simplemente disfrutar de estar."
+        },
+        {
+          "slug": "nature-experience",
+          "title": "Experiencia en la naturaleza",
+          "description": "Caminatas a cascadas entre los paisajes exuberantes de Costa Rica, paseos en bote para avistar delfines y ballenas o hacer snorkel en aguas cristalinas, cabalgatas y clases de surf."
+        },
+        {
+          "slug": "support",
+          "title": "El acompañamiento del equipo de House of Shakti",
+          "description": "Estamos aquí para que tu estadía se sienta fácil, cómoda y cuidada."
+        },
+        {
+          "slug": "welcome-gift",
+          "title": "Regalo de bienvenida",
+          "description": "Un pequeño detalle para que te sientas en casa desde el momento en que llegas."
+        }
+      ]
+    },
+    "testimonial": {
+      "quote": "En julio, mi mejor amiga y yo participamos de la Shakti Experience en House of Shakti. Fue una semana mágica en la casa, llena de yoga, surf, breathwork y sanación con sonido. La casa está muy bien ubicada, a 10 minutos de la playa y a 15 del centro del pueblo. Despertar cada mañana con el sonido de los pájaros y los monos fue un regalo. Nancy es una profesora increíble; estoy muy agradecida de haberla encontrado a ella y a su oasis. ¡No podría recomendar más este lugar!",
+      "author": "Reseña de una huésped",
+      "role": "Shakti Experience · julio"
+    },
+    "whoFor": {
+      "heading": "Esta experiencia es para ti si…",
+      "audience": [
+        {
+          "lead": "Sientes que has perdido la conexión con tu cuerpo",
+          "detail": "y quieres bajar el ritmo y volver a él."
+        },
+        {
+          "lead": "Vienes viviendo en piloto automático",
+          "detail": "y necesitas espacio para descansar y reiniciar."
+        },
+        {
+          "lead": "Anhelas un entorno seguro y tranquilo",
+          "detail": "lejos del ruido y las exigencias de la vida cotidiana."
+        },
+        {
+          "lead": "Quieres reconectar con tu cuerpo",
+          "detail": "a través de prácticas de yoga suaves y nutritivas."
+        },
+        {
+          "lead": "Simplemente sientes la necesidad de hacer una pausa",
+          "detail": "para respirar y cuidar de ti."
+        }
+      ],
+      "closing": "No necesitas experiencia previa en yoga: las clases se adaptan a todos los niveles, incluidos principiantes."
+    },
+    "pricing": {
+      "heading": "Elige tu experiencia.",
+      "includesLabel": "Incluye",
+      "tiers": [
+        {
+          "title": "Full Reset",
+          "duration": "7 días · 6 noches",
+          "price": "Desde USD 1.400",
+          "body": "Una semana completa para salir de la rutina y sumergirte en la experiencia House of Shakti. Una combinación equilibrada de movimiento, bienestar, naturaleza, comida nutritiva y tiempo para ti. La forma más completa de vivir Shakti.",
+          "includes": [
+            "Alojamiento",
+            "Desayuno diario",
+            "Clases de yoga",
+            "Sauna y baño de hielo",
+            "Sesión de breathwork",
+            "Masaje",
+            "Experiencia en la naturaleza",
+            "Regalo de bienvenida"
+          ]
+        },
+        {
+          "title": "Refresh",
+          "duration": "5 días · 4 noches",
+          "price": "Desde USD 950",
+          "body": "Unos días para reiniciar tu ritmo, recargar energía y disfrutar de un cambio de aire. Una experiencia equilibrada con movimiento, relajación, mañanas nutritivas y mucho espacio para disfrutar. Un pequeño paréntesis para volver con la energía renovada.",
+          "includes": [
+            "Alojamiento",
+            "Desayuno diario",
+            "Clases de yoga",
+            "Sauna y baño de hielo",
+            "Masaje",
+            "Regalo de bienvenida"
+          ]
+        },
+        {
+          "title": "Your Own Way",
+          "duration": "Experiencia a medida",
+          "price": "Hazla tuya.",
+          "body": "Elige cuánto tiempo te quedas y qué experiencias quieres incluir: desde yoga y breathwork hasta masajes, sanación con sonido, sauna y baño de hielo o una experiencia guiada en la naturaleza.",
+          "includes": [],
+          "extra": "Una de nuestras expertas de House of Shakti te ayudará a crear una experiencia personalizada según lo que estés buscando.",
+          "closing": "Diseñada alrededor de ti, de tus necesidades y de tu ritmo.",
+          "cta": "Diseñar mi experiencia"
+        }
+      ],
+      "groupNote": "Ofrecemos tarifas especiales para grupos de dos o más personas.",
+      "cta": "Reserva tu lugar"
+    },
+    "day": {
+      "heading": "¿Cómo es un día aquí?",
+      "intro": "Un ritmo suave, cada día a tu propio paso, con nuestro equipo de facilitadores cerca para acompañarte durante toda la estadía.",
+      "note": "Los masajes y las experiencias en la naturaleza se organizan con nuestro equipo según tus preferencias. El almuerzo y la cena son tuyos: una amplia cocina compartida, o los muchos buenos lugares que hay cerca. Para moverte con libertad, te recomendamos alquilar un cuatriciclo o un auto.",
+      "trackAria": "Los momentos de un día en House of Shakti",
+      "moments": [
+        {
+          "slug": "breakfast",
+          "time": "8:00 AM",
+          "title": "Desayuno",
+          "detail": "Empieza la mañana con un desayuno fresco y nutritivo."
+        },
+        {
+          "slug": "yoga",
+          "time": "10:00 AM",
+          "title": "Clase de yoga",
+          "detail": "Moverte, respirar y empezar el día con una práctica que aterriza."
+        },
+        {
+          "slug": "free-time",
+          "time": "Mediodía",
+          "title": "Tiempo libre",
+          "detail": "Explora, descansa, disfruta de la playa o simplemente tómate un tiempo para ti."
+        },
+        {
+          "slug": "breathwork",
+          "time": "5:00 PM",
+          "title": "Breathwork",
+          "detail": "Una práctica de respiración guiada para soltar y entrar en la noche; se ofrece una vez durante tu estadía."
+        },
+        {
+          "slug": "sauna",
+          "time": "6:30 PM",
+          "title": "Sauna y baño de hielo",
+          "detail": "Una experiencia restauradora de calor y frío para refrescar el cuerpo y los sentidos."
+        }
+      ]
+    },
+    "sanctuary": {
+      "heading": "House of Shakti Yoga Sanctuary",
+      "body": "Donde la selva se encuentra con el mar y la sabiduría ancestral con el confort moderno. Estamos en Santa Teresa, Costa Rica, a solo 7 minutos de la playa en Playa Hermosa.",
+      "trackAria": "El santuario de House of Shakti"
+    },
+    "closing": {
+      "heading": "Esta etapa de tu vida puede ser para bajar el ritmo.",
+      "body": "Descansar, disfrutar de lo que has creado y hacer espacio para simplemente ser. Porque a veces no hay nada que arreglar: solo un poco más de espacio para descansar, sentir y disfrutar de la vida.",
+      "cta": "Reserva tu lugar"
+    },
+    "faq": {
+      "heading": "Todo lo que te puedes estar preguntando.",
+      "items": [
+        {
+          "q": "¿Es un retiro?",
+          "a": "No. Es una experiencia más independiente, pensada para darte espacio para disfrutar de House of Shakti a tu propio ritmo. Nuestro equipo estará aquí para acompañarte, responder tus preguntas y ayudarte durante toda la estadía, pero no hay un único facilitador o profesor que guíe toda la experiencia. Tú eliges cómo usar tu tiempo y a qué actividades sumarte."
+        },
+        {
+          "q": "¿Cuál es la diferencia entre Full Reset y Refresh?",
+          "a": "Full Reset es una experiencia de 7 días y 6 noches, con una selección más completa de actividades. Refresh es una experiencia más corta, de 5 días y 4 noches, pensada para disfrutar lo esencial de House of Shakti."
+        },
+        {
+          "q": "¿Puedo personalizar mi experiencia?",
+          "a": "Por supuesto. Con Your Own Way eliges la duración de tu estadía y las experiencias que quieres incluir. Una de nuestras expertas de House of Shakti te ayudará a diseñar una estadía según lo que estés buscando."
+        },
+        {
+          "q": "¿Necesito experiencia previa en yoga?",
+          "a": "Para nada. Nuestras clases se adaptan a distintos niveles, incluidos principiantes."
+        },
+        {
+          "q": "¿Tengo que participar en todas las actividades?",
+          "a": "Para nada. Eres libre de elegir lo que sientas adecuado para ti y disfrutar el resto de tu tiempo a tu propio ritmo."
+        },
+        {
+          "q": "¿Puedo venir por mi cuenta?",
+          "a": "Claro que sí. La experiencia es ideal para quienes viajan en solitario y quieren disfrutar de tiempo personal, con la opción de conectar con otras personas en las actividades compartidas."
+        },
+        {
+          "q": "¿Qué debo llevar?",
+          "a": "Ropa cómoda para yoga, traje de baño, protector solar, repelente de insectos y todo lo que puedas necesitar para disfrutar de tu estadía."
+        },
+        {
+          "q": "¿Cómo reservo?",
+          "a": "Envíanos una consulta y nuestro equipo te ayudará a elegir la experiencia que mejor se adapte a ti y te guiará en el proceso de reserva."
+        }
+      ]
+    },
+    "whatsapp": {
+      "message": "¡Hola! Me gustaría reservar mi lugar en la Shakti Experience de House of Shakti.",
+      "messageCustom": "¡Hola! Me gustaría diseñar mi propia Shakti Experience en House of Shakti. ¿Podemos hablar de fechas y de qué incluir?"
+    },
+    "meta": {
+      "title": "Shakti Experience",
+      "description": "Una estadía completa en House of Shakti, Santa Teresa: yoga, respiración, sauna y baño de hielo, masajes y tiempo en la naturaleza. Una semana, unos días, o la tuya."
+    }
+  },
+  "about": {
+    "opening": {
+      "place": "Santa Teresa, Costa Rica",
+      "title": "Sobre House of Shakti",
+      "second": "Unas palabras sobre la casa, y sobre la mujer que la construyó."
+    },
+    "nancy": {
+      "numeral": "I",
+      "eyebrow": "La fundadora",
+      "notes": [
+        "Practica desde 1992",
+        "Tradición Ashtanga Vinyasa",
+        "750+ horas · Yoga Alliance",
+        "Santa Teresa, Costa Rica"
+      ],
+      "paragraphs": [
+        "Nancy comenzó su camino en el yoga en 1992, en la tradición Ashtanga Vinyasa. Tras años de práctica y estudio, se mudó a Costa Rica en busca de una vida más simple, más cerca de la naturaleza y de lo que de verdad importa.",
+        "Desde entonces ha completado más de 750 horas de formación de Yoga Alliance y ha explorado distintas tradiciones y enfoques del yoga.",
+        "Pero sus enseñanzas más profundas también han llegado de la vida misma. Después de atravesar una pérdida profunda, el yoga se convirtió para Nancy en algo más que una práctica: en una forma de encontrarse con la vida con más presencia, compasión, coraje y alegría.",
+        "Hoy lleva esa comprensión a los espacios que crea y en los que enseña: con los pies en la tierra, auténticos y profundamente humanos."
+      ],
+      "pull": "Auténtica, con los pies en la tierra y profundamente humana.",
+      "photoAlt": "Nancy Goodfellow, fundadora de House of Shakti"
+    },
+    "house": {
+      "numeral": "II",
+      "eyebrow": "La casa",
+      "notes": [
+        "Santa Teresa, Costa Rica",
+        "Lejos del turismo masivo",
+        "Yoga · Retiros · Formaciones",
+        "Presencia · Autenticidad · Comunidad · Vida consciente"
+      ],
+      "paragraphs": [
+        "House of Shakti nació de esa misma visión: crear un espacio donde las personas puedan bajar el ritmo y reconectar con su cuerpo, con la naturaleza y consigo mismas.",
+        "Creada en Costa Rica y, a propósito, lejos del turismo masivo, House of Shakti ofrece un entorno íntimo para el yoga, los retiros, las formaciones y la conexión con sentido.",
+        "Arraigado en los valores de la presencia, la autenticidad, la comunidad y la vida consciente, el espacio invita a cada persona a alejarse del ruido y reconectar con lo esencial.",
+        "Inspirada en Shakti, la energía creativa que da vida al universo, House of Shakti existe alrededor de una pregunta simple:"
+      ],
+      "pull": "¿Cómo podemos vivir, y sentirnos, más vivos?",
+      "photoAlt": "La casa principal de House of Shakti, vista desde la piscina"
+    },
+    "signature": {
+      "name": "Nancy Goodfellow",
+      "role": "Fundadora · House of Shakti",
+      "handle": "@wildheart.yogini"
+    },
+    "closing": {
+      "heading": "Lo demás se siente mejor de lo que se lee.",
+      "links": [
+        {
+          "label": "Quédate con nosotras",
+          "href": "/stay-with-us"
+        },
+        {
+          "label": "Explora los retiros",
+          "href": "/retreats"
+        }
+      ]
+    },
+    "meta": {
+      "title": "Nosotras",
+      "description": "Cómo nació House of Shakti, y la historia de Nancy Goodfellow, quien lo construyó en Santa Teresa, Costa Rica."
+    }
+  },
+  "hostYourRetreat": {
+    "intro": {
+      "headline": "Un santuario para sostener tu encuentro",
+      "paragraphs": [
+        "House of Shakti es un refugio tranquilo y lujoso en el corazón de la naturaleza, un lugar pensado para inspirar conexión, transformación y renovación.",
+        "Escondido en lo alto de una colina serena, el santuario ofrece privacidad total y vistas impresionantes a la selva, a cinco minutos de Playa Hermosa, en Santa Teresa: uno de los mejores spots de surf y una de las playas más bellas de Costa Rica.",
+        "Ya sea que guíes un taller de bienestar, una escapada creativa o un viaje espiritual, nuestro espacio y nuestro equipo se ocupan de cada detalle para crear una experiencia inolvidable para ti y tus invitados."
+      ],
+      "trackAria": "Fotografías de House of Shakti"
+    },
+    "meta": {
+      "title": "Host Your Retreat",
+      "description": "Organiza tu retiro en House of Shakti, Santa Teresa. Alojamiento privado, una shala de yoga y un equipo que coordina cada detalle en Costa Rica."
+    },
+    "hero": {
+      "location": "Santa Teresa, Costa Rica",
+      "headline": "Da vida a tu visión",
+      "subline": "Tu retiro, nuestro espacio"
+    },
+    "stays": {
+      "heading": "Dónde se hospeda tu grupo",
+      "intro": "La propiedad ofrece distintas opciones de alojamiento para adaptarse a las preferencias de tu grupo."
+    },
+    "review": {
+      "quote": "House of Shakti es un refugio sereno rodeado de naturaleza, con una shala hermosa y una energía que arraiga profundamente. Es el tipo de lugar donde de inmediato sientes un cambio: un lugar para bajar el ritmo, respirar y reconectar.",
+      "author": "Reseña de un huésped",
+      "role": "Santa Teresa, Costa Rica"
+    },
+    "activities": {
+      "heading": "Enriquece tu retiro",
+      "intro": "Enriquece la experiencia de tu retiro con actividades rejuvenecedoras y transformadoras en la propiedad, y descubre la belleza de los alrededores con aventuras fuera de ella.",
+      "note": "Nuestro equipo ayuda a coordinar y personalizar estas actividades para que tu retiro sea inolvidable.",
+      "trackAria": "Actividades para tu retiro, en House of Shakti y más allá",
+      "onSite": "En la propiedad",
+      "offSite": "Fuera de la propiedad",
+      "items": {
+        "sauna": {
+          "title": "Sesiones de sauna",
+          "description": "Desintoxícate y relájate en nuestro sauna privado y sereno."
+        },
+        "coldPlunge": {
+          "title": "Terapia de inmersión en frío",
+          "description": "Revitalízate con una inmersión en frío vigorizante."
+        },
+        "yogaClasses": {
+          "title": "Clases de yoga",
+          "description": "Adaptadas al nivel y las intenciones de tu grupo."
+        },
+        "breathwork": {
+          "title": "Sesiones de respiración",
+          "description": "Explora el poder de la respiración consciente."
+        },
+        "soundHealing": {
+          "title": "Sanación con sonido",
+          "description": "Sumérgete en un viaje meditativo y reconfortante."
+        },
+        "massage": {
+          "title": "Masajes terapéuticos",
+          "description": "Disfruta de masajes restauradores con terapeutas expertos."
+        },
+        "fireCeremony": {
+          "title": "Ceremonia de fuego",
+          "description": "Conecta profundamente con la naturaleza a través de un ritual sagrado."
+        },
+        "privateChef": {
+          "title": "Servicio de chef privado",
+          "description": "Disfruta de comidas gourmet preparadas por nuestro talentoso chef local.",
+          "note": "Elige 2 o 3 comidas al día, con opciones de precio ajustables a las necesidades de tu grupo."
+        },
+        "surf": {
+          "title": "Clases de surf",
+          "description": "Aprende de los mejores en uno de los principales destinos de surf del mundo."
+        },
+        "horseback": {
+          "title": "Cabalgatas",
+          "description": "Explora playas y senderos impresionantes a caballo."
+        },
+        "photoshoot": {
+          "title": "Sesión de fotos en la selva",
+          "description": "Captura momentos inolvidables en la exuberante selva."
+        },
+        "atv": {
+          "title": "Tours en cuatriciclo",
+          "description": "Vive recorridos emocionantes por senderos escénicos."
+        },
+        "waterfalls": {
+          "title": "Caminatas a cascadas",
+          "description": "Vive la magia de las impresionantes cascadas de Costa Rica."
+        },
+        "boat": {
+          "title": "Paseos en lancha",
+          "description": "Disfruta del avistamiento de delfines y ballenas, o prueba suerte con la pesca."
+        }
+      }
+    },
+    "quote": {
+      "heading": "Solicita tu presupuesto",
+      "intro": "El precio depende de las fechas, el tamaño del grupo y los servicios que elijas. Elige lo esencial y seguimos la conversación por WhatsApp.",
+      "responseTime": "Solemos responder dentro de las 24 horas.",
+      "what": "¿Qué tipo de retiro?",
+      "when": "¿Cuándo?",
+      "whenHint": "Con el mes y la duración alcanza: el precio varía según la temporada.",
+      "month": "Mes",
+      "length": "Duración",
+      "flexible": "Fechas flexibles",
+      "howMany": "¿Cuántas personas?",
+      "howManyHint": "Con un estimado alcanza.",
+      "cta": "Pedir presupuesto por WhatsApp",
+      "ctaNote": "Abre WhatsApp con tu mensaje ya escrito.",
+      "kinds": {
+        "yoga": "Yoga",
+        "surfYoga": "Surf y yoga",
+        "teacherTraining": "Formación de profesores",
+        "breathwork": "Respiración y meditación",
+        "soundHealing": "Sanación con sonido",
+        "aguahara": "Aguahara",
+        "macrame": "Macramé",
+        "tarot": "Tarot",
+        "creative": "Artes creativas",
+        "other": "Otro"
+      },
+      "lengths": {
+        "3to4": "3–4 noches",
+        "5to6": "5–6 noches",
+        "7": "7 noches",
+        "8plus": "8 noches o más"
+      },
+      "groups": {
+        "upTo6": "Hasta 6",
+        "7to10": "7–10",
+        "11to14": "11–14",
+        "15to20": "15–20",
+        "moreThan20": "Más de 20"
+      },
+      "message": {
+        "opening": "¡Hola! Quisiera pedir un presupuesto para organizar un retiro en House of Shakti.",
+        "closing": "¿Me podrían compartir disponibilidad y precios? ¡Gracias!",
+        "retreatLine": "• Retiro: {kind}",
+        "whenLine": "• Cuándo: {when}",
+        "flexibleDates": "fechas flexibles",
+        "groupLine": "• Cantidad de personas: {people}",
+        "peopleUpTo": "hasta {n}",
+        "peopleRange": "{from}–{to}",
+        "peopleMoreThan": "más de {n}"
+      }
+    },
+    "closing": {
+      "heading": "Un espacio para reunirse. Un lugar para reconectar.",
+      "body": "De retiros íntimos a formaciones de yoga y experiencias transformadoras, estamos aquí para acompañarte a crear algo con sentido."
+    }
+  },
+  "nav": {
+    "items": {
+      "yoga": "Yoga y Bienestar",
+      "stay": "Hospédate con Nosotras",
+      "retreats": "Retiros",
+      "seasonal": "Experiencias de Temporada",
+      "about": "Nosotras",
+      "contact": "Contacto"
+    },
+    "menu": "Menú",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "siteNavigation": "Navegación del sitio",
+    "siteSections": "Secciones del sitio",
+    "mainNavigation": "Navegación principal",
+    "reserve": "Reservar",
+    "changeLanguage": "Cambiar idioma"
+  },
+  "footer": {
+    "tagline": "Un santuario entre las copas de Costa Rica.",
+    "explore": "Explorar",
+    "visit": "Visita",
+    "follow": "Síguenos",
+    "maps": "Ver en Google Maps",
+    "rights": "Todos los derechos reservados.",
+    "links": {
+      "yoga": "Yoga y Bienestar",
+      "stay": "Hospédate con Nosotras",
+      "retreats": "Retiros",
+      "host": "Host Your Retreat",
+      "about": "Nosotras",
+      "contact": "Contacto"
+    }
+  },
+  "whatsapp": {
+    "aria": "Escríbenos por WhatsApp",
+    "questions": "¿Consultas?",
+    "chat": "Escríbenos",
+    "help": "¿En qué podemos ayudarte?",
+    "doors": {
+      "stays": {
+        "title": "Estadías y Experiencias",
+        "detail": "Estadías, reservas y la Shakti Experience",
+        "message": "¡Hola! Quisiera consultar por alojamiento, reservas o experiencias en House of Shakti."
+      },
+      "wellbeing": {
+        "title": "Yoga y Bienestar",
+        "detail": "Clases, packs y sesiones de bienestar",
+        "message": "¡Hola! Quisiera consultar por clases de yoga y sesiones de bienestar en House of Shakti."
+      },
+      "host": {
+        "title": "Host Your Retreat",
+        "detail": "Trae a tu grupo a House of Shakti",
+        "message": "¡Hola! Quisiera consultar por organizar mi retiro en House of Shakti."
+      }
+    }
+  },
+  "common": {
+    "buttons": {
+      "discoverMore": "Descubrir más",
+      "checkAvailability": "Ver disponibilidad"
+    },
+    "labels": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "skipToContent": "Ir al contenido"
+    },
+    "notFound": {
+      "title": "Esta página no vive aquí.",
+      "body": "La página que buscas puede haberse movido, o quizá nunca existió.",
+      "home": "Volver al inicio",
+      "contact": "Contáctanos",
+      "retreat": {
+        "title": "Este retiro no está activo por ahora.",
+        "body": "La página que buscabas puede haberse movido o el retiro ya no está en nuestro calendario.",
+        "back": "Volver a todos los retiros"
+      }
+    }
+  },
+  "home": {
+    "meta": {
+      "title": "House of Shakti — Santuario de yoga en Santa Teresa, Costa Rica",
+      "description": "Clases de yoga, retiros y alojamiento en la selva en Santa Teresa, Costa Rica. Un santuario boutique a cinco minutos de Playa Hermosa."
+    },
+    "hero": {
+      "headline": "Inmersos en la naturaleza, despiertos a la esencia.",
+      "availability": {
+        "placeholder": "Llegada → Salida",
+        "selectCheckout": "{from} → Elige la salida",
+        "range": "{from} → {to}",
+        "dateFormat": "d MMM"
+      }
+    },
+    "introduction": {
+      "headline": "Un viaje de sabiduría y bienestar",
+      "paragraphs": [
+        "Esto no es un escape. Es un regreso. Un regreso a tu cuerpo, a tu respiración y a lo que de verdad importa.",
+        "Unos días inmersos en naturaleza, movimiento, descanso y conexión—entre la selva y el mar de Santa Teresa.",
+        "Te esperamos en retiros, formaciones y clases enraizados en presencia, conexión y transformación."
+      ],
+      "trackAria": "Fotografías de House of Shakti"
+    },
+    "pillars": {
+      "heading": "Descubre House of Shakti",
+      "items": {
+        "retreats": {
+          "title": "Retiros",
+          "description": "Descubre retiros de yoga cuidadosamente curados en el corazón de Santa Teresa, guiados por facilitadores inspiradores de todo el mundo. Entre la selva y el mar, cada retiro ofrece espacio para reconectar, restaurarte y volver a ti."
+        },
+        "stay": {
+          "title": "Hospédate con Nosotras",
+          "description": "Quédate a tu manera. Elige entre alojamientos cómodos y paquetes de experiencias para personas, parejas y grupos."
+        },
+        "yoga": {
+          "title": "Yoga y Bienestar",
+          "description": "Un espacio sereno donde el movimiento, el aprendizaje y la comunidad se encuentran a través del yoga, talleres, ceremonias y experiencias conscientes."
+        }
+      }
+    },
+    "testimonial": {
+      "quote": "Recuerdo mi estadía en House of Shakti por su entorno hermoso, el mejor yoga y un alojamiento impecable. Un lugar para bajar el ritmo, respirar y reconectar por completo.",
+      "author": "House of Shakti",
+      "role": "Santa Teresa, Costa Rica"
+    },
+    "featured": {
+      "heading": "Experiencias Destacadas",
+      "intro": "Explora las experiencias que hoy tienen lugar en House of Shakti.",
+      "trackAria": "Experiencias destacadas",
+      "items": {
+        "shakti": {
+          "title": "Shakti Experience",
+          "description": "Un recorrido curado de movimiento, naturaleza, bienestar y conexión. Pensado para ayudarte a reconectar contigo y con la esencia de House of Shakti."
+        },
+        "ytt": {
+          "eyebrow": "Yoga Teacher Training",
+          "title": "The Awakened Body: Embody Tantra Yoga Teacher Training",
+          "description": "Una formación certificada de profesores de Tantra Yoga, diseñada para profundizar tu práctica, despertar el cuerpo, expandir la conciencia e inspirar una enseñanza auténtica desde la práctica encarnada."
+        },
+        "couples": {
+          "title": "Sacred Union: Un viaje para dos",
+          "description": "Una experiencia privada para parejas, diseñada para profundizar la intimidad, fortalecer la conexión y cultivar la presencia."
+        }
+      }
+    },
+    "host": {
+      "eyebrow": "Para profesores y anfitriones",
+      "heading": "Organiza tu retiro en el paraíso",
+      "body": "Trae tu retiro a House of Shakti, un santuario sereno en el corazón de Santa Teresa. Ofrecemos alojamiento, una hermosa shala de yoga, servicios de bienestar, comidas nutritivas y experiencias curadas, todo con el respaldo de un equipo con experiencia, para que puedas concentrarte en lo que mejor haces: guiar a tu comunidad.",
+      "imageAlt": "Organiza tu retiro en House of Shakti"
+    },
+    "gallery": {
+      "aria": "Galería",
+      "alts": [
+        "Una práctica de yoga en solitario bajo la luz suave de la mañana",
+        "Detalle vertical de la arquitectura del santuario",
+        "Detalle apaisado de los jardines del santuario",
+        "Un rincón vacío del santuario en reposo",
+        "Un momento amplio de práctica en la shala al aire libre",
+        "Textura orgánica de la selva que rodea la casa",
+        "Detalle del ritual de terapia de contraste",
+        "Interior de una habitación del santuario",
+        "Una vista amplia del terreno a la hora dorada"
+      ]
+    }
+  },
+  "stayWithUs": {
+    "cards": {
+      "readMore": "Leer más"
+    },
+    "carousel": {
+      "viewAlt": "{alt} — vista {index}",
+      "viewAll": "Ver las {count} fotografías de {alt}",
+      "previous": "Imagen anterior de {alt}",
+      "next": "Imagen siguiente de {alt}"
+    },
+    "lightbox": {
+      "photoAlt": "{title} — fotografía {index} de {total}",
+      "previous": "Fotografía anterior de {title}",
+      "next": "Fotografía siguiente de {title}",
+      "thumb": "Fotografía {index} de {title}",
+      "close": "Cerrar {title}"
+    },
+    "activities": {
+      "heading": "Enriquece tu experiencia",
+      "intro": "Enriquece tu estadía con experiencias significativas, en House of Shakti y más allá.",
+      "note": "Agrega cualquiera de ellas al reservar tu estadía, o coordínalas después con nuestro equipo en recepción.",
+      "trackAria": "Actividades en House of Shakti y más allá",
+      "onSite": "En la propiedad",
+      "offSite": "Fuera de la propiedad",
+      "items": {
+        "yoga": {
+          "title": "Clases de yoga",
+          "description": "Muévete, respira y reconecta a través de prácticas de yoga conscientes, pensadas para favorecer el equilibrio, la presencia y el bienestar."
+        },
+        "saunaIceBath": {
+          "title": "Sauna y baño de hielo",
+          "description": "Una poderosa experiencia de contraste para relajarte, reiniciar y reconectar con tu cuerpo a través del calor y el frío."
+        },
+        "massages": {
+          "title": "Masajes",
+          "description": "Relájate y reconecta con tu cuerpo con un masaje terapéutico, relajante, tailandés o de tejido profundo."
+        },
+        "soundHealing": {
+          "title": "Sanación con sonido",
+          "description": "Relájate y recupera el equilibrio a través del poder sanador del sonido y la vibración."
+        },
+        "reiki": {
+          "title": "Reiki y Access Bars",
+          "description": "Una experiencia profundamente relajante, pensada para restaurar el equilibrio energético y la calma interior."
+        },
+        "sacredMedicine": {
+          "title": "Ceremonia de medicina sagrada",
+          "description": "Una experiencia guiada e intencional para la autoexploración, la conexión y el crecimiento personal."
+        },
+        "cacaoFire": {
+          "title": "Ceremonia de cacao y fuego",
+          "description": "Un ritual sagrado de cacao y fuego que invita a la conexión, la gratitud y la apertura del corazón."
+        },
+        "boatTour": {
+          "title": "Paseo en lancha",
+          "description": "Explora las hermosas playas de la península, haz snorkel en aguas cristalinas y disfruta de un día en la naturaleza.",
+          "note": "Opcional: experiencia de bioluminiscencia."
+        },
+        "jungleHike": {
+          "title": "Caminata por la selva",
+          "description": "Una refrescante aventura por la selva hasta una cascada de agua dulce escondida, a solo 40 minutos."
+        },
+        "surf": {
+          "title": "Clases de surf",
+          "description": "Aprende a surfear o mejora tu técnica en los mejores spots de Santa Teresa. Clases compartidas y privadas disponibles."
+        },
+        "horseback": {
+          "title": "Cabalgatas",
+          "description": "Descubre playas, selva y senderos de montaña en una hermosa cabalgata al atardecer. Opciones compartidas o privadas disponibles."
+        }
+      }
+    },
+    "meta": {
+      "title": "Dónde hospedarse en Santa Teresa — Alojamiento en la selva",
+      "description": "Cuatro lugares para hospedarse en House of Shakti, Santa Teresa: las suites de la Main House, La Casita, el Jungle Bungalow y Shakti House, a cinco minutos de la playa."
+    },
+    "intro": {
+      "headline": "Más que una estadía.",
+      "subline": "Un espacio para reconectar.",
+      "labels": [
+        "Yoga",
+        "Bienestar",
+        "Naturaleza",
+        "Comunidad"
+      ],
+      "body": "La Main House reúne cuatro suites en torno a un corazón compartido. La Casita y el Jungle Bungalow se adentran en el verde, cada uno por su cuenta. Shakti House se abre a la selva y al mar desde una única y amplia terraza."
+    },
+    "faq": {
+      "heading": "Antes de llegar",
+      "items": [
+        {
+          "question": "¿A qué hora son el check-in y el check-out?",
+          "answer": "El check-in es a partir de las 3:00 p. m. y el check-out a las 11:00 a. m. Si necesitas llegar antes o salir más tarde, avísanos con anticipación: haremos lo posible por acomodarlo."
+        },
+        {
+          "question": "¿Qué incluye mi estadía?",
+          "answer": "Toda estadía incluye limpieza diaria, toallas frescas y ropa de cama premium, wifi de alta velocidad, la piscina, acceso a la shala de yoga, estacionamiento sin cargo y acompañamiento personalizado durante toda la estadía, desde servicios de bienestar hasta tours y transporte. Nuestras clases regulares de yoga y el área de bienestar con sauna y baño de hielo están disponibles con reserva previa y a un costo adicional."
+        },
+        {
+          "question": "¿Se adaptan a restricciones alimentarias?",
+          "answer": "Sí. Nuestra cocina compartida está totalmente equipada y muchos huéspedes preparan sus propias comidas. Para retiros y experiencias curadas, el equipo puede planificar menús vegetarianos, veganos, sin gluten y para otras necesidades alimentarias; cuéntanos cualquier restricción al reservar."
+        },
+        {
+          "question": "¿El santuario es adecuado para niños?",
+          "answer": "House of Shakti está pensado para adultos que buscan descanso y una práctica en calma. No recibimos niños menores de 12 años. Si viajas con niños mayores o adolescentes, escríbenos antes de reservar para poder orientarte."
+        },
+        {
+          "question": "¿Se permiten mascotas?",
+          "answer": "No permitimos mascotas en la propiedad. La selva que nos rodea es hogar de animales silvestres y mantenemos el santuario lo más intacto posible. Si viajas con un animal de asistencia, contáctanos con anticipación."
+        },
+        {
+          "question": "¿Cuál es la política de cancelación?",
+          "answer": "Las reservas son reembolsables en su totalidad hasta 30 días antes de la llegada. Las cancelaciones entre 30 y 14 días antes de la llegada se reembolsan al 50 %. Dentro de los 14 días previos a la llegada, las reservas no son reembolsables. Recomendamos contratar un seguro de viaje para imprevistos."
+        },
+        {
+          "question": "¿Cómo llego a House of Shakti desde el aeropuerto?",
+          "answer": "La mayoría de los huéspedes llega a Liberia (LIR), a unas 4 horas en auto de Santa Teresa, o a San José (SJO), a unas 5 horas. Desde cualquiera de los dos puedes contratar un traslado privado (podemos recomendarte conductores de confianza), alquilar un auto o tomar un shuttle. La propiedad está a 5 minutos de Playa Hermosa, en la península de Nicoya."
+        },
+        {
+          "question": "¿Qué debo llevar?",
+          "answer": "Ropa liviana y fresca para el clima tropical, traje de baño, un impermeable ligero (sobre todo en la temporada verde), repelente de insectos, protector solar apto para arrecifes, sandalias y los accesorios de yoga que prefieras (en la shala hay mats y props básicos). Para las noches, una prenda liviana viene bien."
+        }
+      ]
+    }
+  },
+  "retreats": {
+    "meta": {
+      "title": "Retiros de yoga en Costa Rica — House of Shakti",
+      "description": "Retiros de yoga en House of Shakti, Santa Teresa, Costa Rica: práctica, descanso y naturaleza en un íntimo santuario en la selva sobre Playa Hermosa."
+    },
+    "heading": "Retiros de yoga en House of Shakti, Santa Teresa, Costa Rica",
+    "intro": {
+      "headline": "Donde la transformación se encuentra con el paraíso",
+      "tagline": "Retiros propios / Retiros hospedados / Formación de yoga / Experiencias"
+    },
+    "cards": {
+      "join": {
+        "title": "Únete a un retiro en House of Shakti",
+        "paragraphs": [
+          "House of Shakti recibe retiros de todo tipo, guiados por facilitadores inspiradores de todo el mundo: yoga, viajes de respiración, prácticas de bienestar, aventuras en la naturaleza, surf y experiencias de sanación.",
+          "Un santuario sagrado en Santa Teresa donde los practicantes comparten su visión y los huéspedes se reúnen para reconectar, transformarse y renovarse."
+        ],
+        "cta": "Ver los próximos retiros"
+      },
+      "host": {
+        "title": "Host Your Retreat",
+        "paragraphs": [
+          "Da vida a tu visión en House of Shakti. Un santuario privado en Santa Teresa, pensado para facilitadores que crean experiencias con sentido. Rodeado de selva y cerca del mar, nuestro espacio ofrece todo lo necesario para acoger retiros transformadores: desde inmersiones de yoga y bienestar hasta encuentros creativos y viajes conscientes.",
+          "Un lugar para reunirse, reconectar y crear experiencias que dejan huella."
+        ],
+        "cta": "Ver más"
+      },
+      "ytt": {
+        "title": "Yoga Teacher Training",
+        "paragraphs": [
+          "Una inmersión presencial de 100 horas con un programa online opcional de 100 horas, que conduce a una formación de 200 horas registrada en Yoga Alliance, guiada por Nancy Goodfellow. Un viaje de práctica profunda, autodescubrimiento y aprendizaje encarnado."
+        ],
+        "cta": "Ver más"
+      }
+    },
+    "gallery": {
+      "aria": "Galería de retiros",
+      "alts": [
+        "Desayuno compartido en la mesa larga",
+        "La shala preparada para la práctica de la mañana",
+        "Una habitación lista para la llegada",
+        "Un brindis en el salón al aire libre",
+        "Estiramientos en la playa al atardecer",
+        "Estiramiento lateral sobre los mats",
+        "Baño en la cascada",
+        "Descanso en la red sobre la selva",
+        "Una hamaca en la terraza",
+        "Un largo almuerzo en compañía",
+        "Fruta fresca dispuesta para el desayuno",
+        "Meditación sobre las copas de los árboles"
+      ]
+    }
+  },
+  "upcomingRetreats": {
+    "meta": {
+      "title": "Próximos retiros",
+      "description": "Retiros y formaciones que se hospedan en House of Shakti, Santa Teresa, Costa Rica, guiados por facilitadores de todo el mundo."
+    },
+    "hero": {
+      "headline": "Próximos retiros en House of Shakti",
+      "subline": "Donde la naturaleza, la práctica y la conexión se encuentran."
+    },
+    "heading": "Próximamente",
+    "moreInfo": "Más información",
+    "items": {
+      "solForSoul": {
+        "label": "Retiro de bienestar",
+        "instructor": "Elly Miles",
+        "title": "Sol for Soul",
+        "dates": "6–12 sep 2026",
+        "description": "Un portal hacia ti, sostenido en un contenedor ligero, acompañado y divertido, construido alrededor de la manera en que Santa Teresa te invita naturalmente a abrirte y sentirte con vida.",
+        "alt": "Una huésped saliendo a la mañana en House of Shakti"
+      },
+      "ytt": {
+        "label": "Yoga Teacher Training",
+        "instructor": "Nancy Goodfellow",
+        "title": "The Awakened Body: A Tantric Yoga Intensive",
+        "dates": "21 nov – 4 dic 2026",
+        "description": "Una inmersión transformadora para quienes desean profundizar su relación con el yoga más allá de la práctica física. Cien horas en el camino encarnado del Tantra: movimiento, respiración, ritual e indagación interior.",
+        "alt": "Un grupo practicando junto en la shala abierta"
+      },
+      "nourish": {
+        "label": "Formación de yoga",
+        "instructor": "Sam Bianchini",
+        "title": "NOURISH: 50hr Restorative + Yin Training",
+        "dates": "5–12 dic 2026",
+        "description": "Un retiro de una semana unido a un estudio rico y vital del Yoga Restaurativo y el Yin, y de cómo sostener un espacio de sanación desde tu propia medicina original.",
+        "alt": "Un grupo descansando en una práctica restaurativa en la shala"
+      },
+      "salvaje": {
+        "label": "Retiro transformacional",
+        "instructor": "Heather Nil",
+        "title": "SALVAJE",
+        "dates": "18–23 ene 2027",
+        "description": "Más que un retiro: un despertar. Para quien busca una experiencia que sacuda su mundo y le devuelva la energía del HELL YES.",
+        "alt": "Baño en la cascada"
+      }
+    }
+  },
+  "retreatLanding": {
+    "meta": {
+      "title": "{title} — Retiro en Santa Teresa, Costa Rica",
+      "description": "{subhead} {eyebrow} · {dates} en House of Shakti, Santa Teresa.",
+      "imageAlt": "{title} en House of Shakti, Santa Teresa, Costa Rica",
+      "heading": "{title} — Retiro de yoga en {location}"
+    },
+    "manifesto": {
+      "dates": "Fechas",
+      "duration": "Duración",
+      "location": "Lugar",
+      "group": "Grupo"
+    },
+    "testimonials": {
+      "heading": "Voces de quienes ya llegaron.",
+      "previous": "Testimonio anterior",
+      "next": "Testimonio siguiente",
+      "portrait": "Retrato de {author}"
+    },
+    "investment": {
+      "heading": "Reserva tu lugar.",
+      "earlyBird": "Precio anticipado",
+      "availableUntil": "Disponible hasta el {date}",
+      "lastDay": "Último día",
+      "daysRemaining": "{count, plural, =1 {Queda 1 día} other {Quedan # días}}",
+      "reserveAtThisPrice": "Reservar a este precio",
+      "regularPrice": "Precio regular",
+      "reserveAtRegularPrice": "Reservar al precio regular",
+      "paymentMethods": "Formas de pago",
+      "paymentTerms": "Condiciones de pago"
+    },
+    "space": {
+      "explore": "Explora el santuario",
+      "aria": "El espacio"
+    },
+    "gallery": {
+      "aria": "Galería del retiro"
+    }
+  },
+  "yoga": {
+    "meta": {
+      "title": "Clases de yoga en Santa Teresa — Práctica diaria en House of Shakti",
+      "description": "Clases diarias de yoga en Santa Teresa, Costa Rica. Vinyasa, Tantra y meditación en una shala al aire libre, para todos los niveles. Reserva tu lugar en House of Shakti."
+    },
+    "narrative": {
+      "headline": "Salvajes por naturaleza, sostenidos por la práctica.",
+      "body": "Ven como eres. Muévete a tu ritmo. Deja que la naturaleza sostenga el resto.",
+      "labels": [
+        "Clases",
+        "Actividades",
+        "Talleres",
+        "Yoga online"
+      ]
+    },
+    "calendar": {
+      "heading": "Esta semana en la shala",
+      "previousWeek": "Semana anterior",
+      "nextWeek": "Semana siguiente",
+      "backToThisWeek": "volver a esta semana",
+      "loading": "cargando…",
+      "thisWeek": "esta semana",
+      "upcoming": "próximamente",
+      "past": "pasadas",
+      "noClasses": "Sin clases",
+      "dayFormat": "EEE d",
+      "weekRange": "{start} – {end}",
+      "weekSameMonthStart": "d",
+      "weekSameMonthEnd": "d 'de' MMMM",
+      "weekOtherMonth": "d 'de' MMMM",
+      "card": {
+        "minutes": "{count} min",
+        "past": "Pasada",
+        "fullyBooked": "Completa",
+        "spotsLeft": "{count, plural, =1 {Queda 1 lugar} other {Quedan # lugares}}"
+      }
+    },
+    "categories": {
+      "vinyasa": "Vinyasa",
+      "yin": "Yin y Restaurativo",
+      "hatha": "Hatha",
+      "ashtanga": "Ashtanga",
+      "meditation": "Meditación",
+      "yoga": "Yoga"
+    },
+    "packs": {
+      "eyebrow": "Packs de clases",
+      "heading": "Compra una vez, vuelve clase a clase",
+      "body": "Cinco, diez o veinte clases compradas juntas, cada una a menor costo que reservarla por separado. Un pack se paga una sola vez y se usa despacio, cuando la semana lo permite, sin nada que agendar de antemano.",
+      "classes": "Clases",
+      "sizes": {
+        "5": {
+          "cadence": "Alrededor de una clase por semana",
+          "note": "Un primer ritmo. Suficiente para encontrar la profesora y el horario que te acomodan."
+        },
+        "10": {
+          "cadence": "Dos o tres por semana",
+          "note": "Un mes de práctica constante, sin decidir nada de antemano."
+        },
+        "20": {
+          "cadence": "Una práctica diaria",
+          "note": "Para una estadía larga, y el precio por clase más bajo que ofrecemos."
+        }
+      },
+      "cta": "Comprar un pack de clases",
+      "codeLabel": "Tu código",
+      "codeBody": "Te enviamos por correo un código personal en cuanto se confirma el pago. Úsalo para reservar tu lugar en cualquier clase del calendario, sin nada más que pagar al reservar.",
+      "paymentLabel": "Pago",
+      "paymentBody": "Los packs comprados aquí se pagan solo con tarjeta, de forma segura a través de Tilopay."
+    },
+    "special": {
+      "heading": "Actividades especiales",
+      "intro": "La práctica no termina en el mat. Estos son los rituales que la casa sostiene a su alrededor, para las horas entre clases.",
+      "note": "Todas se coordinan con nuestro equipo en recepción.",
+      "trackAria": "Actividades especiales en House of Shakti",
+      "items": {
+        "saunaIceBath": {
+          "title": "Sauna y baño de hielo",
+          "description": "Una poderosa experiencia de contraste para relajarte, reiniciar y reconectar con tu cuerpo a través del calor y el frío."
+        },
+        "massages": {
+          "title": "Masajes",
+          "description": "Relájate y reconecta con tu cuerpo con un masaje terapéutico, relajante, tailandés o de tejido profundo."
+        },
+        "soundHealing": {
+          "title": "Sanación con sonido",
+          "description": "Relájate y recupera el equilibrio a través del poder sanador del sonido y la vibración."
+        },
+        "reiki": {
+          "title": "Reiki y Access Bars",
+          "description": "Una experiencia profundamente relajante, pensada para restaurar el equilibrio energético y la calma interior."
+        },
+        "sacredMedicine": {
+          "title": "Ceremonia de medicina sagrada",
+          "description": "Una experiencia guiada e intencional para la autoexploración, la conexión y el crecimiento personal."
+        },
+        "cacaoFire": {
+          "title": "Ceremonia de cacao y fuego",
+          "description": "Un ritual sagrado de cacao y fuego que invita a la conexión, la gratitud y la apertura del corazón."
+        },
+        "microdose": {
+          "title": "Ceremonia de microdosis y sanación con sonido",
+          "description": "Una ceremonia de microdosis que abre el corazón, con cacao, respiración, sanación con sonido y música en vivo. Un viaje suave hacia adentro, que cierra con integración y fruta fresca."
+        }
+      }
+    },
+    "online": {
+      "heading": "Clases de yoga online",
+      "body": "Lleva la práctica a casa. Clases online en vivo para moverte, respirar y reconectar, estés donde estés.",
+      "cta": "Reservar una clase online",
+      "note": "Las clases online aparecen en el mismo calendario semanal que las presenciales, y se reservan allí."
+    },
+    "team": {
+      "heading": "Conoce a nuestro equipo",
+      "intro": "Conoce a las personas que sostienen el espacio en House of Shakti: profesoras, profesores y facilitadores que traen su conocimiento, su presencia y sus prácticas únicas a nuestra comunidad.",
+      "instagram": "{name} en Instagram",
+      "members": {
+        "nancy": {
+          "country": "EE. UU.",
+          "disciplines": [
+            "Maestra de Tantra Yoga",
+            "Breathwork",
+            "Coach de embodiment"
+          ]
+        },
+        "antonia": {
+          "country": "Chile",
+          "disciplines": [
+            "Profesora de yoga",
+            "Terapeuta holística",
+            "Masaje tailandés",
+            "Reiki",
+            "Sanación con sonido",
+            "Yogaterapia",
+            "Terapia asistida con psicodélicos"
+          ]
+        },
+        "gabriela": {
+          "country": "Suecia",
+          "disciplines": [
+            "Health coach y nutrición",
+            "Profesora de yoga",
+            "Meditación"
+          ]
+        },
+        "eliana": {
+          "country": "Argentina",
+          "disciplines": [
+            "Coach ontológica",
+            "Especialista en sistema nervioso y trauma",
+            "Terapeuta somática",
+            "Terapia asistida con psicodélicos",
+            "Breathwork",
+            "Profesora de yoga",
+            "Meditación",
+            "Crioterapia",
+            "Reiki",
+            "Access Bars"
+          ]
+        },
+        "miguel": {
+          "country": "España",
+          "disciplines": [
+            "Breathwork",
+            "Sanación con sonido",
+            "Craneosacral",
+            "Meditación",
+            "Masajista terapéutico",
+            "Profesor de masaje tailandés de yoga",
+            "Retiros de sanación",
+            "Guía de medicina"
+          ]
+        }
+      }
+    },
+    "faq": {
+      "heading": "¿Preguntas antes de reservar?",
+      "items": [
+        {
+          "question": "¿Puedo reservar una sesión privada de yoga?",
+          "answer": "Sí. Las sesiones privadas de yoga se coordinan según tus necesidades y la disponibilidad."
+        },
+        {
+          "question": "¿Puedo tomar una clase de yoga si soy principiante?",
+          "answer": "Por supuesto. Nuestras clases reciben distintos niveles. Recomendamos avisar a quien da la clase sobre cualquier lesión o limitación física antes de empezar."
+        },
+        {
+          "question": "¿Puedo reservar la shala de yoga para un evento privado o un retiro?",
+          "answer": "Sí. La shala de yoga puede reservarse para retiros, formaciones, talleres y experiencias privadas en grupo."
+        },
+        {
+          "question": "¿Ofrecen experiencias de bienestar a quienes no se hospedan?",
+          "answer": "Sí, algunas de nuestras propuestas de bienestar están disponibles para visitantes. La disponibilidad puede variar según la experiencia y el calendario."
+        },
+        {
+          "question": "¿Necesito reservar las experiencias de bienestar con anticipación?",
+          "answer": "Recomendamos reservar con anticipación para asegurar la disponibilidad, sobre todo en sesiones privadas y experiencias en grupo."
+        },
+        {
+          "question": "¿Qué debo llevar a una clase de yoga?",
+          "answer": "Proveemos mats y props básicos. Recomendamos traer ropa cómoda, agua y una mente abierta."
+        },
+        {
+          "question": "¿Las experiencias de bienestar pueden personalizarse para mi grupo?",
+          "answer": "Sí. Podemos ayudarte a crear una experiencia de bienestar personalizada según las necesidades, intenciones y horarios de tu grupo."
+        },
+        {
+          "question": "¿Cómo reservo una experiencia?",
+          "answer": "Escríbenos con la experiencia que te interesa, la fecha que prefieres y la cantidad de personas, y nuestro equipo te ayuda a organizarla."
+        }
+      ],
+      "outro": "Escríbenos: te ayudamos a encontrar la clase adecuada o a coordinar una sesión privada.",
+      "cta": "Contáctanos"
+    },
+    "galleryAria": "Galería de yoga"
+  },
+  "contact": {
+    "meta": {
+      "title": "Contacta a House of Shakti — Santa Teresa, Costa Rica",
+      "description": "Comunícate con House of Shakti en Santa Teresa, Costa Rica. WhatsApp, teléfono y correo para estadías, clases de yoga, retiros y reservas privadas."
+    },
+    "heading": "Contacto",
+    "reservations": {
+      "heading": "Reservas y consultas",
+      "body": "Nuestro equipo está disponible para ayudarte a planificar tu estadía, un retiro o el uso privado del santuario. Solemos responder dentro de las 24 horas.",
+      "whatsapp": "WhatsApp",
+      "call": "Llamar",
+      "email": "Correo"
+    },
+    "host": {
+      "heading": "Organizar un retiro",
+      "body": "Para profesores, anfitriones y marcas que buscan House of Shakti como escenario para retiros o encuentros curados."
+    },
+    "imageAlt": "La piscina de agua salada enmarcada por la selva en House of Shakti",
+    "visit": {
+      "heading": "Visita",
+      "body": "House of Shakti se esconde entre las copas de los árboles de la península de Nicoya, a cinco minutos de Playa Hermosa, Santa Teresa.",
+      "maps": "Ver en Google Maps"
+    },
+    "press": {
+      "heading": "Prensa y medios",
+      "body": "Para consultas de prensa, medios y editoriales.",
+      "emailLabel": "Correo:"
+    }
+  },
+  "booking": {
+    "header": {
+      "close": "Cerrar",
+      "booked": "Reservado",
+      "stepOf": "{step} / {total}"
+    },
+    "steps": {
+      "eyebrow": "PASO {step}",
+      "step1": "Tu clase",
+      "step2": "Complementa tu práctica",
+      "step3": "Tus datos",
+      "step4": "Pago"
+    },
+    "step1": {
+      "descriptionFallback": "Una práctica con raíces, al ritmo del cuerpo.",
+      "instructor": "Instructor/a",
+      "certified": "Certificación de 200 horas",
+      "date": "Fecha",
+      "time": "Hora",
+      "availability": "Disponibilidad",
+      "fullyBooked": "Completa",
+      "spots": "{remaining} de {capacity} lugares",
+      "minutes": "{count} minutos",
+      "dateFormat": "EEE d MMM yyyy"
+    },
+    "step2": {
+      "intro": "Complementos opcionales para que tu clase sea más completa. Elige los que quieras.",
+      "included": "Incluido",
+      "none": "No hay complementos disponibles por ahora."
+    },
+    "step3": {
+      "intro": "Enviaremos aquí la confirmación de tu reserva.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "optional": "(opcional)",
+      "code": "Código de referido / pack",
+      "codePlaceholder": "p. ej. SURF-CAMP o tu código de pack",
+      "apply": "Aplicar",
+      "placeholders": {
+        "firstName": "Ana",
+        "lastName": "García",
+        "email": "ana@email.com",
+        "phone": "+1 555-0100"
+      },
+      "discountPercent": "{percent} % de descuento",
+      "discountFixed": "${amount} de descuento",
+      "freeGift": "Regalo incluido",
+      "errors": {
+        "firstNameRequired": "El nombre es obligatorio",
+        "lastNameRequired": "El apellido es obligatorio",
+        "emailInvalid": "Ingresa un correo electrónico válido"
+      },
+      "codeErrors": {
+        "invalid": "Código no encontrado.",
+        "inactive": "Este código no está activo.",
+        "expired": "Este código expiró.",
+        "notStarted": "Este código aún no es válido.",
+        "limitReached": "Este código alcanzó su límite de usos.",
+        "minPurchase": "No se alcanzó el monto mínimo de compra.",
+        "generic": "Código inválido."
+      },
+      "packCodeName": "Pack de clases",
+      "packCodeApplied": "Pack de clases aplicado"
+    },
+    "step4": {
+      "intro": "Paga de forma segura con tarjeta ahora, o con Venmo o en efectivo en el estudio. Elige una clase suelta o ahorra con un pack: el pack también cubre esta clase y te envía un código para las próximas.",
+      "packs": {
+        "dropin": "Clase suelta",
+        "pack5": "Pack de 5",
+        "pack10": "Pack de 10",
+        "pack20": "Pack de 20"
+      },
+      "savings": "Ahorra ${amount}",
+      "priceUsd": "${amount} USD",
+      "paymentMethod": "Forma de pago",
+      "methods": {
+        "card": {
+          "name": "Tarjeta",
+          "hint": "Paga en línea de forma segura ahora"
+        },
+        "venmo": {
+          "name": "Venmo",
+          "hint": "Envía el pago por Venmo"
+        },
+        "cash": {
+          "name": "Efectivo",
+          "hint": "Paga en persona en el estudio"
+        }
+      },
+      "venmoNote": "Te mostraremos los datos de Venmo para completar el pago. Tu lugar queda pendiente hasta que lo verifiquemos.",
+      "cashNote": "Te guardamos el lugar: solo paga en efectivo en la recepción del estudio antes de tu clase.",
+      "cancellation": "✓ Cancelación gratuita hasta 2 horas antes de la clase.",
+      "errors": {
+        "noSpots": "Lo sentimos, esta clase ya está completa.",
+        "tooLate": "Las reservas cierran 1 hora antes de la clase.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      },
+      "pay": {
+        "card": "Confirmar y pagar",
+        "venmo": "Pagar con Venmo",
+        "cash": "Reservar"
+      }
+    },
+    "navigation": {
+      "back": "Atrás",
+      "continue": "Continuar"
+    },
+    "summary": {
+      "date": "FECHA",
+      "time": "HORA",
+      "instructor": "INSTRUCTOR/A",
+      "duration": "DURACIÓN",
+      "minutes": "{count} minutos",
+      "classLabel": "Clase",
+      "free": "Gratis",
+      "included": "Incluido",
+      "code": "Código {code}",
+      "total": "Total",
+      "dateFormat": "EEE d MMM",
+      "hide": "Ocultar",
+      "details": "Ver detalles"
+    },
+    "confirmation": {
+      "reserved": "Reservado",
+      "confirmed": "Confirmado",
+      "headline": "Tu práctica te espera.",
+      "reference": "Referencia de reserva",
+      "class": "Clase",
+      "instructor": "Instructor/a",
+      "date": "Fecha",
+      "time": "Hora",
+      "duration": "Duración",
+      "location": "Lugar",
+      "minutes": "{count} minutos",
+      "free": "Gratis",
+      "included": "Incluido",
+      "code": "Código {code}",
+      "amountDue": "Monto a pagar",
+      "total": "Total",
+      "payVenmo": "Pagar con Venmo",
+      "payCash": "Pagar en efectivo",
+      "venmoInstructions": "Envía tu pago por Venmo a {handle} e incluye tu referencia de reserva en la nota. Tu lugar está reservado; lo confirmaremos en cuanto recibamos el pago.",
+      "cashInstructions": "Paga en efectivo en la recepción del estudio antes de tu clase. Tu lugar queda reservado hasta entonces.",
+      "emailSent": "Enviamos los detalles a {email}.",
+      "emailSentGeneric": "Enviamos los detalles a tu correo.",
+      "pendingNote": "Ten a mano tu referencia de reserva para el pago.",
+      "addToCalendar": "Agregar al calendario",
+      "backToClasses": "Volver a las clases",
+      "dateFormat": "EEEE d 'de' MMMM 'de' yyyy",
+      "icsDescription": "Clase de yoga con {instructor} en House of Shakti. Ref.: {ref}",
+      "icsLocation": "{location}, House of Shakti, Costa Rica"
+    },
+    "venmo": {
+      "title": "Pagar con Venmo",
+      "close": "Cerrar",
+      "intro": "Envía tu pago por Venmo a la cuenta de abajo y luego confirma. Tu lugar queda <em>pendiente</em> hasta que verifiquemos el pago.",
+      "account": "Cuenta de Venmo",
+      "amount": "Monto",
+      "amountValue": "${amount} USD",
+      "note": "Agregar en la nota",
+      "open": "Abrir Venmo",
+      "cancel": "Cancelar",
+      "paid": "Ya pagué"
+    },
+    "done": {
+      "title": "¡Reserva confirmada!",
+      "body": "Tu reserva fue procesada exitosamente. Recibirás un email de confirmación con todos los detalles.",
+      "seeYou": "Nos vemos en el shala",
+      "brand": "House of Shakti · Costa Rica",
+      "home": "Ir al inicio",
+      "more": "Más clases"
+    }
+  },
+  "packs": {
+    "meta": {
+      "title": "Packs de clases",
+      "description": "Compra un pack de clases de yoga en House of Shakti, Santa Teresa, Costa Rica, y reserva cuando quieras."
+    },
+    "heading": "Packs de clases",
+    "intro": "Practica a tu ritmo. Compra un pack de clases y reserva cuando quieras: te enviaremos un código personal para canjear, una clase a la vez.",
+    "choose": "Elige tu pack",
+    "perClass": "{count} clases · ${price} cada una",
+    "none": "No hay packs disponibles por ahora.",
+    "details": "Tus datos",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "Correo electrónico",
+    "phone": "Teléfono (opcional)",
+    "errors": {
+      "incomplete": "Completa tu nombre y correo electrónico.",
+      "payment": "No pudimos iniciar el pago. Inténtalo de nuevo en un momento.",
+      "generic": "Algo salió mal. Inténtalo de nuevo."
+    },
+    "processing": "Procesando…",
+    "continueWith": "Continuar · ${price}",
+    "continue": "Continuar",
+    "note": "Te llevaremos a la página segura de Tilopay para pagar con tarjeta. Una vez confirmado el pago, te enviaremos por correo tu código personal de clases.",
+    "result": {
+      "ok": {
+        "pack": {
+          "title": "Pago recibido",
+          "body": "¡Gracias! Tu pack de clases está confirmado. Te enviamos por correo tu código personal: úsalo al reservar para que cada clase salga sin cargo."
+        },
+        "booking": {
+          "title": "Reserva confirmada",
+          "body": "¡Gracias! Tu clase está reservada y tu pago confirmado. Te esperamos en el mat."
+        }
+      },
+      "declined": {
+        "title": "Pago no completado",
+        "body": "Tu pago fue rechazado o cancelado. No se realizó ningún cargo. Puedes intentarlo de nuevo cuando quieras."
+      },
+      "error": {
+        "title": "Algo salió mal",
+        "body": "No pudimos confirmar tu pago automáticamente. Si se te hizo un cargo, no te preocupes: contáctanos y lo resolvemos de inmediato."
+      },
+      "bookClass": "Reservar una clase",
+      "tryAgain": "Intentar de nuevo"
+    }
+  },
+  "email": {
+    "packCode": {
+      "subject": "Tu {packName} está listo — House of Shakti",
+      "heading": "Tu pack de clases está listo",
+      "hello": "Hola, {firstName}:",
+      "thanks": "Gracias por tu <strong>{packName}</strong>. Tienes <strong>{count, plural, =1 {1 clase} other {# clases}}</strong> para disfrutar en la shala.",
+      "useCode": "Usa este código al reservar una clase; el costo de la clase quedará cubierto:",
+      "works": "El código sirve para {count} reservas. Ingrésalo en el campo «Código de referido» al reservar. Los complementos opcionales (como el baño de hielo y el sauna) se cobran aparte.",
+      "signoff": "Nos vemos en el mat,"
+    }
+  }
+}

@@ -1,8 +1,7 @@
 'use client';
 
 import { QuoteBreak } from '@/components/landing/QuoteBreak';
-import { useLanguage } from '@/contexts/language-context';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
 
 // ─── A guest's voice ─────────────────────────────────────────────────────────
 // The full-height treatment built for the training landing: the photograph
@@ -12,8 +11,7 @@ import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
 const IMAGE = '/images/shakti-experience/review.webp';
 
 export function ShaktiReview() {
-  const { lang } = useLanguage();
-  const t = SHAKTI_DICTIONARIES[lang].testimonial;
+  const t = useMessages().shaktiExperience.testimonial;
 
   return (
     <QuoteBreak

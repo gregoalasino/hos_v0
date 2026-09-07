@@ -3,51 +3,10 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { useMessages, useTranslations } from 'next-intl';
 
-// FAQ content — placeholder copy approved by Santi. Final answers to be
-// reviewed by Nancy before launch.
-const faqs: { question: string; answer: string }[] = [
-  {
-    question: 'What time is check-in and check-out?',
-    answer:
-      "Check-in is from 3:00 PM and check-out is at 11:00 AM. If you need an earlier check-in or later check-out, let us know in advance — we'll do our best to accommodate.",
-  },
-  {
-    question: "What's included in my stay?",
-    answer:
-      'Every stay includes daily housekeeping, fresh towels and premium bed linens, high-speed Wi-Fi, the swimming pool, access to the yoga shala, complimentary parking, and personalized support throughout your stay — from wellness services to tours and transportation. Our regular yoga classes and the sauna and ice bath wellness area are available by advance reservation, at an extra cost.',
-  },
-  {
-    question: 'Do you accommodate dietary restrictions?',
-    answer:
-      'Yes. Our shared kitchen is fully equipped, and many guests prepare their own meals. For retreats and curated experiences, our team can plan menus around vegetarian, vegan, gluten-free, and other dietary needs — please share any restrictions when you book.',
-  },
-  {
-    question: 'Is the sanctuary suitable for children?',
-    answer:
-      "House of Shakti is designed for adults seeking rest and quiet practice. We do not accommodate children under 12. If you're traveling with older children or teens, please reach out before booking so we can advise.",
-  },
-  {
-    question: 'Are pets allowed?',
-    answer:
-      "We don't allow pets on the property. The jungle around us is home to wild animals, and we keep the sanctuary as undisturbed as possible. If you're traveling with a service animal, please contact us in advance.",
-  },
-  {
-    question: 'What is your cancellation policy?',
-    answer:
-      'Reservations are fully refundable up to 30 days before arrival. Cancellations made between 30 and 14 days before arrival are refundable at 50%. Within 14 days of arrival, reservations are non-refundable. We recommend travel insurance for unexpected changes.',
-  },
-  {
-    question: 'How do I get to House of Shakti from the airport?',
-    answer:
-      'Most guests fly into Liberia (LIR), about 4 hours by car from Santa Teresa, or San José (SJO), about 5 hours away. From either airport you can arrange a private transfer (we can recommend trusted drivers), rent a car, or take a shuttle. The property is 5 minutes from Playa Hermosa, in the Nicoya Peninsula.',
-  },
-  {
-    question: 'What should I bring?',
-    answer:
-      'Light, breathable clothing for the tropical climate, swimwear, a light rain jacket (especially in green season), insect repellent, reef-safe sunscreen, sandals, and any personal yoga props you prefer (mats and basic props are provided at the shala). For evenings, a light layer is helpful.',
-  },
-];
+// FAQ content — placeholder copy approved by Santi, in the catalogue under
+// stayWithUs.faq.items. Final answers to be reviewed by Nancy before launch.
 
 // Stagger variants for the list children
 const listContainer: Variants = {
@@ -135,6 +94,8 @@ function FAQItem({
 // Accordion behavior: one item open at a time.
 // ═════════════════════════════════════════════════════════════════════════════
 export function AccommodationsFAQ() {
+  const t = useTranslations('stayWithUs.faq');
+  const faqs = useMessages().stayWithUs.faq.items;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
@@ -150,7 +111,7 @@ export function AccommodationsFAQ() {
           transition={{ duration: 1.0, ease: 'easeOut' }}
           className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mb-16 lg:mb-20"
         >
-          Before you arrive
+          {t('heading')}
         </motion.h2>
 
         <motion.ul

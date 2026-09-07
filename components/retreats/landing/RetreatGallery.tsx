@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import type { Retreat, RetreatGalleryImage } from '@/lib/retreats';
 
 function GalleryItem({ image }: { image: RetreatGalleryImage }) {
@@ -27,9 +28,10 @@ function GalleryItem({ image }: { image: RetreatGalleryImage }) {
 }
 
 export function RetreatGallery({ retreat }: { retreat: Retreat }) {
+  const t = useTranslations('retreatLanding.gallery');
   return (
     <section
-      aria-label="Retreat gallery"
+      aria-label={t('aria')}
       className="bg-warm-white py-20 lg:py-28"
     >
       <div className="w-[90%] md:w-[80%] mx-auto">

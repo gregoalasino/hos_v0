@@ -5,8 +5,7 @@ import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
 import { Ornament } from '@/components/shared/ornament';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
 import { usePageVisible } from '@/hooks/use-page-visible';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 // 24 frames from the training, all shot 3:4 portrait.
 const POOL = Array.from(
@@ -129,8 +128,7 @@ const headlineWord: Variants = {
 };
 
 export function YTTIntro() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const HEADLINE = t.intro.headline;
   const ref = useRef<HTMLDivElement | null>(null);
 

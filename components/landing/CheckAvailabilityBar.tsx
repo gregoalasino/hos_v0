@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { format, isBefore, startOfToday } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
 import type { DateRange } from "react-day-picker";
+import { dateFnsLocale } from "@/lib/dates";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -17,11 +19,16 @@ import {
 // reservation with the chosen dates; with no dates we fall back to the immersive
 // popup exposed site-wide by the loader script (app/layout.tsx).
 const iso = (d: Date) => format(d, "yyyy-MM-dd");
-const pretty = (d: Date) => format(d, "MMM d");
 
 export function CheckAvailabilityBar() {
+  const t = useTranslations("home.hero.availability");
+  const tButtons = useTranslations("common.buttons");
+  const locale = useLocale();
   const [range, setRange] = useState<DateRange | undefined>();
   const [open, setOpen] = useState(false);
+
+  // "Sep 7" in English, "7 sep" in Spanish — the pattern is part of the copy.
+  const pretty = (d: Date) => format(d, t("dateFormat"), { locale: dateFnsLocale(locale) });
 
   // Two months side by side is what makes a stay pickable: a one-month view
   // hides the checkout the moment it falls after the 30th, and the reader has
@@ -74,10 +81,10 @@ export function CheckAvailabilityBar() {
   // should say what it's now waiting for.
   const dateLabel =
     from && to
-      ? `${pretty(from)} → ${pretty(to)}`
+      ? t("range", { from: pretty(from), to: pretty(to) })
       : from
-      ? `${pretty(from)} → Select checkout`
-      : "Start date → End date";
+      ? t("selectCheckout", { from: pretty(from) })
+      : t("placeholder");
 
   // The pill reads as smoked glass over the footage. Neutral black rather than
   // `--dark` (#340000): a burgundy panel sitting on the video was part of the
@@ -110,6 +117,7 @@ export function CheckAvailabilityBar() {
         <PopoverContent align="start" className="w-auto p-0" sideOffset={12}>
           <Calendar
             mode="range"
+            locale={dateFnsLocale(locale)}
             numberOfMonths={isWide ? 2 : 1}
             selected={range}
             onSelect={handleSelect}
@@ -127,7 +135,7 @@ export function CheckAvailabilityBar() {
         onClick={handleCheck}
         className="bg-cream text-ink font-body text-xs md:text-sm tracking-[0.05em] px-5 md:px-7 hover:bg-ink hover:text-cream transition-colors duration-300"
       >
-        Check availability
+        {tButtons("checkAvailability")}
       </button>
     </div>
   );
