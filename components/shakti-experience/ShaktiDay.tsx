@@ -1,32 +1,44 @@
 'use client';
 
-import { DaySchedule } from '@/components/shared/DaySchedule';
+import { ActivitiesTrack } from '@/components/shared/ActivitiesTrack';
 import { useLanguage } from '@/contexts/language-context';
 import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
 
 // ─── A day at House of Shakti ────────────────────────────────────────────────
-// The day, told in the training landing's schedule section — simplified to
-// its beats, with the practical notes folded into the same timeline rather
-// than set as paragraphs beneath it. The frames walk the day in order —
-// breakfast, the mat, the beach, the sauna and the plunge, the hammock —
-// drawn from the experience's own photographs (2:3, so framed at 2:3). They
-// come from the introduction's pool rather than from the activity cards
-// above, so the same photograph never sits in two sections a scroll apart.
-const FRAMES = [7, 9, 2, 11, 21, 15, 3, 18].map(
-  (n) => `/images/shakti-experience/introduction/intro-slider-${n}.webp`,
-);
+// The day as a row of moments, in the same track "More than a stay" rides a
+// few sections up: one card per moment, its hour as the mark above the title
+// and a photograph of that very moment — breakfast at the table, the class in
+// the shala, the beach, the breathwork, the sauna. A timeline told this way
+// takes one screen instead of three, and on a phone it swipes.
+//
+// The practical notes — what is arranged, what is yours, how to get around —
+// sit with the invitation in the first column, in the quieter voice every
+// track keeps for that.
+const IMAGES: Record<string, string> = {
+  breakfast: '/images/shakti-experience/more-than-a-stay/nourishing-food.webp',
+  yoga: '/images/shakti-experience/introduction/intro-slider-9.webp',
+  'free-time': '/images/shakti-experience/introduction/intro-slider-2.webp',
+  breathwork: '/images/shakti-experience/more-than-a-stay/breathwork.webp',
+  sauna: '/images/shakti-experience/introduction/intro-slider-21.webp',
+};
 
 export function ShaktiDay() {
   const { lang } = useLanguage();
   const t = SHAKTI_DICTIONARIES[lang].day;
+
   return (
-    <DaySchedule
+    <ActivitiesTrack
       heading={t.heading}
-      eyebrow={t.eyebrow}
-      blocks={t.blocks}
-      footnote={t.footnote}
-      trackAria={t.trackAria}
-      frames={FRAMES}
+      intro={t.intro}
+      note={t.note}
+      ariaLabel={t.trackAria}
+      ornament="/logos/moon-phase.png"
+      items={t.moments.map((moment) => ({
+        where: moment.time,
+        title: moment.title,
+        description: moment.detail,
+        image: IMAGES[moment.slug],
+      }))}
     />
   );
 }

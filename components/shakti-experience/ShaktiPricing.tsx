@@ -56,21 +56,20 @@ export function ShaktiPricing() {
             const quiet = featured ? 'text-dark/70' : 'text-cream/70';
             return (
               <motion.article
-                key={tier.tag}
+                key={tier.title}
                 variants={item}
                 className={`p-8 md:p-10 flex flex-col ${
                   featured ? 'bg-cream text-dark' : 'border border-cream/20 text-cream'
                 }`}
               >
-                <p
-                  className={`font-body text-[10px] tracking-[0.25em] uppercase ${
-                    featured ? 'text-burgundy' : 'text-cream/60'
-                  }`}
-                >
-                  {tier.tag}
-                </p>
-                <p className={`font-body text-sm mt-4 ${quiet}`}>{tier.duration}</p>
-                <p className="font-display font-light text-3xl md:text-4xl leading-[1.1] mt-3">
+                {/* The experience's name opens the card — a title, not an
+                    eyebrow, and a clear step below the price so the two never
+                    compete for the eye. */}
+                <h3 className="font-display font-light text-xl md:text-2xl leading-snug">
+                  {tier.title}
+                </h3>
+                <p className={`font-body text-sm mt-2 ${quiet}`}>{tier.duration}</p>
+                <p className="font-display font-light text-3xl md:text-4xl leading-[1.1] mt-6">
                   {tier.price}
                 </p>
                 <p className={`font-body text-sm leading-[1.7] mt-5 ${quiet}`}>{tier.body}</p>
