@@ -3,7 +3,7 @@
 import { ClosingBand } from '@/components/shared/ClosingBand';
 import { useLanguage } from '@/contexts/language-context';
 import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
-import { whatsappUrl } from '@/lib/whatsapp-shakti';
+import { whatsappUrl } from '@/lib/whatsapp';
 
 const IMAGE = '/images/shakti-experience/pre-footer.webp';
 

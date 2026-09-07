@@ -3,7 +3,7 @@
 import { ClosingBand } from '@/components/shared/ClosingBand';
 import { useLanguage } from '@/contexts/language-context';
 import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
-import { whatsappUrl } from '@/lib/whatsapp-ytt';
+import { whatsappUrl } from '@/lib/whatsapp';
 
 const IMAGE_DESKTOP = '/images/pre-footer/pre-footer-desktop.webp';
 const IMAGE_MOBILE = '/images/pre-footer/pre-footer-mobile.webp';

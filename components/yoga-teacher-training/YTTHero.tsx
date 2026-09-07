@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useMediaQuery, usePrefersReducedMotion } from '@/hooks/use-media-query';
 import { useLanguage } from '@/contexts/language-context';
 import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
-import { whatsappUrl } from '@/lib/whatsapp-ytt';
+import { whatsappUrl } from '@/lib/whatsapp';
 
 // Two cuts of the same sunset, framed for their own orientation: 1440×1080 for
 // desktop, 810×1080 for portrait phones. Only one is ever fetched — see below.

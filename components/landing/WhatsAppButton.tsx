@@ -41,7 +41,8 @@ const EXCLUDED_PREFIXES = ['/admin', '/instructor', '/login', '/booking'];
 
 // ─── The three doors ─────────────────────────────────────────────────────────
 // Same conversation, three prepared opening lines. The message is the routing:
-// nothing else distinguishes the doors on the team's side.
+// nothing else distinguishes the doors on the team's side, and since every
+// page now shares one number (see lib/whatsapp.ts) that is true site-wide.
 type Door = {
   title: (lang: Lang) => string;
   detail: (lang: Lang) => string;

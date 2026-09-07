@@ -5,9 +5,10 @@ import { motion, Variants, useInView } from 'framer-motion';
 import { Ornament } from '@/components/shared/ornament';
 import { useLanguage } from '@/contexts/language-context';
 import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
-import { whatsappUrl } from '@/lib/whatsapp-ytt';
+import { whatsappUrl } from '@/lib/whatsapp';
 
-// All CTAs on the YTT landing route to Nancy's WhatsApp.
+// All CTAs on this landing route to the house's WhatsApp — one number for
+// the whole site, see lib/whatsapp.ts.
 
 // Payment schedule and tier text live in the dictionary, in both languages.
 

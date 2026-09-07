@@ -6,15 +6,23 @@
 //   · Nobody has to compose an opening line. The friction between deciding to
 //     ask and actually asking is where enquiries are lost, and a blank message
 //     box is most of that friction.
-//   · The team sees which door the person came through — stays, wellbeing, or
-//     hosting a retreat — before reading a word of their own.
+//   · The team sees which door the person came through — stays, wellbeing,
+//     hosting a retreat, the training, the Shakti Experience — before reading
+//     a word of their own. The message is the routing; the number is not.
 //
-// The number lives here once, so it can be changed in one place — /contact
-// and the retreats data derive theirs from this export. It is the site's
-// general contact number, NOT Nancy's YTT line (50684904626): that one
-// belongs to the Yoga Teacher Training landing and its components, which
-// keep it deliberately.
-export const WHATSAPP_NUMBER = '50688365115';
+// One number, in one place. The site used to carry three: this general line,
+// Nancy's line for the Yoga Teacher Training, and a third for the Shakti
+// Experience, each in its own module so that changing one could never silently
+// move another. As of 2026-09-07 the owners route every enquiry to this single
+// number, and with the digits identical the old split inverted its own
+// purpose: three copies of one number is precisely how one of them ends up
+// stale. `lib/whatsapp-ytt.ts` and `lib/whatsapp-shakti.ts` are gone, and
+// every page imports from here. If a page ever needs its own line again, give
+// it its own module then — the seam is one import wide.
+//
+// Changing this constant moves every WhatsApp link on the site, and the phone
+// number shown on /contact with it.
+export const WHATSAPP_NUMBER = '50685605115';
 
 /** The bare conversation link, for entry points that shouldn't pre-fill. */
 export const WHATSAPP_URL_PLAIN = `https://wa.me/${WHATSAPP_NUMBER}`;

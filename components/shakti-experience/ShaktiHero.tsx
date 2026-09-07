@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 import { useLanguage } from '@/contexts/language-context';
 import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
-import { whatsappUrl } from '@/lib/whatsapp-shakti';
+import { whatsappUrl } from '@/lib/whatsapp';
 
 // Full-bleed video hero in the training landing's framing — 80% container on
 // desktop, edge-to-edge on mobile, the copy ranged along the bottom-left —
 // with the Shakti Experience clip and no dateline: the experience has no
 // fixed dates, so the title opens the frame on its own, the subtitle beneath
-// it, and a single door to WhatsApp.
+// it, and a single door to the house's WhatsApp.
 
 // The neutral scrim the other text-bearing video heroes carry: black rather
 // than the brand burgundy, holding a near-plateau across the copy and falling

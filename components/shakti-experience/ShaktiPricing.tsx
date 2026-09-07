@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { useLanguage } from '@/contexts/language-context';
 import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
-import { whatsappUrl } from '@/lib/whatsapp-shakti';
+import { whatsappUrl } from '@/lib/whatsapp';
 
 // ─── Pricing ─────────────────────────────────────────────────────────────────
 // Three ways to stay, in the training landing's pricing language: a dark band,

@@ -29,7 +29,9 @@ const EMAIL_PRESS = 'press@houseofshaktiyoga.com';
 // Phone and WhatsApp derive from the shared number in lib/whatsapp.ts, so a
 // number change lands here without anyone remembering this page exists.
 const PHONE_E164 = `+${WHATSAPP_NUMBER}`;
-const PHONE_DISPLAY = '+506 8836 5115';
+// Written out from WHATSAPP_NUMBER, which is what the tel: link and the
+// WhatsApp button both use — the displayed digits can never drift from them.
+const PHONE_DISPLAY = '+506 8560 5115';
 const WHATSAPP_URL = WHATSAPP_URL_PLAIN;
 
 // TODO: confirm exact Google Maps link with Nancy
