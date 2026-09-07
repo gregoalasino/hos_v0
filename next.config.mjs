@@ -10,6 +10,10 @@ const nextConfig = {
       // shared, and the owners have sent the old URL by hand. A permanent
       // redirect costs nothing and saves every one of those.
       { source: '/accommodations', destination: '/stay-with-us', permanent: true },
+      // The gallery became the About page: the photographs are on every other
+      // page already, and what the site lacked was the words. The old path
+      // stays reachable for the links that went out with it.
+      { source: '/gallery', destination: '/about', permanent: true },
     ]
   },
   images: {

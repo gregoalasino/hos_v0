@@ -11,7 +11,7 @@ const sitemapLinks: { label: string; href: string }[] = [
   { label: 'Stay With Us', href: '/stay-with-us' },
   { label: 'Retreats', href: '/retreats' },
   { label: 'Host your retreat', href: '/host-your-retreat' },
-  { label: 'Gallery', href: '/gallery' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
 
