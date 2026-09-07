@@ -6,8 +6,7 @@ import { LoopingClip } from '@/components/shared/LoopingClip';
 import { Ornament } from '@/components/shared/ornament';
 import { TrackArrows } from '@/components/shared/TrackArrows';
 import { useCarousel } from '@/hooks/use-carousel';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 const MEDIA = '/videos/more-than-a-training';
 
@@ -30,8 +29,7 @@ const card: Variants = {
 };
 
 export function YTTDifferent() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

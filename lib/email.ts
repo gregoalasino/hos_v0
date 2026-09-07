@@ -1,5 +1,18 @@
 import { Resend } from 'resend';
+import { createTranslator } from 'next-intl';
 import { BUSINESS } from '@/lib/business';
+import { routing, type AppLocale } from '@/i18n/routing';
+import en from '@/messages/en.json';
+import es from '@/messages/es.json';
+
+// The catalogues, by locale. Statically imported: this runs in server actions
+// and route handlers, outside any request that next-intl could configure, so
+// the translator is built by hand from the `email` namespace.
+const MESSAGES: Record<AppLocale, { email: typeof en.email }> = { en, es };
+
+function translator(locale: AppLocale) {
+  return createTranslator({ locale, messages: MESSAGES[locale], namespace: 'email.packCode' });
+}
 
 // Email is optional infrastructure: if RESEND_API_KEY is not set, sends are
 // skipped (not thrown) so local dev and the pack flow keep working. The admin
@@ -17,10 +30,12 @@ type PackCodeEmail = {
   code: string;
   packName: string;
   classesTotal: number;
+  /** The language the pack was bought in. Defaults to English. */
+  locale?: AppLocale;
 };
 
 export async function sendPackCodeEmail(params: PackCodeEmail): Promise<SendResult> {
-  const { to, firstName, code, packName, classesTotal } = params;
+  const { to, firstName, code, packName, classesTotal, locale = routing.defaultLocale } = params;
 
   if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping pack code email to', to);
@@ -31,8 +46,8 @@ export async function sendPackCodeEmail(params: PackCodeEmail): Promise<SendResu
     const { error } = await resend.emails.send({
       from: FROM,
       to,
-      subject: `Your ${packName} is ready — House of Shakti`,
-      html: packCodeHtml({ firstName, code, packName, classesTotal }),
+      subject: translator(locale)('subject', { packName }),
+      html: packCodeHtml({ firstName, code, packName, classesTotal, locale }),
     });
     if (error) {
       console.error('[email] pack code send failed:', error);
@@ -50,31 +65,34 @@ function packCodeHtml({
   code,
   packName,
   classesTotal,
+  locale = routing.defaultLocale,
 }: Omit<PackCodeEmail, 'to'>): string {
+  const t = translator(locale);
+  // Values are escaped before they meet the template; the catalogue's own
+  // markup (<strong>) is produced by `markup` and is the only HTML in there.
+  const strong = (chunks: string) => `<strong>${chunks}</strong>`;
   return `
   <div style="font-family: Georgia, 'Times New Roman', serif; background:#f7f4ef; padding:40px 0; color:#313131;">
     <div style="max-width:520px; margin:0 auto; background:#ffffff; border:1px solid #ececec;">
       <div style="background:#1f1b18; padding:32px 40px;">
         <p style="margin:0; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.5);">House of Shakti</p>
-        <h1 style="margin:8px 0 0; font-size:22px; font-weight:300; color:#f7f4ef;">Your class pack is ready</h1>
+        <h1 style="margin:8px 0 0; font-size:22px; font-weight:300; color:#f7f4ef;">${t('heading')}</h1>
       </div>
       <div style="padding:36px 40px;">
-        <p style="font-size:15px; line-height:1.6;">Hello ${escapeHtml(firstName)},</p>
+        <p style="font-size:15px; line-height:1.6;">${t('hello', { firstName: escapeHtml(firstName) })}</p>
         <p style="font-size:15px; line-height:1.6;">
-          Thank you for your <strong>${escapeHtml(packName)}</strong>. You have
-          <strong>${classesTotal} classes</strong> to enjoy at the shala.
+          ${t.markup('thanks', { packName: escapeHtml(packName), count: classesTotal, strong })}
         </p>
-        <p style="font-size:15px; line-height:1.6;">Use this code when you book a class — the class fee will be waived:</p>
+        <p style="font-size:15px; line-height:1.6;">${t('useCode')}</p>
         <div style="margin:24px 0; text-align:center;">
           <span style="display:inline-block; font-family: 'Courier New', monospace; font-size:24px; letter-spacing:4px; padding:16px 28px; background:#f7f4ef; border:1px dashed #b08d57; color:#1f1b18;">
             ${escapeHtml(code)}
           </span>
         </div>
         <p style="font-size:13px; line-height:1.6; color:#7a6b5d;">
-          The code works for ${classesTotal} bookings. Enter it in the “Referral code” field at checkout.
-          Optional add-ons (like Ice Bath &amp; Sauna) are charged separately.
+          ${t('works', { count: classesTotal })}
         </p>
-        <p style="font-size:15px; line-height:1.6; margin-top:28px;">See you on the mat,<br/>House of Shakti</p>
+        <p style="font-size:15px; line-height:1.6; margin-top:28px;">${t('signoff')}<br/>House of Shakti</p>
       </div>
       <div style="border-top:1px solid #ececec; padding:20px 40px;">
         <p style="margin:0; font-size:11px; color:#a6896d;">${BUSINESS.address.locality} · ${BUSINESS.address.region} · ${BUSINESS.address.countryName}</p>

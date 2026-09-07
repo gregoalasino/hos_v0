@@ -14,7 +14,8 @@ import { defineRouting } from 'next-intl/routing';
 //     time. The URL is the only signal.
 //   localeCookie false — next-intl never reads or writes NEXT_LOCALE. The
 //     language toggle stores the choice itself, as a convenience for the
-//     client; the server does nothing with it (see contexts/language-context).
+//     client; the server does nothing with it (see LangToggle in
+//     components/landing/navigation.tsx).
 //   alternateLinks false — the hreflang alternates are already emitted per
 //     page by lib/seo.ts with absolute canonical URLs. The Link header next-intl
 //     would add builds URLs from the request host, which on a preview

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { buildMetadata } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { routing, localeFromParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import { RetreatJsonLd } from '@/components/seo/JsonLd';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
@@ -39,19 +40,24 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const [locale, { slug }] = await Promise.all([localeFromParams(params), params]);
-  const retreat = getRetreatBySlug(slug);
+  const retreat = getRetreatBySlug(slug, locale);
   if (!retreat) return {};
 
+  const t = await getTranslations({ locale, namespace: 'retreatLanding.meta' });
   return buildMetadata({
     path: `/retreats/${retreat.slug}`,
     locale,
-    title: `${retreat.heroTitle} — Retreat in Santa Teresa, Costa Rica`,
+    title: t('title', { title: retreat.heroTitle }),
     // heroSubhead is one editorial line; the dates and length are the facts a
     // searcher scans for. Together they stay well inside 160 characters.
-    description: `${retreat.heroSubhead} ${retreat.heroEyebrow} · ${retreat.heroDates} at House of Shakti, Santa Teresa.`,
+    description: t('description', {
+      subhead: retreat.heroSubhead,
+      eyebrow: retreat.heroEyebrow,
+      dates: retreat.heroDates,
+    }),
     image: {
       url: retreat.heroImage,
-      alt: `${retreat.heroTitle} at House of Shakti, Santa Teresa, Costa Rica`,
+      alt: t('imageAlt', { title: retreat.heroTitle }),
     },
   });
 }
@@ -65,17 +71,22 @@ export default async function RetreatLandingPage({
   // Before notFound(): the 404 that follows renders in the same request and
   // reads the locale set here.
   setRequestLocale(locale);
-  const retreat = getRetreatBySlug(slug);
+  const retreat = getRetreatBySlug(slug, locale);
   if (!retreat) notFound();
+  const t = await getTranslations('retreatLanding.meta');
 
   return (
+    <PageMessages namespaces={['retreatLanding']}>
     <main id="main-content" className="bg-warm-white overflow-hidden">
-      <RetreatJsonLd retreat={retreat} />
+      {/* The structured data reads the English record whichever language the
+          page is in, so a crawler sees one Event with one name and one
+          description for both URLs. */}
+      <RetreatJsonLd retreat={getRetreatBySlug(slug, 'en') ?? retreat} />
       {/* Same reason as /retreats: the hero is video only and the manifesto
           heading ("Return to what is essential.") never names the retreat.
           This is the one place the page says, in text, what it is. */}
       <h1 className="sr-only">
-        {retreat.heroTitle} — Yoga Retreat in {retreat.heroLocation}
+        {t('heading', { title: retreat.heroTitle, location: retreat.heroLocation })}
       </h1>
       <Navigation />
       <RetreatHero retreat={retreat} />
@@ -92,5 +103,6 @@ export default async function RetreatLandingPage({
       <RetreatFinalCTA retreat={retreat} />
       <Footer />
     </main>
+    </PageMessages>
   );
 }

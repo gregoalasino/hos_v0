@@ -6,7 +6,9 @@ import { useRouter } from '@/i18n/navigation';
 import { motion, Variants, useInView } from 'framer-motion';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLocale, useMessages, useTranslations } from 'next-intl';
 import type { YogaClass } from '@/types';
+import { dateFnsLocale } from '@/lib/dates';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { ClassPacks } from '@/components/yoga/ClassPacks';
@@ -19,18 +21,23 @@ import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
 // ─── Refined earth-tone category palette ─────────────────────────────────────
 // Only the top stripe carries the category color. Card surface stays cream/
 // transparent so the schedule reads as one quiet object, not a rainbow grid.
-type CategoryStyle = { stripe: string; label: string };
+// The label of each category lives in the catalogue under yoga.categories.
+const CATEGORY_STYLES = {
+  'flow-vinyasa':     { stripe: '#8B6F47' }, // warm terracotta-brown
+  'yin-restorative':  { stripe: '#6B7355' }, // muted olive
+  'hatha-gentle':     { stripe: '#A6896D' }, // sand
+  'ashtanga-intense': { stripe: '#5A3E2B' }, // deep earth — for intensity
+  'meditation':       { stripe: '#7A6B5D' }, // warm gray
+} as const;
 
-const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  'flow-vinyasa':     { stripe: '#8B6F47', label: 'Vinyasa' },          // warm terracotta-brown
-  'yin-restorative':  { stripe: '#6B7355', label: 'Yin & Restorative' }, // muted olive
-  'hatha-gentle':     { stripe: '#A6896D', label: 'Hatha' },             // sand
-  'ashtanga-intense': { stripe: '#5A3E2B', label: 'Ashtanga' },          // deep earth — for intensity
-  'meditation':       { stripe: '#7A6B5D', label: 'Meditation' },        // warm gray
-};
+type CategoryKey = keyof typeof CATEGORY_STYLES;
 
 // Untouched — maps existing class names to category keys. DO NOT remove entries.
-function getCategoryKey(name: string): string {
+// The names compared here are the ones stored in the database, exactly as
+// written there ('Pranayama & Meditación' included); they are never
+// translated. What the reader sees is the category's label from the
+// catalogue, looked up at render time.
+function getCategoryKey(name: string): CategoryKey {
   if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement', 'Vinyasa Flow', 'Vinyasa Krama', 'Detox Yoga'].includes(name)) return 'flow-vinyasa';
   if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga', 'Deep Stretch & Breath'].includes(name)) return 'yin-restorative';
   if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'hatha-gentle';
@@ -90,19 +97,19 @@ function YogaHero() {
 
 // ═════════════════════════════════════════════════════════════════════════════
 // NARRATIVE — adapted for the Yoga page (no trailing image)
+// The claim, the sentence under it and the four tracked labels live in the
+// catalogue under yoga.narrative. The labels stay labels rather than a
+// sentence: a reader scanning for "is there an online option?" finds it here
+// without reading a paragraph to get there.
 // ═════════════════════════════════════════════════════════════════════════════
-const NARRATIVE_HEADLINE = 'Wild by nature, held by practice.';
-
-// What the page actually holds, named after the claim above states it. Kept as
-// four tracked labels rather than a sentence: a reader scanning for "is there
-// an online option?" finds it here without reading a paragraph to get there.
-const NARRATIVE_LABELS = ['Classes', 'Activities', 'Workshops', 'Online Yoga'];
-
 function YogaNarrative() {
+  const t = useTranslations('yoga.narrative');
+  const labels = useMessages().yoga.narrative.labels;
   const textRef = useRef<HTMLDivElement | null>(null);
   const textInView = useInView(textRef, { once: true, margin: '-100px' });
 
-  const words = NARRATIVE_HEADLINE.split(' ');
+  const headline = t('headline');
+  const words = headline.split(' ');
 
   return (
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
@@ -114,7 +121,7 @@ function YogaNarrative() {
             variants={headlineContainer}
             initial="hidden"
             animate={textInView ? 'visible' : 'hidden'}
-            aria-label={NARRATIVE_HEADLINE}
+            aria-label={headline}
             className="font-display font-light text-ink text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em]"
           >
             {words.map((word, i) => (
@@ -141,7 +148,7 @@ function YogaNarrative() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.8 }}
             className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-12 lg:mt-16"
           >
-            Come as you are. Move at your own pace. Let nature hold the rest.
+            {t('body')}
           </motion.p>
 
           {/* No rule and no container: the labels sit straight on the page and
@@ -153,7 +160,7 @@ function YogaNarrative() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 2.1 }}
             className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12"
           >
-            {NARRATIVE_LABELS.map((label, i) => (
+            {labels.map((label, i) => (
               <li key={label} className="flex items-center gap-3 md:gap-5">
                 {i > 0 && (
                   <span aria-hidden className="h-3 w-px bg-ink/25 select-none" />
@@ -174,6 +181,7 @@ function YogaNarrative() {
 // CLASS CARD
 // ═════════════════════════════════════════════════════════════════════════════
 function ClassCard({ clase }: { clase: SerializedClass }) {
+  const t = useTranslations('yoga.calendar.card');
   const router = useRouter();
   const catKey = getCategoryKey(clase.name);
   const cat = CATEGORY_STYLES[catKey];
@@ -211,19 +219,19 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
 
         <div className="flex items-baseline justify-between mt-3">
           <span className="font-body text-[10px] text-ink">
-            {clase.durationMinutes} min
+            {t('minutes', { count: clase.durationMinutes })}
           </span>
           {past ? (
             <span className="font-body text-[10px] text-ink/50">
-              Past
+              {t('past')}
             </span>
           ) : sold ? (
             <span className="font-body text-[10px] text-ink">
-              Fully booked
+              {t('fullyBooked')}
             </span>
           ) : fewLeft ? (
             <span className="font-body text-[10px] text-burgundy">
-              {clase.spotsRemaining === 1 ? '1 spot left' : `${clase.spotsRemaining} spots left`}
+              {t('spotsLeft', { count: clase.spotsRemaining })}
             </span>
           ) : null}
         </div>
@@ -236,6 +244,8 @@ function ClassCard({ clase }: { clase: SerializedClass }) {
 // WEEKLY CALENDAR
 // ═════════════════════════════════════════════════════════════════════════════
 function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] }) {
+  const t = useTranslations('yoga.calendar');
+  const locale = dateFnsLocale(useLocale());
   const [weekOffset, setWeekOffset] = useState(0);
   const [weekClasses, setWeekClasses] = useState<SerializedClass[]>(initialClasses);
   const [loadingWeek, setLoadingWeek] = useState(false);
@@ -244,19 +254,27 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
   const sectionInView = useInView(sectionRef, { once: true, margin: '-100px' });
 
   const today = new Date();
-  const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // "Mon 7" / "lun 7" — the pattern is the catalogue's, the words are date-fns'.
+  const dayLabel = (day: Date) => {
+    const label = format(day, t('dayFormat'), { locale });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
 
-  const weekLabel = useMemo(() => {
+  // "September 7 – 13" / "7 – 13 de septiembre": each language keeps its own
+  // order of day and month, so the patterns come from the catalogue too.
+  const weekLabel = (() => {
     const start = weekDays[0];
     const end = weekDays[6];
     if (!start || !end) return '';
-    if (start.getMonth() === end.getMonth()) {
-      return `${format(start, 'MMMM d')} – ${format(end, 'd')}`;
-    }
-    return `${format(start, 'MMMM d')} – ${format(end, 'MMMM d')}`;
-  }, [weekDays]);
+    const sameMonth = start.getMonth() === end.getMonth();
+    return t('weekRange', {
+      start: format(start, sameMonth ? t('weekSameMonthStart') : t('weekOtherMonth'), { locale }),
+      end: format(end, sameMonth ? t('weekSameMonthEnd') : t('weekOtherMonth'), { locale }),
+    });
+  })();
 
   async function navigateWeek(offset: number) {
     setWeekOffset(offset);
@@ -306,7 +324,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
           transition={{ duration: 1.0, ease: 'easeOut' }}
         >
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
-            This week at the shala
+            {t('heading')}
           </h2>
 
           {/* Week navigation row */}
@@ -314,7 +332,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
             <div className="flex items-center gap-4 lg:gap-6">
               <button
                 onClick={() => navigateWeek(weekOffset - 1)}
-                aria-label="Previous week"
+                aria-label={t('previousWeek')}
                 className="text-ink hover:opacity-70 transition-opacity duration-300"
               >
                 <ChevronLeft className="w-4 h-4" strokeWidth={1} />
@@ -324,7 +342,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
               </p>
               <button
                 onClick={() => navigateWeek(weekOffset + 1)}
-                aria-label="Next week"
+                aria-label={t('nextWeek')}
                 className="text-ink hover:opacity-70 transition-opacity duration-300"
               >
                 <ChevronRight className="w-4 h-4" strokeWidth={1} />
@@ -337,17 +355,17 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                   onClick={() => navigateWeek(0)}
                   className="font-body text-xs italic text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300"
                 >
-                  back to this week
+                  {t('backToThisWeek')}
                 </button>
               )}
               <span className="font-body text-xs italic text-ink">
                 {loadingWeek
-                  ? 'loading…'
+                  ? t('loading')
                   : weekOffset === 0
-                    ? 'this week'
+                    ? t('thisWeek')
                     : weekOffset > 0
-                      ? 'upcoming'
-                      : 'past'}
+                      ? t('upcoming')
+                      : t('past')}
               </span>
             </div>
           </div>
@@ -366,13 +384,13 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                   <p
                     className={`font-display text-base lg:text-lg leading-none ${isToday ? 'text-burgundy' : 'text-ink'}`}
                   >
-                    {DAY_NAMES[i]} {format(day, 'd')}
+                    {dayLabel(day)}
                   </p>
                 </div>
                 <div className="flex flex-col gap-y-3 lg:gap-y-4 mt-4">
                   {dayClasses.length === 0 ? (
                     <p className="font-body text-xs italic text-ink/30 text-center mt-6">
-                      No classes
+                      {t('noClasses')}
                     </p>
                   ) : (
                     dayClasses.map((c) => <ClassCard key={c.id} clase={c} />)
@@ -394,7 +412,7 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
                 <h3
                   className={`font-display font-light text-lg pb-3 border-b ${isToday ? 'text-burgundy border-burgundy' : 'text-ink border-ink/10'}`}
                 >
-                  {DAY_NAMES[i]} {format(day, 'd')}
+                  {dayLabel(day)}
                 </h3>
                 <div className="flex flex-col gap-y-3 mt-4">
                   {dayClasses.map((c) => <ClassCard key={c.id} clase={c} />)}
@@ -423,6 +441,9 @@ function WeeklyCalendar({ initialClasses }: { initialClasses: SerializedClass[] 
 // - Progress bar lives inside the standard 80% container.
 // ═════════════════════════════════════════════════════════════════════════════
 type GalleryImg = { src: string; aspect: string; alt: string };
+
+// Alt texts describe the photographs, which are the same in every language;
+// they stay here rather than in the catalogue.
 
 // Every `aspect` below is the file's real ratio on disk, within a rounding of
 // well under half a percent — except 18 (1519×1926 = 0.789), which is declared
@@ -459,7 +480,7 @@ const yogaGalleryImages: GalleryImg[] = [
   { src: '/images/yoga/carrete-yoga-wellbeing/yoga-wellbeing-14.webp', aspect: 'aspect-[3/4]',  alt: 'Practice in the shala' },
 ];
 
-function YogaGallery() {
+function YogaGallery({ galleryAria }: { galleryAria: string }) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
@@ -552,7 +573,7 @@ function YogaGallery() {
   return (
     <section
       ref={sectionRef}
-      aria-label="Yoga gallery"
+      aria-label={galleryAria}
       className="bg-warm-white py-20 lg:py-28"
     >
       {/*
@@ -642,6 +663,7 @@ function YogaGallery() {
 // MAIN EXPORT
 // ═════════════════════════════════════════════════════════════════════════════
 export default function YogaPageClient({ initialClasses }: { initialClasses: SerializedClass[] }) {
+  const t = useTranslations('yoga');
   return (
     <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
@@ -656,7 +678,7 @@ export default function YogaPageClient({ initialClasses }: { initialClasses: Ser
       <OnlineClasses />
       <MeetOurTeam />
       <YogaFAQ />
-      <YogaGallery />
+      <YogaGallery galleryAria={t('galleryAria')} />
       <Footer />
     </main>
   );

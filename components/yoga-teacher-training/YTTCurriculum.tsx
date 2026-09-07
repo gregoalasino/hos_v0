@@ -2,8 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 // Module text lives in the dictionary (both languages); only the fixed
 // numerals live here, zipped with it by index at render.
@@ -156,8 +155,7 @@ function Module({
 }
 
 export function YTTCurriculum() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

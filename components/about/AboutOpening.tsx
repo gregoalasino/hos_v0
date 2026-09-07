@@ -3,8 +3,7 @@
 import { motion } from 'framer-motion';
 import { Ornament } from '@/components/shared/ornament';
 import { WordReveal } from '@/components/about/WordReveal';
-import { useLanguage } from '@/contexts/language-context';
-import { ABOUT_DICTIONARIES } from '@/lib/i18n-about';
+import { useMessages } from 'next-intl';
 
 // ─── Opening ─────────────────────────────────────────────────────────────────
 // No hero, no film. The page opens the way a letter does: the brand's
@@ -13,8 +12,7 @@ import { ABOUT_DICTIONARIES } from '@/lib/i18n-about';
 // its own intro. Mount-animated rather than scroll-triggered, since it sits
 // at the top of the page.
 export function AboutOpening() {
-  const { lang } = useLanguage();
-  const t = ABOUT_DICTIONARIES[lang].opening;
+  const t = useMessages().about.opening;
 
   return (
     <section className="bg-warm-white pt-28 lg:pt-36 pb-12 lg:pb-16">

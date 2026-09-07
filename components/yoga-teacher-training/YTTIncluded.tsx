@@ -2,8 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 const listContainer: Variants = {
   hidden: { opacity: 0 },
@@ -15,8 +14,7 @@ const listItem: Variants = {
 };
 
 export function YTTIncluded() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

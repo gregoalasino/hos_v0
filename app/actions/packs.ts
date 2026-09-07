@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { createServiceClient } from '@/lib/supabase/server';
 import { sendPackCodeEmail } from '@/lib/email';
 import { createPayment } from '@/lib/tilopay';
+import { tilopayReturnUrl } from '@/lib/tilopay-return';
+import type { AppLocale } from '@/i18n/routing';
 import type { LinkedPendingBooking } from '@/types';
 
 export type PackPurchaseInput = {
@@ -12,6 +14,11 @@ export type PackPurchaseInput = {
   lastName: string;
   email: string;
   phone?: string;
+  /**
+   * The language the pack was bought in. Rides Tilopay's return URL so the
+   * receipt and the code email come back in it; not stored.
+   */
+  locale?: AppLocale;
 };
 
 // ── Step 1 — the customer starts a purchase (payment seam) ────────────────────
@@ -74,14 +81,12 @@ export async function startPackCheckout(
 
   if (!purchase) return { ok: false, error: 'purchase_not_found' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-
   try {
     const url = await createPayment({
       amount: Number(purchase.amount_usd ?? 0).toFixed(2),
       currency: 'USD',
       orderNumber: purchase.id,
-      redirect: `${siteUrl}/api/tilopay/callback`,
+      redirect: tilopayReturnUrl(input.locale ?? 'en'),
       billToFirstName: purchase.first_name,
       billToLastName: purchase.last_name,
       billToEmail: purchase.email,
@@ -119,8 +124,12 @@ async function findLinkedPendingBooking(
   };
 }
 
+// `locale` is the language the pack was bought in, for the code email. The
+// admin's manual confirmation (cash / Venmo) has no way of knowing it and
+// falls back to English.
 export async function confirmPackPayment(
   id: string,
+  locale: AppLocale = 'en',
 ): Promise<{
   ok: boolean;
   code?: string;
@@ -182,6 +191,7 @@ export async function confirmPackPayment(
     code,
     packName,
     classesTotal: purchase.classes_total,
+    locale,
   });
 
   revalidatePath('/admin/paquetes');

@@ -2,32 +2,17 @@
 
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from '@/i18n/navigation';
 import { Ornament } from "@/components/shared/ornament";
 
+// The three doors, in order. Titles and descriptions live in the catalogue
+// under home.pillars.items, keyed by `id`.
 const pillars = [
-  {
-    title: "Retreats",
-    description:
-      "Discover thoughtfully curated yoga retreats in the heart of Santa Teresa, guided by inspiring facilitators from around the world. Surrounded by jungle and ocean, each retreat offers space to reconnect, restore and return to yourself.",
-    image: "/images/seccion3/card_retreats.webp",
-    link: "/retreats",
-  },
-  {
-    title: "Stay With Us",
-    description:
-      "Stay your way. Choose from comfortable accommodations and experience packages for individuals, couples and groups.",
-    image: "/images/seccion3/card_accommodations.webp",
-    link: "/stay-with-us",
-  },
-  {
-    title: "Yoga & Wellbeing",
-    description:
-      "A peaceful space where movement, learning and community come together through yoga, workshops, ceremonies and mindful experiences.",
-    image: "/images/yoga/NE8A7702%201.webp",
-    link: "/yoga",
-  },
-];
+  { id: "retreats", image: "/images/seccion3/card_retreats.webp", link: "/retreats" },
+  { id: "stay", image: "/images/seccion3/card_accommodations.webp", link: "/stay-with-us" },
+  { id: "yoga", image: "/images/yoga/NE8A7702%201.webp", link: "/yoga" },
+] as const;
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -52,6 +37,8 @@ const itemVariants: Variants = {
 };
 
 export function Pillars() {
+  const t = useTranslations("home.pillars");
+  const tButtons = useTranslations("common.buttons");
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -73,7 +60,7 @@ export function Pillars() {
           <Ornament src="/logos/snake-sun-rays.png" className="h-20 md:h-24 mx-auto mb-6 lg:mb-8" />
 
           <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
-            Discover House of Shakti
+            {t("heading")}
           </h2>
         </motion.div>
 
@@ -85,7 +72,7 @@ export function Pillars() {
           className="grid md:grid-cols-3 gap-8 lg:gap-10"
         >
           {pillars.map((pillar) => (
-            <motion.article key={pillar.title} variants={itemVariants} className="h-full">
+            <motion.article key={pillar.id} variants={itemVariants} className="h-full">
               {/* Entire card is one link — image, title, description, CTA all clickable */}
               <Link href={pillar.link} className="group flex h-full flex-col">
                 {/* Image — static, no hover zoom */}
@@ -109,15 +96,15 @@ export function Pillars() {
                     link is pushed to the floor, so the three line up. */}
                 <div className="mt-6 lg:mt-8 flex flex-1 flex-col">
                   <h3 className="font-display font-light text-ink text-lg lg:text-xl leading-snug mb-3 lg:mb-4">
-                    {pillar.title}
+                    {t(`items.${pillar.id}.title`)}
                   </h3>
 
                   <p className="font-body text-sm text-ink leading-relaxed mb-6 lg:mb-8">
-                    {pillar.description}
+                    {t(`items.${pillar.id}.description`)}
                   </p>
 
                   <span className="mt-auto font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] transition-opacity duration-300 group-hover:opacity-70 self-start">
-                    Discover more
+                    {tButtons("discoverMore")}
                   </span>
                 </div>
               </Link>

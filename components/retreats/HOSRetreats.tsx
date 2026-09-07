@@ -2,58 +2,51 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useMessages } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
 // ─── Retreats offering ──────────────────────────────────────────────────────
 // Feature blocks in a two-column body — title + description + dark CTA on the
-// left, and a row of images on the right.
+// left, and a row of images on the right. Titles, paragraphs and button
+// labels live in the catalogue under retreats.cards, keyed by `id`.
 type RetreatCard = {
   title: string;
-  description: string;
+  paragraphs: string[];
   images: string[];
   href: string;
   ctaLabel: string;
   external: boolean;
 };
 
-const CARDS: RetreatCard[] = [
+const CARDS = [
   {
-    title: 'Join a Retreat at House of Shakti',
-    description:
-      'House of Shakti welcomes a variety of retreats led by inspiring facilitators from around the world — offering yoga, breathwork journeys, wellness practices, nature adventures, surf and healing experiences.\n\nA sacred sanctuary in Santa Teresa where practitioners share their vision and guests gather to reconnect, transform and renew.',
+    id: 'join',
     images: [
       '/images/upcoming_retreats/upcoming_retreats.webp',
       '/images/upcoming_retreats/upcoming_retreats_2.webp',
     ],
     href: '/upcoming-retreats',
-    ctaLabel: 'See upcoming retreats',
     external: false,
   },
   {
-    title: 'Host Your Retreat',
-    description:
-      'Bring your vision to life at House of Shakti. A private sanctuary in Santa Teresa designed for facilitators creating meaningful experiences. Surrounded by jungle and close to the ocean, our space offers everything needed to host transformational retreats — from yoga and wellness immersions to creative gatherings and conscious journeys.\n\nA place to gather, reconnect, and create experiences that leave a lasting impact.',
+    id: 'host',
     images: [
       '/images/card_host_your_retreat.webp',
       '/images/sanctuary/271A0759_websize%201.webp',
     ],
     href: '/host-your-retreat',
-    ctaLabel: 'See more',
     external: false,
   },
   {
-    title: 'Teacher Training Yoga',
-    description:
-      'A 100-hour in-person immersion with an optional 100-hour online program, leading to a Yoga Alliance Registered 200-Hour Yoga Teacher Training guided by Nancy Goodfellow. A journey of deep practice, self-discovery, and embodied learning.',
+    id: 'ytt',
     images: [
       '/images/card_ytt.webp',
       '/images/yoga/IMG_8693%201.webp',
     ],
     href: '/yoga-teacher-training',
-    ctaLabel: 'See more',
     external: false,
   },
-];
+] as const;
 
 function RetreatFeatureCard({
   card,
@@ -93,7 +86,7 @@ function RetreatFeatureCard({
             {card.title}
           </h3>
 
-          {card.description.split('\n\n').map((para, i) => (
+          {card.paragraphs.map((para, i) => (
             <p key={i} className="font-body text-sm text-ink leading-[1.8] mt-6 max-w-md">
               {para}
             </p>
@@ -120,12 +113,21 @@ function RetreatFeatureCard({
 }
 
 export function HOSRetreats() {
+  const copy = useMessages().retreats.cards;
+  const cards: RetreatCard[] = CARDS.map((card) => ({
+    ...card,
+    images: [...card.images],
+    title: copy[card.id].title,
+    paragraphs: copy[card.id].paragraphs,
+    ctaLabel: copy[card.id].cta,
+  }));
+
   return (
     <section className="bg-warm-white pb-20 lg:pb-28">
       <div className="w-[90%] md:w-[80%] mx-auto">
         <div className="space-y-20 lg:space-y-28">
-          {CARDS.map((card, i) => (
-            <RetreatFeatureCard key={card.title} card={card} delay={i * 0.1} />
+          {cards.map((card, i) => (
+            <RetreatFeatureCard key={card.href} card={card} delay={i * 0.1} />
           ))}
         </div>
       </div>

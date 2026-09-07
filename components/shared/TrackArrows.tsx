@@ -1,8 +1,7 @@
 'use client';
 
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/contexts/language-context';
-import { tr } from '@/lib/i18n';
+import { useTranslations } from 'next-intl';
 
 /**
  * The pair of controls that step a carousel track.
@@ -56,13 +55,13 @@ export function TrackArrows({
   onNext: () => void;
   className?: string;
 }) {
-  const { lang } = useLanguage();
+  const t = useTranslations('common.labels');
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <TrackButton label={tr(lang, 'Anterior', 'Previous')} onClick={onPrev} disabled={atStart}>
+      <TrackButton label={t('previous')} onClick={onPrev} disabled={atStart}>
         <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
       </TrackButton>
-      <TrackButton label={tr(lang, 'Siguiente', 'Next')} onClick={onNext} disabled={atEnd}>
+      <TrackButton label={t('next')} onClick={onNext} disabled={atEnd}>
         <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden />
       </TrackButton>
     </div>

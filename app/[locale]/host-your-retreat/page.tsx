@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { QuoteBreak } from '@/components/landing/QuoteBreak';
@@ -14,11 +15,11 @@ import { HostClosing } from '@/components/host-your-retreat/HostClosing';
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const locale = await localeFromParams(params);
+  const t = await getTranslations({ locale, namespace: 'hostYourRetreat.meta' });
   return buildMetadata({
     path: '/host-your-retreat',
-    title: 'Host Your Retreat',
-    description:
-      'Host your retreat at House of Shakti, Santa Teresa. Private lodging, a yoga shala and a team that coordinates every detail in Costa Rica.',
+    title: t('title'),
+    description: t('description'),
     locale,
   });
 }
@@ -32,8 +33,10 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
 export default async function HostYourRetreatPage({ params }: LocaleParams) {
   const locale = await localeFromParams(params);
   setRequestLocale(locale);
+  const t = await getTranslations('hostYourRetreat.review');
 
   return (
+    <PageMessages namespaces={['hostYourRetreat', 'stayWithUs']}>
     <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <HostHero />
@@ -51,9 +54,9 @@ export default async function HostYourRetreatPage({ params }: LocaleParams) {
       <QuoteBreak
         variant="testimonial"
         image="/images/host-your-retreat/review-image.webp"
-        quote="House of Shakti is a peaceful escape surrounded by nature, with a beautiful shala and a deeply grounding energy. It's the kind of place where you immediately feel a shift — a place to slow down, breathe and reconnect."
-        author="Guest review"
-        role="Santa Teresa, Costa Rica"
+        quote={t('quote')}
+        author={t('author')}
+        role={t('role')}
         scrim={0.6}
       />
       <HostActivities />
@@ -61,5 +64,6 @@ export default async function HostYourRetreatPage({ params }: LocaleParams) {
       <HostClosing />
       <Footer />
     </main>
+    </PageMessages>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CheckAvailabilityLink } from '@/components/accommodations/CheckAvailabilityLink';
 import type { StayData } from '@/lib/stays';
 
@@ -32,6 +33,7 @@ export function StayLightbox({
   /** Whether the Cloudbeds door closes the story — see StayCard. */
   booking?: boolean;
 }) {
+  const t = useTranslations('stayWithUs.lightbox');
   const [current, setCurrent] = useState(initialIndex);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -194,7 +196,7 @@ export function StayLightbox({
                   <motion.img
                     key={src}
                     src={src}
-                    alt={`${stay.title} — photograph ${i + 1} of ${total}`}
+                    alt={t('photoAlt', { title: stay.title, index: i + 1, total })}
                     // Opacity alone doesn't hide anything from a screen
                     // reader: the two neighbours stay mounted for the
                     // crossfade, and without this all three announce.
@@ -218,7 +220,7 @@ export function StayLightbox({
                   <button
                     type="button"
                     onClick={goPrev}
-                    aria-label={`Previous photograph of ${stay.title}`}
+                    aria-label={t('previous', { title: stay.title })}
                     className="lg:hidden absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-11 w-11 grid place-items-center bg-black/35 text-cream hover:bg-black/60 transition-colors duration-300 backdrop-blur-[2px]"
                   >
                     <ChevronLeft className="h-5 w-5" strokeWidth={1.2} />
@@ -226,7 +228,7 @@ export function StayLightbox({
                   <button
                     type="button"
                     onClick={goNext}
-                    aria-label={`Next photograph of ${stay.title}`}
+                    aria-label={t('next', { title: stay.title })}
                     className="lg:hidden absolute right-3 md:right-4 top-1/2 -translate-y-1/2 h-11 w-11 grid place-items-center bg-black/35 text-cream hover:bg-black/60 transition-colors duration-300 backdrop-blur-[2px]"
                   >
                     <ChevronRight className="h-5 w-5" strokeWidth={1.2} />
@@ -257,7 +259,7 @@ export function StayLightbox({
                   key={src}
                   type="button"
                   onClick={() => setCurrent(i)}
-                  aria-label={`Photograph ${i + 1} of ${stay.title}`}
+                  aria-label={t('thumb', { index: i + 1, title: stay.title })}
                   aria-current={i === current}
                   className={`relative shrink-0 w-12 aspect-[3/4] overflow-hidden transition-opacity duration-300 ${
                     i === current ? 'opacity-100 ring-1 ring-ink' : 'opacity-45 hover:opacity-80'
@@ -284,7 +286,7 @@ export function StayLightbox({
                   <button
                     type="button"
                     onClick={goPrev}
-                    aria-label={`Previous photograph of ${stay.title}`}
+                    aria-label={t('previous', { title: stay.title })}
                     className="h-10 w-10 grid place-items-center border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300"
                   >
                     <ChevronLeft className="h-4 w-4" strokeWidth={1.2} />
@@ -292,7 +294,7 @@ export function StayLightbox({
                   <button
                     type="button"
                     onClick={goNext}
-                    aria-label={`Next photograph of ${stay.title}`}
+                    aria-label={t('next', { title: stay.title })}
                     className="h-10 w-10 grid place-items-center border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300"
                   >
                     <ChevronRight className="h-4 w-4" strokeWidth={1.2} />
@@ -355,7 +357,7 @@ export function StayLightbox({
           ref={closeRef}
           type="button"
           onClick={onClose}
-          aria-label={`Close ${stay.title}`}
+          aria-label={t('close', { title: stay.title })}
           className="absolute top-3 right-3 md:top-4 md:right-4 h-11 w-11 grid place-items-center bg-warm-white/80 backdrop-blur-[2px] text-ink hover:opacity-60 transition-opacity duration-300"
         >
           <X className="h-[22px] w-[22px]" strokeWidth={1.5} />

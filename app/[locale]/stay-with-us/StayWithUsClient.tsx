@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, Variants, useInView, AnimatePresence } from 'framer-motion';
+import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { StayCard } from '@/components/stay-with-us/StayCard';
 import { StayLightbox } from '@/components/stay-with-us/StayLightbox';
 import { EnhanceYourExperience } from '@/components/stay-with-us/EnhanceYourExperience';
@@ -10,7 +11,7 @@ import { Footer } from '@/components/landing/footer';
 import { SeasonalExperiences } from '@/components/landing/seasonal-experiences';
 import { AccommodationsFAQ } from '@/components/accommodations/AccommodationsFAQ';
 import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
-import { STAYS, type StayData } from '@/lib/stays';
+import { getStays, type StayData } from '@/lib/stays';
 
 // The Cloudbeds immersive loader is mounted once, site-wide, in app/layout.tsx;
 // it exposes window.openImmersiveExperiencePopup, which CheckAvailabilityLink calls.
@@ -97,13 +98,12 @@ function AccommodationsHero() {
 // Sets the expectation that there are four distinct dwellings
 // before the grid below.
 // ═════════════════════════════════════════════════════════════════════════════
-const INTRO_HEADLINE = 'More than a stay.';
-
-// What the place actually holds — the claim above states it, these name it.
-// Four words, so they read as a rhythm rather than a feature list.
-const INTRO_LABELS = ['Yoga', 'Wellness', 'Nature', 'Community'];
-
+// The words live in the catalogue under stayWithUs.intro: the claim, its
+// second beat, and the four labels that name what the place actually holds —
+// four words, so they read as a rhythm rather than a feature list.
 function AccommodationsIntro() {
+  const t = useTranslations('stayWithUs.intro');
+  const labels = useMessages().stayWithUs.intro.labels;
   const textRef = useRef<HTMLDivElement | null>(null);
   const textInView = useInView(textRef, { once: true, margin: '-100px' });
 
@@ -115,7 +115,7 @@ function AccommodationsIntro() {
               opened without ever naming itself. */}
           <WordRevealHeading
             as="h1"
-            text={INTRO_HEADLINE}
+            text={t('headline')}
             inView={textInView}
             className="text-ink text-4xl md:text-5xl lg:text-6xl"
           />
@@ -129,7 +129,7 @@ function AccommodationsIntro() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.0 }}
             className="font-display font-light text-ink/65 text-2xl md:text-3xl lg:text-4xl leading-[1.15] tracking-[-0.01em] mt-4 lg:mt-5"
           >
-            A space to reconnect.
+            {t('subline')}
           </motion.p>
 
           {/* No rule and no container: the labels sit straight on the page and
@@ -141,7 +141,7 @@ function AccommodationsIntro() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.3 }}
             className="flex flex-wrap items-center gap-x-3 md:gap-x-5 gap-y-3 mt-10 lg:mt-12"
           >
-            {INTRO_LABELS.map((label, i) => (
+            {labels.map((label, i) => (
               <li key={label} className="flex items-center gap-3 md:gap-5">
                 {i > 0 && (
                   <span aria-hidden className="h-3 w-px bg-ink/25 select-none" />
@@ -162,9 +162,7 @@ function AccommodationsIntro() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.5 }}
             className="font-body text-ink max-w-2xl text-sm leading-[1.7] mt-10 lg:mt-12"
           >
-            The Main House gathers four suites around a shared heart. La Casita and
-            the Jungle Bungalow sit deeper in the greenery, each standing alone.
-            Shakti House opens to jungle and ocean from a single wide deck.
+            {t('body')}
           </motion.p>
         </div>
       </div>
@@ -181,6 +179,7 @@ function AccommodationsIntro() {
 // ═════════════════════════════════════════════════════════════════════════════
 
 function StaysGrid() {
+  const stays = getStays(useLocale());
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -203,9 +202,9 @@ function StaysGrid() {
              and the lightbox still owns the full-size photograph. */
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-x-8 gap-y-14 lg:gap-y-28"
         >
-          {STAYS.map((stay, i) => (
+          {stays.map((stay, i) => (
             <StayCard
-              key={stay.title}
+              key={stay.slug}
               stay={stay}
               index={i}
               onExpand={(index) => setExpanded({ stay, index })}

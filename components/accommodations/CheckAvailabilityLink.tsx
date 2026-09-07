@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
 
 // ─── Editorial "Check availability" link ─────────────────────────────────────
@@ -10,12 +11,14 @@ import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
 // just follows the link to the reservation page. Middle-click / cmd-click also
 // still open the reservation in a new tab.
 export function CheckAvailabilityLink({
-  label = 'Check availability',
+  label,
   className = 'mt-6',
 }: {
+  /** Defaults to the site-wide "Check availability". */
   label?: string;
   className?: string;
 }) {
+  const t = useTranslations('common.buttons');
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Let the browser handle modified clicks (new tab, etc.) via the href.
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -35,7 +38,7 @@ export function CheckAvailabilityLink({
       onClick={handleClick}
       className={`inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer ${className}`}
     >
-      {label}
+      {label ?? t('checkAvailability')}
     </a>
   );
 }

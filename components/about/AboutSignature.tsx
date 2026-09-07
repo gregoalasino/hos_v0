@@ -2,16 +2,14 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { ABOUT_DICTIONARIES } from '@/lib/i18n-about';
+import { useMessages } from 'next-intl';
 
 // ─── The signature ───────────────────────────────────────────────────────────
 // A letter is signed. One drawn stroke — the same hand as the line that
 // threads the home's photographs, a path that draws itself as it comes into
 // view — then the name in the display face and, beneath it, who she is here.
 export function AboutSignature() {
-  const { lang } = useLanguage();
-  const t = ABOUT_DICTIONARIES[lang].signature;
+  const t = useMessages().about.signature;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

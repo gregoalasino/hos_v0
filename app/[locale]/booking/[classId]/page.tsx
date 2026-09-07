@@ -3,6 +3,7 @@ import { getActiveUpsells } from '@/lib/queries/upsells';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { localeFromParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import BookingFlow from './BookingFlow';
 
 export default async function BookingPage({
@@ -19,7 +20,9 @@ export default async function BookingPage({
 
   if (!clase) notFound();
 
+  // `yoga` too: the class category labels are the schedule's.
   return (
+    <PageMessages namespaces={['booking', 'yoga']}>
     <BookingFlow
       classId={classId}
       className={clase.name}
@@ -33,6 +36,8 @@ export default async function BookingPage({
       description={clase.description ?? ''}
       color={clase.color ?? undefined}
       upsells={upsells}
+      locale={locale}
     />
+    </PageMessages>
   );
 }

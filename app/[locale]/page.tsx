@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import { Navigation } from "@/components/landing/navigation";
 import { Hero } from "@/components/landing/hero";
 // Introduction ("We are not in the business of more.") removed from home — file preserved
@@ -20,11 +21,11 @@ import { SiteJsonLd } from "@/components/seo/JsonLd";
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const locale = await localeFromParams(params);
+  const t = await getTranslations({ locale, namespace: 'home.meta' });
   return buildMetadata({
     path: '/',
-    title: 'House of Shakti — Yoga Sanctuary in Santa Teresa, Costa Rica',
-    description:
-      'Yoga classes, retreats and jungle accommodation in Santa Teresa, Costa Rica. A boutique sanctuary five minutes from Playa Hermosa.',
+    title: t('title'),
+    description: t('description'),
     absoluteTitle: true,
     locale,
   });
@@ -33,8 +34,10 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
 export default async function Home({ params }: LocaleParams) {
   const locale = await localeFromParams(params);
   setRequestLocale(locale);
+  const t = await getTranslations('home.testimonial');
 
   return (
+    <PageMessages namespaces={['home']}>
     <main id="main-content" className="overflow-hidden">
       {/* LodgingBusiness + WebSite, rendered once for the whole site. Every
           other schema references the business by @id rather than repeating it. */}
@@ -51,9 +54,9 @@ export default async function Home({ params }: LocaleParams) {
       <QuoteBreak
         variant="testimonial"
         image="/images/home/quote/quote-img.webp"
-        quote="My stay at House of Shakti can be best remembered by beautiful surroundings, the best Yoga and an impeccable accommodation. A place to slow down, breathe and fully reconnect."
-        author="House of Shakti"
-        role="Santa Teresa, Costa Rica"
+        quote={t('quote')}
+        author={t('author')}
+        role={t('role')}
       />
       <SeasonalExperiences />
       <HostYourRetreat />
@@ -71,5 +74,6 @@ export default async function Home({ params }: LocaleParams) {
       {/* <Testimonials /> — removed from render, kept in repo */}
       <Footer />
     </main>
+    </PageMessages>
   );
 }

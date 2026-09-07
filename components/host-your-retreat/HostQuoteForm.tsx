@@ -15,8 +15,8 @@ import {
   Ellipsis,
   type LucideIcon,
 } from 'lucide-react';
-import { useLanguage } from '@/contexts/language-context';
-import { tr, type Lang } from '@/lib/i18n';
+import { useLocale, useTranslations } from 'next-intl';
+import { intlTag } from '@/lib/dates';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 // ─── Request a quote ─────────────────────────────────────────────────────────
@@ -31,73 +31,66 @@ import { whatsappUrl } from '@/lib/whatsapp';
 // conversation itself is for; a month, a length and a bracket are enough to
 // quote a season and a house.
 //
+// Every word — chip labels, legends, and each line of the message — comes
+// from the catalogue under hostYourRetreat.quote. The message lines are ICU
+// templates ("• Group size: {people}"), never pieces glued together, so each
+// language phrases its own sentence.
+//
 // The house's general number, via lib/whatsapp — the same door the floating
 // button's "Host Your Retreat" entry opens.
-
-type Option = {
-  id: string;
-  icon?: LucideIcon;
-  label: (lang: Lang) => string;
-};
 
 // What a retreat can be. The first six are the owners' list; the rest are the
 // kinds of gathering that actually come to Santa Teresa, so a host finds
 // their own without reaching for "Other". Each carries a thin lucide mark —
 // the same family the rest of the site's controls draw from.
-const KINDS: Option[] = [
-  { id: 'yoga', icon: Flower2, label: () => 'Yoga' },
-  { id: 'surf-yoga', icon: Waves, label: (l) => tr(l, 'Surf y yoga', 'Surf & yoga') },
-  {
-    id: 'teacher-training',
-    icon: GraduationCap,
-    label: (l) => tr(l, 'Formación de profesores', 'Teacher training'),
-  },
-  {
-    id: 'breathwork',
-    icon: Wind,
-    label: (l) => tr(l, 'Respiración y meditación', 'Breathwork & meditation'),
-  },
-  { id: 'sound-healing', icon: Music, label: (l) => tr(l, 'Sanación con sonido', 'Sound healing') },
-  { id: 'aguahara', icon: Droplets, label: () => 'Aguahara' },
-  { id: 'macrame', icon: Spool, label: () => 'Macramé' },
-  { id: 'tarot', icon: MoonStar, label: () => 'Tarot' },
-  { id: 'creative', icon: Palette, label: (l) => tr(l, 'Artes creativas', 'Creative arts') },
-  { id: 'other', icon: Ellipsis, label: (l) => tr(l, 'Otro', 'Other') },
-];
+const KINDS = [
+  { id: 'yoga', icon: Flower2 },
+  { id: 'surfYoga', icon: Waves },
+  { id: 'teacherTraining', icon: GraduationCap },
+  { id: 'breathwork', icon: Wind },
+  { id: 'soundHealing', icon: Music },
+  { id: 'aguahara', icon: Droplets },
+  { id: 'macrame', icon: Spool },
+  { id: 'tarot', icon: MoonStar },
+  { id: 'creative', icon: Palette },
+  { id: 'other', icon: Ellipsis },
+] as const;
 
 // How long. Brackets rather than a count: a host planning a retreat knows
 // "about a week" long before they know the nights.
-const LENGTHS: Option[] = [
-  { id: '3-4', label: (l) => tr(l, '3–4 noches', '3–4 nights') },
-  { id: '5-6', label: (l) => tr(l, '5–6 noches', '5–6 nights') },
-  { id: '7', label: (l) => tr(l, '7 noches', '7 nights') },
-  { id: '8+', label: (l) => tr(l, '8 noches o más', '8+ nights') },
-];
+const LENGTHS = ['3to4', '5to6', '7', '8plus'] as const;
 
 // How many. The brackets follow the house: Main House sleeps ten, the three
 // dwellings together around fifteen, and beyond twenty is a conversation
-// about the whole property.
-const GROUPS: Option[] = [
-  { id: 'up-to-6', label: (l) => tr(l, 'Hasta 6', 'Up to 6') },
-  { id: '7-10', label: () => '7–10' },
-  { id: '11-14', label: () => '11–14' },
-  { id: '15-20', label: () => '15–20' },
-  { id: '20+', label: (l) => tr(l, 'Más de 20', 'More than 20') },
-];
+// about the whole property. Each bracket knows how to say itself in a
+// sentence — "up to 6 people", "7–10 people", "more than 20 people".
+const GROUPS = [
+  { id: 'upTo6', people: { shape: 'upTo', n: 6 } },
+  { id: '7to10', people: { shape: 'range', from: 7, to: 10 } },
+  { id: '11to14', people: { shape: 'range', from: 11, to: 14 } },
+  { id: '15to20', people: { shape: 'range', from: 15, to: 20 } },
+  { id: 'moreThan20', people: { shape: 'moreThan', n: 20 } },
+] as const;
+
+type KindId = (typeof KINDS)[number]['id'];
+type LengthId = (typeof LENGTHS)[number];
+type GroupId = (typeof GROUPS)[number]['id'];
 
 const FLEXIBLE = 'flexible';
 
 type Answers = {
-  kind: string | null;
+  kind: KindId | null;
   /** A month as YYYY-MM, or FLEXIBLE. */
   month: string | null;
-  length: string | null;
-  group: string | null;
+  length: LengthId | null;
+  group: GroupId | null;
 };
 
 const EMPTY: Answers = { kind: null, month: null, length: null, group: null };
 
 const LABEL = 'block font-body text-[10px] tracking-[0.25em] uppercase text-ink/70';
+
+type Option = { id: string; icon?: LucideIcon; label: string };
 
 // The next twelve months from today, as YYYY-MM keys. Computed on the client
 // only (see the effect below), so the server and the first client render
@@ -110,53 +103,38 @@ function upcomingMonths(from: Date, count = 12): string[] {
 }
 
 // "March 2027" / "Marzo 2027" — the chip and the message use the same words.
-function monthLabel(key: string, lang: Lang): string {
+function monthLabel(key: string, tag: string): string {
   const [y, m] = key.split('-').map(Number);
-  const name = new Intl.DateTimeFormat(lang === 'es' ? 'es' : 'en-US', { month: 'long' }).format(
-    new Date(y, m - 1, 1),
-  );
+  const name = new Intl.DateTimeFormat(tag, { month: 'long' }).format(new Date(y, m - 1, 1));
   return `${name.charAt(0).toUpperCase()}${name.slice(1)} ${y}`;
 }
 
-function composeMessage(lang: Lang, a: Answers): string {
+type Translate = ReturnType<typeof useTranslations<'hostYourRetreat.quote'>>;
+
+function composeMessage(t: Translate, tag: string, a: Answers): string {
   const lines: string[] = [];
 
-  const kind = KINDS.find((k) => k.id === a.kind);
-  if (kind) lines.push(tr(lang, `• Retiro: ${kind.label(lang)}`, `• Retreat: ${kind.label(lang)}`));
+  if (a.kind) lines.push(t('message.retreatLine', { kind: t(`kinds.${a.kind}`) }));
 
   const when: string[] = [];
-  if (a.month === FLEXIBLE) when.push(tr(lang, 'fechas flexibles', 'flexible dates'));
-  else if (a.month) when.push(monthLabel(a.month, lang));
-  const length = LENGTHS.find((l) => l.id === a.length);
-  if (length) when.push(length.label(lang).toLowerCase());
-  if (when.length) lines.push(tr(lang, `• Cuándo: ${when.join(', ')}`, `• When: ${when.join(', ')}`));
+  if (a.month === FLEXIBLE) when.push(t('message.flexibleDates'));
+  else if (a.month) when.push(monthLabel(a.month, tag));
+  if (a.length) when.push(t(`lengths.${a.length}`).toLowerCase());
+  if (when.length) lines.push(t('message.whenLine', { when: when.join(', ') }));
 
   const group = GROUPS.find((g) => g.id === a.group);
   if (group) {
-    const people = tr(
-      lang,
-      group.id === 'up-to-6' ? 'hasta 6' : group.id === '20+' ? 'más de 20' : group.label(lang),
-      group.id === 'up-to-6'
-        ? 'up to 6 people'
-        : group.id === '20+'
-          ? 'more than 20 people'
-          : `${group.label(lang)} people`,
-    );
-    lines.push(tr(lang, `• Cantidad de personas: ${people}`, `• Group size: ${people}`));
+    const { people } = group;
+    const phrase =
+      people.shape === 'upTo'
+        ? t('message.peopleUpTo', { n: people.n })
+        : people.shape === 'moreThan'
+          ? t('message.peopleMoreThan', { n: people.n })
+          : t('message.peopleRange', { from: people.from, to: people.to });
+    lines.push(t('message.groupLine', { people: phrase }));
   }
 
-  const opening = tr(
-    lang,
-    '¡Hola! Quisiera pedir un presupuesto para organizar un retiro en House of Shakti.',
-    "Hi! I'd like to request a quote to host a retreat at House of Shakti.",
-  );
-  const closing = tr(
-    lang,
-    '¿Me podrían compartir disponibilidad y precios? ¡Gracias!',
-    'Could you share availability and pricing? Thank you!',
-  );
-
-  return [opening, lines.join('\n'), closing].filter(Boolean).join('\n\n');
+  return [t('message.opening'), lines.join('\n'), t('message.closing')].filter(Boolean).join('\n\n');
 }
 
 // A legend sits on the fieldset's own top rule, which is exactly where the
@@ -170,16 +148,14 @@ function Legend({ children }: { children: ReactNode }) {
 // One row of choices, one of which can be down. Square, hairline, and the
 // chosen one inverts to ink — the same states the track arrows and the
 // lightbox thumbnails already use. Tapping the chosen chip lets go of it.
-function Chips({
+function Chips<Id extends string>({
   options,
   value,
   onChange,
-  lang,
 }: {
-  options: Option[];
-  value: string | null;
-  onChange: (next: string | null) => void;
-  lang: Lang;
+  options: readonly (Option & { id: Id })[];
+  value: Id | null;
+  onChange: (next: Id | null) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-2.5">
@@ -197,7 +173,7 @@ function Chips({
             }`}
           >
             {Icon && <Icon className="h-4 w-4 shrink-0" strokeWidth={1.25} aria-hidden />}
-            <span>{option.label(lang)}</span>
+            <span>{option.label}</span>
           </button>
         );
       })}
@@ -206,7 +182,8 @@ function Chips({
 }
 
 export function HostQuoteForm() {
-  const { lang } = useLanguage();
+  const t = useTranslations('hostYourRetreat.quote');
+  const tag = intlTag(useLocale());
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -218,15 +195,18 @@ export function HostQuoteForm() {
   const [months, setMonths] = useState<string[]>([]);
   useEffect(() => setMonths(upcomingMonths(new Date())), []);
 
+  const kindOptions = KINDS.map((k) => ({ id: k.id, icon: k.icon, label: t(`kinds.${k.id}`) }));
+  const lengthOptions = LENGTHS.map((id) => ({ id, label: t(`lengths.${id}`) }));
+  const groupOptions = GROUPS.map((g) => ({ id: g.id, label: t(`groups.${g.id}`) }));
   const monthOptions = useMemo<Option[]>(
     () => [
-      { id: FLEXIBLE, label: (l) => tr(l, 'Fechas flexibles', 'Flexible dates') },
-      ...months.map((key) => ({ id: key, label: (l: Lang) => monthLabel(key, l) })),
+      { id: FLEXIBLE, label: t('flexible') },
+      ...months.map((key) => ({ id: key, label: monthLabel(key, tag) })),
     ],
-    [months],
+    [months, t, tag],
   );
 
-  const message = useMemo(() => composeMessage(lang, answers), [lang, answers]);
+  const message = useMemo(() => composeMessage(t, tag, answers), [t, tag, answers]);
   const href = whatsappUrl(message);
 
   return (
@@ -240,7 +220,7 @@ export function HostQuoteForm() {
             transition={{ duration: 1.0, ease: 'easeOut' }}
             className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]"
           >
-            {tr(lang, 'Pedí tu presupuesto', 'Request a quote')}
+            {t('heading')}
           </motion.h2>
 
           <motion.p
@@ -249,11 +229,7 @@ export function HostQuoteForm() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
             className="font-body text-sm text-ink leading-relaxed mt-6 lg:mt-10 max-w-full lg:max-w-xs"
           >
-            {tr(
-              lang,
-              'El precio depende de las fechas, el tamaño del grupo y los servicios que elijas. Elegí lo esencial y seguimos la conversación por WhatsApp.',
-              "Prices depend on your dates, group size and the services you choose. Pick the essentials and we'll continue the conversation on WhatsApp.",
-            )}
+            {t('intro')}
           </motion.p>
 
           <motion.p
@@ -262,11 +238,7 @@ export function HostQuoteForm() {
             transition={{ duration: 1.0, ease: 'easeOut', delay: 0.3 }}
             className="font-body text-xs text-ink/75 leading-[1.7] mt-8 lg:mt-10 max-w-full lg:max-w-xs"
           >
-            {tr(
-              lang,
-              'Solemos responder dentro de las 24 horas.',
-              'We typically respond within 24 hours.',
-            )}
+            {t('responseTime')}
           </motion.p>
         </div>
 
@@ -284,43 +256,27 @@ export function HostQuoteForm() {
         >
           {/* What */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
-            <Legend>{tr(lang, '¿Qué tipo de retiro?', 'What kind of retreat?')}</Legend>
+            <Legend>{t('what')}</Legend>
             <div className="mt-5">
-              <Chips options={KINDS} value={answers.kind} onChange={(v) => set('kind', v)} lang={lang} />
+              <Chips options={kindOptions} value={answers.kind} onChange={(v) => set('kind', v)} />
             </div>
           </fieldset>
 
           {/* When */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
-            <Legend>{tr(lang, '¿Cuándo?', 'When?')}</Legend>
-            <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">
-              {tr(
-                lang,
-                'Con el mes y la duración alcanza: el precio varía según la temporada.',
-                'A month and a length are enough — prices vary by season.',
-              )}
-            </p>
+            <Legend>{t('when')}</Legend>
+            <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">{t('whenHint')}</p>
             <div className="mt-5 space-y-6">
               <div>
-                <p className={LABEL}>{tr(lang, 'Mes', 'Month')}</p>
+                <p className={LABEL}>{t('month')}</p>
                 <div className="mt-3">
-                  <Chips
-                    options={monthOptions}
-                    value={answers.month}
-                    onChange={(v) => set('month', v)}
-                    lang={lang}
-                  />
+                  <Chips options={monthOptions} value={answers.month} onChange={(v) => set('month', v)} />
                 </div>
               </div>
               <div>
-                <p className={LABEL}>{tr(lang, 'Duración', 'How long')}</p>
+                <p className={LABEL}>{t('length')}</p>
                 <div className="mt-3">
-                  <Chips
-                    options={LENGTHS}
-                    value={answers.length}
-                    onChange={(v) => set('length', v)}
-                    lang={lang}
-                  />
+                  <Chips options={lengthOptions} value={answers.length} onChange={(v) => set('length', v)} />
                 </div>
               </div>
             </div>
@@ -328,12 +284,10 @@ export function HostQuoteForm() {
 
           {/* How many */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
-            <Legend>{tr(lang, '¿Cuántas personas?', 'How many people?')}</Legend>
-            <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">
-              {tr(lang, 'Con un estimado alcanza.', 'An estimate is enough.')}
-            </p>
+            <Legend>{t('howMany')}</Legend>
+            <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">{t('howManyHint')}</p>
             <div className="mt-5">
-              <Chips options={GROUPS} value={answers.group} onChange={(v) => set('group', v)} lang={lang} />
+              <Chips options={groupOptions} value={answers.group} onChange={(v) => set('group', v)} />
             </div>
           </fieldset>
 
@@ -345,15 +299,9 @@ export function HostQuoteForm() {
               rel="noopener noreferrer"
               className="inline-block self-start bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300"
             >
-              {tr(lang, 'Pedir presupuesto por WhatsApp', 'Request a quote on WhatsApp')}
+              {t('cta')}
             </a>
-            <p className="font-body text-xs text-ink/75 leading-[1.7]">
-              {tr(
-                lang,
-                'Abre WhatsApp con tu mensaje ya escrito.',
-                'Opens WhatsApp with your message already written.',
-              )}
-            </p>
+            <p className="font-body text-xs text-ink/75 leading-[1.7]">{t('ctaNote')}</p>
           </div>
         </motion.form>
       </div>

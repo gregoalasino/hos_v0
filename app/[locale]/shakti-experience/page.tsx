@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { ShaktiHero } from '@/components/shakti-experience/ShaktiHero';
@@ -17,11 +18,11 @@ import { ShaktiFaq } from '@/components/shakti-experience/ShaktiFaq';
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const locale = await localeFromParams(params);
+  const t = await getTranslations({ locale, namespace: 'shaktiExperience.meta' });
   return buildMetadata({
     path: '/shakti-experience',
-    title: 'Shakti Experience',
-    description:
-      'A packaged stay at House of Shakti, Santa Teresa: yoga, breathwork, sauna and ice bath, massage and time in nature. A week, a few days, or your own.',
+    title: t('title'),
+    description: t('description'),
     locale,
   });
 }
@@ -38,6 +39,7 @@ export default async function ShaktiExperiencePage({ params }: LocaleParams) {
   setRequestLocale(locale);
 
   return (
+    <PageMessages namespaces={['shaktiExperience']}>
     <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <ShaktiHero />
@@ -54,5 +56,6 @@ export default async function ShaktiExperiencePage({ params }: LocaleParams) {
       <ShaktiFaq />
       <Footer />
     </main>
+    </PageMessages>
   );
 }

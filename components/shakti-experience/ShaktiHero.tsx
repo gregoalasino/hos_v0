@@ -2,8 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { HeroVideo, heroCuts } from '@/components/shared/HeroVideo';
-import { useLanguage } from '@/contexts/language-context';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 // Full-bleed video hero in the training landing's framing — 80% container on
@@ -25,8 +24,7 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function ShaktiHero() {
-  const { lang } = useLanguage();
-  const t = SHAKTI_DICTIONARIES[lang];
+  const t = useMessages().shaktiExperience;
 
   return (
     <section className="bg-warm-white">

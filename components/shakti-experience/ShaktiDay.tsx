@@ -1,8 +1,7 @@
 'use client';
 
 import { ActivitiesTrack } from '@/components/shared/ActivitiesTrack';
-import { useLanguage } from '@/contexts/language-context';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
 
 // ─── A day at House of Shakti ────────────────────────────────────────────────
 // The day as a row of moments, in the same track "More than a stay" rides a
@@ -23,8 +22,7 @@ const IMAGES: Record<string, string> = {
 };
 
 export function ShaktiDay() {
-  const { lang } = useLanguage();
-  const t = SHAKTI_DICTIONARIES[lang].day;
+  const t = useMessages().shaktiExperience.day;
 
   return (
     <ActivitiesTrack

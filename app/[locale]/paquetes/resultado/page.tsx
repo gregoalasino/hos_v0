@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
 import { Navigation } from '@/components/landing/navigation';
@@ -7,28 +7,18 @@ import { Check, X, AlertCircle } from 'lucide-react';
 
 type Copy = { icon: 'ok' | 'declined' | 'error'; title: string; body: string };
 
-const OK_BODY: Record<string, string> = {
-  pack: "Thank you! Your class pack is confirmed. We've emailed your personal class code — use it at checkout to book each class for free.",
-  booking:
-    "Thank you! Your class is booked and your payment is confirmed. We look forward to seeing you on the mat.",
-};
+type Translate = Awaited<ReturnType<typeof getTranslations<'packs.result'>>>;
 
-function copyFor(status: string, kind: string): Copy {
+// The receipt's words, from the catalogue, for the outcome Tilopay reported.
+function copyFor(t: Translate, status: string, kind: string): Copy {
   if (status === 'ok') {
-    return { icon: 'ok', title: kind === 'booking' ? 'Booking confirmed' : 'Payment received', body: OK_BODY[kind] ?? OK_BODY.pack };
+    const which = kind === 'booking' ? 'booking' : 'pack';
+    return { icon: 'ok', title: t(`ok.${which}.title`), body: t(`ok.${which}.body`) };
   }
   if (status === 'declined') {
-    return {
-      icon: 'declined',
-      title: 'Payment not completed',
-      body: 'Your payment was declined or cancelled. No charge was made. You can try again whenever you like.',
-    };
+    return { icon: 'declined', title: t('declined.title'), body: t('declined.body') };
   }
-  return {
-    icon: 'error',
-    title: 'Something went wrong',
-    body: "We couldn't confirm your payment automatically. If you were charged, don't worry — contact us and we'll sort it out right away.",
-  };
+  return { icon: 'error', title: t('error.title'), body: t('error.body') };
 }
 
 export default async function ResultadoPage({
@@ -39,8 +29,9 @@ export default async function ResultadoPage({
 }) {
   const locale = await localeFromParams(params);
   setRequestLocale(locale);
+  const t = await getTranslations('packs.result');
   const { status, kind } = await searchParams;
-  const c = copyFor(status ?? 'error', kind ?? 'pack');
+  const c = copyFor(t, status ?? 'error', kind ?? 'pack');
 
   return (
     <>
@@ -66,14 +57,14 @@ export default async function ResultadoPage({
                 href="/yoga"
                 className="bg-ink text-warm-white font-body text-sm tracking-[0.1em] uppercase px-6 py-3 hover:bg-dark transition-colors duration-200"
               >
-                Book a class
+                {t('bookClass')}
               </Link>
               {status !== 'ok' && (
                 <Link
                   href="/paquetes"
                   className="border border-ink/25 text-ink font-body text-sm tracking-[0.1em] uppercase px-6 py-3 hover:bg-cream/60 transition-colors duration-200"
                 >
-                  Try again
+                  {t('tryAgain')}
                 </Link>
               )}
             </div>

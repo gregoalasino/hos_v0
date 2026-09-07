@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
+import { PageMessages } from '@/i18n/PageMessages';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { YTTHero } from '@/components/yoga-teacher-training/YTTHero';
@@ -22,11 +23,11 @@ import { YTTClosingCTA } from '@/components/yoga-teacher-training/YTTClosingCTA'
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const locale = await localeFromParams(params);
+  const t = await getTranslations({ locale, namespace: 'ytt.meta' });
   return buildMetadata({
     path: '/yoga-teacher-training',
-    title: 'The Awakened Body — Yoga Teacher Training',
-    description:
-      'A 100-hour Tantra yoga teacher training in Santa Teresa, Costa Rica, leading to Yoga Alliance RYT 200. November 21 – December 4, 2026.',
+    title: t('title'),
+    description: t('description'),
     locale,
   });
 }
@@ -41,6 +42,7 @@ export default async function YogaTeacherTrainingPage({ params }: LocaleParams) 
   setRequestLocale(locale);
 
   return (
+    <PageMessages namespaces={['ytt']}>
     <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <YTTHero />
@@ -83,5 +85,6 @@ export default async function YogaTeacherTrainingPage({ params }: LocaleParams) 
 
       <Footer />
     </main>
+    </PageMessages>
   );
 }

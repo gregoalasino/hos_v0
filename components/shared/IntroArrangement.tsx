@@ -5,8 +5,6 @@ import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
 import { Ornament } from '@/components/shared/ornament';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
 import { usePageVisible } from '@/hooks/use-page-visible';
-import { useLanguage } from '@/contexts/language-context';
-import type { Lang } from '@/lib/i18n';
 
 // ─── Intro arrangement ───────────────────────────────────────────────────────
 // The opening statement of a page, sitting directly under its hero: a centred
@@ -20,10 +18,9 @@ import type { Lang } from '@/lib/i18n';
 // are the only things that change from page to page, so they arrive as props
 // and everything else stays in one place.
 
-export type IntroCopy = Record<
-  Lang,
-  { headline: string; paragraphs: string[]; trackAria: string }
->;
+// The words for the language being rendered. Callers read them from their
+// page's namespace in the message catalogue and hand them over.
+export type IntroCopy = { headline: string; paragraphs: string[]; trackAria: string };
 
 // Four slots, deliberately unequal — two large flanked by two small, each hung
 // at a different height so the row reads as an editorial arrangement rather
@@ -145,8 +142,7 @@ export function IntroArrangement({
   /** Portrait photographs, at least five so every slot always has a fresh one to draw. */
   pool: string[];
 }) {
-  const { lang } = useLanguage();
-  const text = copy[lang];
+  const text = copy;
   const ref = useRef<HTMLDivElement | null>(null);
 
   // Rotation runs only when someone can actually see it, which takes both

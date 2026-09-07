@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { computeOrderHash } from '@/lib/tilopay';
+import { localeFromCallback } from '@/lib/tilopay-return';
+import { localizedPath } from '@/lib/seo';
 import {
   confirmBookingPaid,
   confirmPackAndBooking,
@@ -52,9 +54,16 @@ export async function GET(req: NextRequest) {
     searchParams.get('orderNumber') ??
     searchParams.get('ordernumber');
 
+  // The language the customer paid in, carried on the return URL we gave
+  // Tilopay (see lib/tilopay-return.ts). The receipt lives at
+  // /paquetes/resultado in English and /es/paquetes/resultado in Spanish.
+  const locale = localeFromCallback(searchParams);
+
   const enforce = process.env.TILOPAY_VERIFY_HASH === 'true';
   const result = (status: string, kind: 'pack' | 'booking' = 'pack') =>
-    NextResponse.redirect(`${siteUrl}/paquetes/resultado?status=${status}&kind=${kind}`);
+    NextResponse.redirect(
+      `${siteUrl}${localizedPath('/paquetes/resultado', locale)}?status=${status}&kind=${kind}`,
+    );
 
   if (!order) return result('error');
 
@@ -75,7 +84,7 @@ export async function GET(req: NextRequest) {
         console.error('[tilopay/callback] hash mismatch (pack), rejecting', order);
         return result('error');
       }
-      await confirmPackAndBooking(order, tx);
+      await confirmPackAndBooking(order, tx, locale);
       return result('ok');
     }
     await releaseBookingOrder('pack', order);

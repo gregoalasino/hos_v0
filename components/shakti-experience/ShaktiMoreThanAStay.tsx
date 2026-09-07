@@ -1,8 +1,7 @@
 'use client';
 
 import { ActivitiesTrack } from '@/components/shared/ActivitiesTrack';
-import { useLanguage } from '@/contexts/language-context';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
 
 // ─── More than a stay ────────────────────────────────────────────────────────
 // Everything the experience holds, in the section /stay-with-us uses for the
@@ -13,8 +12,7 @@ import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
 const img = (slug: string) => `/images/shakti-experience/more-than-a-stay/${slug}.webp`;
 
 export function ShaktiMoreThanAStay() {
-  const { lang } = useLanguage();
-  const t = SHAKTI_DICTIONARIES[lang].moreThanAStay;
+  const t = useMessages().shaktiExperience.moreThanAStay;
 
   return (
     <ActivitiesTrack

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
@@ -12,6 +13,7 @@ import { Footer } from '@/components/landing/footer';
 // route on demand instead of at build time. On the client it takes the
 // locale from the provider and the route prerenders as before.
 export default function RetreatNotFound() {
+  const t = useTranslations('common.notFound.retreat');
   return (
     <main id="main-content" className="bg-warm-white min-h-screen flex flex-col">
       <Navigation />
@@ -19,17 +21,16 @@ export default function RetreatNotFound() {
       <section className="flex-1 flex items-center justify-center px-6 py-32">
         <div className="text-center max-w-xl">
           <h1 className="font-display font-light text-ink text-3xl md:text-4xl leading-tight">
-            This retreat is not currently active.
+            {t('title')}
           </h1>
           <p className="font-body text-sm text-ink leading-relaxed mt-8">
-            The page you were looking for may have moved or the retreat is no longer
-            on our calendar.
+            {t('body')}
           </p>
           <Link
             href="/retreats"
             className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer mt-10"
           >
-            Return to all retreats
+            {t('back')}
           </Link>
         </div>
       </section>

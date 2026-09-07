@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // ─── Stay carousel ───────────────────────────────────────────────────────────
 // Aman Amanjena style: arrows right-aligned, fade between images. No dots, no
@@ -30,6 +31,7 @@ export function StayCarousel({
   onExpand: (index: number) => void;
   aspect?: string;
 }) {
+  const t = useTranslations('stayWithUs.carousel');
   const [current, setCurrent] = useState(0);
   const total = images.length;
 
@@ -52,7 +54,7 @@ export function StayCarousel({
             <motion.img
               key={src}
               src={src}
-              alt={`${alt} — view ${i + 1}`}
+              alt={t('viewAlt', { alt, index: i + 1 })}
               aria-hidden={i !== current}
               loading="lazy"
               draggable={false}
@@ -73,7 +75,7 @@ export function StayCarousel({
             e.stopPropagation();
             onExpand(current);
           }}
-          aria-label={`View all ${total} photographs of ${alt}`}
+          aria-label={t('viewAll', { count: total, alt })}
           className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/45 text-cream backdrop-blur-[2px] pl-2.5 pr-3 h-9 hover:bg-black/70 transition-colors duration-300"
         >
           <Maximize2 className="h-[15px] w-[15px]" strokeWidth={1.5} aria-hidden />
@@ -87,7 +89,7 @@ export function StayCarousel({
           <button
             type="button"
             onClick={goPrev}
-            aria-label={`Previous image of ${alt}`}
+            aria-label={t('previous', { alt })}
             className="p-3 -m-3 text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1} />
@@ -95,7 +97,7 @@ export function StayCarousel({
           <button
             type="button"
             onClick={goNext}
-            aria-label={`Next image of ${alt}`}
+            aria-label={t('next', { alt })}
             className="p-3 -m-3 text-ink hover:opacity-50 transition-opacity duration-300"
           >
             <ChevronRight className="w-5 h-5" strokeWidth={1} />

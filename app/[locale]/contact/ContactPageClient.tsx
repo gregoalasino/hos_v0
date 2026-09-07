@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
 import { MessageCircle, Mail, Phone, ArrowUpRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { BUSINESS } from '@/lib/business';
@@ -127,6 +128,7 @@ function ContactCTA({
 // 1) Page heading — centered, generous breathing room. Mount-animated
 //    (not scroll-triggered) since it sits at the top of the page.
 function PageHeading() {
+  const t = useTranslations('contact');
   return (
     <section className="bg-warm-white pt-24 lg:pt-32 pb-10 lg:pb-12">
       <div className="w-[90%] md:w-[80%] mx-auto text-center">
@@ -136,7 +138,7 @@ function PageHeading() {
           transition={{ duration: 1.0, ease: 'easeOut', delay: 0.1 }}
           className="font-display font-light text-ink text-4xl md:text-5xl lg:text-6xl leading-[1.1]"
         >
-          Contact Us
+          {t('heading')}
         </motion.h1>
       </div>
     </section>
@@ -146,6 +148,7 @@ function PageHeading() {
 // 2) Two-column section — asymmetric 30/70. Left: stacked info blocks
 //    separated by hairline borders. Right: large vertical image.
 function ContactColumns() {
+  const t = useTranslations('contact');
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
 
@@ -165,11 +168,10 @@ function ContactColumns() {
             className="border-t border-ink/10 py-10 lg:py-12"
           >
             <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
-              Reservations &amp; Inquiries
+              {t('reservations.heading')}
             </h2>
             <p className="font-body text-base text-ink leading-relaxed mt-5 max-w-xl">
-              Our team is available to help you plan your stay, retreats, or
-              private use of the sanctuary. We typically respond within 24 hours.
+              {t('reservations.body')}
             </p>
             {/* Primary reach-outs — WhatsApp first (fastest), then email + phone.
                 Email spans full width so the address never truncates. */}
@@ -177,7 +179,7 @@ function ContactColumns() {
               <ContactCTA
                 href={WHATSAPP_URL}
                 icon={MessageCircle}
-                label="WhatsApp"
+                label={t('reservations.whatsapp')}
                 value={PHONE_DISPLAY}
                 external
                 emphasis
@@ -185,14 +187,14 @@ function ContactColumns() {
               <ContactCTA
                 href={`tel:${PHONE_E164}`}
                 icon={Phone}
-                label="Call"
+                label={t('reservations.call')}
                 value={PHONE_DISPLAY}
               />
               <div className="sm:col-span-2">
                 <ContactCTA
                   href={`mailto:${EMAIL_RESERVATIONS}`}
                   icon={Mail}
-                  label="Email"
+                  label={t('reservations.email')}
                   value={EMAIL_RESERVATIONS}
                 />
               </div>
@@ -207,17 +209,16 @@ function ContactColumns() {
             className="border-t border-ink/10 py-10 lg:py-12"
           >
             <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
-              Host a Retreat
+              {t('host.heading')}
             </h2>
             <p className="font-body text-base text-ink leading-relaxed mt-5 max-w-xl">
-              For teachers, hosts, and brands seeking to use House of Shakti as
-              a setting for retreats or curated gatherings.
+              {t('host.body')}
             </p>
             <div className="mt-7 max-w-xl">
               <ContactCTA
                 href={`mailto:${EMAIL_RETREATS}`}
                 icon={Mail}
-                label="Email"
+                label={t('reservations.email')}
                 value={EMAIL_RETREATS}
               />
             </div>
@@ -234,7 +235,7 @@ function ContactColumns() {
           <div className="relative aspect-[4/5] overflow-hidden bg-ink/5 max-w-sm lg:max-w-none mx-auto">
             <Image
               src={COLUMN_IMAGE}
-              alt="The saltwater pool framed by the jungle at House of Shakti"
+              alt={t('imageAlt')}
               fill
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover"
@@ -249,6 +250,7 @@ function ContactColumns() {
 
 // 3) Visit — full-width single-column. Hairline frame top + bottom.
 function VisitSection() {
+  const t = useTranslations('contact.visit');
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -262,11 +264,10 @@ function VisitSection() {
           className="border-t border-ink/10 py-10 lg:py-12"
         >
           <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
-            Visit
+            {t('heading')}
           </h2>
           <p className="font-body text-base text-ink leading-relaxed max-w-2xl mt-6">
-            House of Shakti is hidden in the canopy of the Nicoya Peninsula,
-            five minutes from Playa Hermosa, Santa Teresa.
+            {t('body')}
           </p>
 
           {/* Address block — the same three lines the footer shows, from the
@@ -282,7 +283,7 @@ function VisitSection() {
 
           <div className="mt-6">
             <ContactLink href={MAPS_URL} external>
-              View on Google Maps
+              {t('maps')}
             </ContactLink>
           </div>
         </motion.div>
@@ -295,6 +296,7 @@ function VisitSection() {
 //    The top border doubles as the visual separator from the Visit section
 //    (single line between them, not two).
 function PressSection() {
+  const t = useTranslations('contact.press');
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -308,13 +310,13 @@ function PressSection() {
           className="border-t border-b border-ink/10 py-10 lg:py-12"
         >
           <h2 className="font-display font-light text-ink text-xl lg:text-2xl leading-snug">
-            Press &amp; Media Enquiries
+            {t('heading')}
           </h2>
           <p className="font-body text-base text-ink leading-relaxed max-w-2xl mt-6">
-            For press, media, and editorial enquiries.
+            {t('body')}
           </p>
           <div className="mt-6">
-            <DetailRow label="Email:">
+            <DetailRow label={t('emailLabel')}>
               <ContactLink href={`mailto:${EMAIL_PRESS}`}>
                 {EMAIL_PRESS}
               </ContactLink>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Ornament } from '@/components/shared/ornament';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
 import { usePageVisible } from '@/hooks/use-page-visible';
@@ -47,6 +48,7 @@ const CLIP_SRC = '/videos/yoga-wellbeing/online-classes-video.mp4#t=0.1';
 const MEASURE = 'max-w-md xl:max-w-lg';
 
 export function OnlineClasses() {
+  const t = useTranslations('yoga.online');
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
 
@@ -157,12 +159,11 @@ export function OnlineClasses() {
             />
 
             <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">
-              Online Yoga Classes
+              {t('heading')}
             </h2>
 
             <p className={`font-body text-sm text-ink leading-[1.7] mt-6 lg:mt-7 ${MEASURE}`}>
-              Bring the practice home. Live online classes to move, breathe, and
-              reconnect — wherever you are.
+              {t('body')}
             </p>
           </motion.div>
 
@@ -180,15 +181,14 @@ export function OnlineClasses() {
               href="#schedule"
               className="inline-block bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300"
             >
-              Book an online class
+              {t('cta')}
             </a>
 
             {/* The practical footnote. Nothing rules it off from the button —
                 the drop to text-xs and to ink/70 is the whole separation, and
                 it is the difference between an instruction and an aside. */}
             <p className={`font-body text-xs text-ink/70 leading-[1.7] mt-6 ${MEASURE}`}>
-              Online classes appear on the same weekly schedule as the ones
-              held at the house, and are booked there.
+              {t('note')}
             </p>
           </motion.div>
         </div>

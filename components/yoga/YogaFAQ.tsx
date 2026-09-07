@@ -4,50 +4,10 @@ import { useState, useRef } from 'react';
 import { Link } from '@/i18n/navigation';
 import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { useMessages, useTranslations } from 'next-intl';
 
-// FAQ content — copy provided by the client for the yoga and wellness page.
-const faqs: { question: string; answer: string }[] = [
-  {
-    question: 'Can I book a private yoga session?',
-    answer:
-      'Yes. Private yoga sessions can be arranged according to your needs and availability.',
-  },
-  {
-    question: "Can I join a yoga class if I'm a beginner?",
-    answer:
-      'Absolutely. Our classes welcome different levels. We recommend letting the teacher know about any injuries or physical limitations before class.',
-  },
-  {
-    question: 'Can I book the Yoga Shala for a private event or retreat?',
-    answer:
-      'Yes. The Yoga Shala can be booked for retreats, trainings, workshops, and private group experiences.',
-  },
-  {
-    question: 'Do you offer wellness experiences for non-guests?',
-    answer:
-      'Yes, some of our wellness offerings are available to visitors. Availability may vary depending on the experience and schedule.',
-  },
-  {
-    question: 'Do I need to book wellness experiences in advance?',
-    answer:
-      'We recommend booking in advance to ensure availability, especially for private sessions and group experiences.',
-  },
-  {
-    question: 'What should I bring to a yoga class?',
-    answer:
-      'We provide yoga mats and basic props. We recommend bringing comfortable clothing, water, and an open mind.',
-  },
-  {
-    question: 'Can wellness experiences be customized for my group?',
-    answer:
-      "Yes. We can help create a personalized wellness experience based on your group's needs, intentions, and schedule.",
-  },
-  {
-    question: 'How do I book an experience?',
-    answer:
-      "Simply reach out to us with the experience you're interested in, your preferred date, and number of people, and our team will help you organize it.",
-  },
-];
+// FAQ content — copy provided by the client for the yoga and wellness page,
+// in the catalogue under yoga.faq.items.
 
 // Stagger variants for the list children
 const listContainer: Variants = {
@@ -139,6 +99,8 @@ function FAQItem({
 // whose question is not answered here still has a way out.
 // ═════════════════════════════════════════════════════════════════════════════
 export function YogaFAQ() {
+  const t = useTranslations('yoga.faq');
+  const faqs = useMessages().yoga.faq.items;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { once: true, margin: '-100px' });
@@ -154,7 +116,7 @@ export function YogaFAQ() {
           transition={{ duration: 1.0, ease: 'easeOut' }}
           className="font-display font-light text-ink text-3xl md:text-4xl leading-tight mb-16 lg:mb-20"
         >
-          Questions before you book?
+          {t('heading')}
         </motion.h2>
 
         <motion.ul
@@ -183,14 +145,13 @@ export function YogaFAQ() {
           className="mt-12 lg:mt-16"
         >
           <p className="font-body text-sm text-ink max-w-md leading-relaxed">
-            Reach out — we&apos;ll help you find the right class or arrange a
-            private session.
+            {t('outro')}
           </p>
           <Link
             href="/contact"
             className="inline-block font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 mt-6"
           >
-            Get in touch
+            {t('cta')}
           </Link>
         </motion.div>
       </div>

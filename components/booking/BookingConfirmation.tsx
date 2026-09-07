@@ -4,9 +4,10 @@ import { motion, Variants } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { enUS } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Upsell, ReferralCode } from '@/types';
-import { paymentInstructions } from '@/lib/payment-methods';
+import { dateFnsLocale } from '@/lib/dates';
+import { VENMO_HANDLE } from '@/lib/payment-methods';
 
 // Word-by-word reveal — same easing as the home Introduction headline
 const headlineContainer: Variants = {
@@ -17,7 +18,6 @@ const headlineWord: Variants = {
   hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] } },
 };
-const HEADLINE = 'Your practice awaits.';
 
 type Props = {
   bookingRef: string;
@@ -50,11 +50,13 @@ export function BookingConfirmation({
   priceUsd, isFree, selectedUpsells, appliedCode, discountAmount, total, email,
   pendingMethod = null,
 }: Props) {
+  const t = useTranslations('booking.confirmation');
+  const locale = dateFnsLocale(useLocale());
   const router = useRouter();
 
+  const HEADLINE = t('headline');
   const endTime = new Date(classDate.getTime() + durationMinutes * 60000);
-  const dateStr =
-    format(classDate, 'EEEE, MMMM d yyyy');
+  const dateStr = format(classDate, t('dateFormat'), { locale });
   const timeStr = `${format(classDate, 'HH:mm')} — ${format(endTime, 'HH:mm')}`;
   const isTotalFree = total === 0;
   const isPending = pendingMethod !== null;
@@ -69,7 +71,7 @@ export function BookingConfirmation({
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy"
         >
-          {isPending ? 'Reserved' : 'Confirmed'}
+          {isPending ? t('reserved') : t('confirmed')}
         </motion.p>
 
         <motion.h1
@@ -103,7 +105,7 @@ export function BookingConfirmation({
         {/* Reference */}
         <div className="mt-14 pt-10 border-t border-ink/15 text-center">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-            Booking reference
+            {t('reference')}
           </p>
           <p className="font-display font-light text-ink text-2xl md:text-3xl mt-3 tracking-[0.08em]">
             {bookingRef}
@@ -112,33 +114,33 @@ export function BookingConfirmation({
 
         {/* Class details */}
         <div className="mt-10 pt-10 border-t border-ink/15 space-y-3">
-          <ReceiptRow label="Class" value={className} />
-          <ReceiptRow label="Instructor" value={instructor} />
-          <ReceiptRow label="Date" value={dateStr} />
-          <ReceiptRow label="Time" value={timeStr} />
+          <ReceiptRow label={t('class')} value={className} />
+          <ReceiptRow label={t('instructor')} value={instructor} />
+          <ReceiptRow label={t('date')} value={dateStr} />
+          <ReceiptRow label={t('time')} value={timeStr} />
           <ReceiptRow
-            label="Duration"
-            value={`${durationMinutes} minutes`}
+            label={t('duration')}
+            value={t('minutes', { count: durationMinutes })}
           />
-          <ReceiptRow label="Location" value={location} />
+          <ReceiptRow label={t('location')} value={location} />
         </div>
 
         {/* Price breakdown */}
         <div className="mt-10 pt-10 border-t border-ink/15 space-y-3">
           <ReceiptRow
-            label="Class"
-            value={isFree ? 'Free' : `$${priceUsd}`}
+            label={t('class')}
+            value={isFree ? t('free') : `$${priceUsd}`}
           />
           {selectedUpsells.map((u) => (
             <ReceiptRow
               key={u.id}
               label={u.name}
-              value={u.priceUsd === 0 ? 'Included' : `+$${u.priceUsd}`}
+              value={u.priceUsd === 0 ? t('included') : `+$${u.priceUsd}`}
             />
           ))}
           {appliedCode && discountAmount > 0 && (
             <ReceiptRow
-              label={`Code ${appliedCode.code}`}
+              label={t('code', { code: appliedCode.code })}
               value={`−$${discountAmount}`}
               tone="burgundy"
             />
@@ -148,10 +150,10 @@ export function BookingConfirmation({
         {/* Total */}
         <div className="mt-8 pt-6 border-t border-ink/30 flex justify-between items-baseline">
           <span className="font-body text-sm tracking-[0.1em] uppercase text-ink">
-            {isPending ? 'Amount due' : 'Total'}
+            {isPending ? t('amountDue') : t('total')}
           </span>
           <span className="font-display font-light text-ink text-2xl md:text-3xl">
-            {isTotalFree ? 'Free' : `$${total}`}
+            {isTotalFree ? t('free') : `$${total}`}
           </span>
         </div>
 
@@ -159,10 +161,10 @@ export function BookingConfirmation({
         {isPending && (
           <div className="mt-10 pt-8 border-t border-ink/15">
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-              {pendingMethod === 'venmo' ? 'Pay with Venmo' : 'Pay in cash'}
+              {pendingMethod === 'venmo' ? t('payVenmo') : t('payCash')}
             </p>
             <p className="font-body text-sm text-ink leading-relaxed mt-3">
-              {paymentInstructions(pendingMethod)}
+              {pendingMethod === 'venmo' ? t('venmoInstructions', { handle: VENMO_HANDLE }) : t('cashInstructions')}
             </p>
           </div>
         )}
@@ -175,10 +177,8 @@ export function BookingConfirmation({
         transition={{ duration: 1.0, ease: 'easeOut', delay: 0.6 }}
         className="font-body text-sm text-ink text-center mt-16"
       >
-        {email
-          ? `We've sent the details to ${email}.`
-          : "We've sent the details to your email."}
-        {isPending && ' Keep your booking reference handy for payment.'}
+        {email ? t('emailSent', { email }) : t('emailSentGeneric')}
+        {isPending && <>{' '}{t('pendingNote')}</>}
       </motion.p>
 
       {/* Quicklinks */}
@@ -194,7 +194,7 @@ export function BookingConfirmation({
           className="inline-flex items-center gap-2 font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer"
         >
           <Calendar className="w-4 h-4" strokeWidth={1.5} />
-          Add to calendar
+          {t('addToCalendar')}
         </button>
 
         <button
@@ -202,7 +202,7 @@ export function BookingConfirmation({
           onClick={() => router.push('/yoga')}
           className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer"
         >
-          Back to classes
+          {t('backToClasses')}
         </button>
       </motion.div>
     </div>

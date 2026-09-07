@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { enUS } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,8 @@ import {
 import type { Upsell, ReferralCode } from '@/types';
 import { startBookingCheckout } from '@/app/actions/checkout';
 import type { PaymentMethod } from '@/lib/payment-methods';
+import type { AppLocale } from '@/i18n/routing';
+import { dateFnsLocale } from '@/lib/dates';
 import { downloadICS } from '@/lib/ics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,33 +62,43 @@ type Props = {
   description: string;
   color?: string;
   upsells: Upsell[];
+  /** The language the flow renders in — sent with the checkout so the receipt comes back in it. */
+  locale: AppLocale;
 };
 
-const personalSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Please enter a valid email'),
-  phone: z.string().optional(),
-  referralCode: z.string().optional(),
-  isHotelGuest: z.boolean(),
-  cloudbedsRef: z.string().optional(),
-});
+// The messages are the reader's — built inside the component, where the
+// catalogue is at hand.
+type FormErrors = { firstNameRequired: string; lastNameRequired: string; emailInvalid: string };
 
-type PersonalData = z.infer<typeof personalSchema>;
+const personalSchema = (errors: FormErrors) =>
+  z.object({
+    firstName: z.string().min(1, errors.firstNameRequired),
+    lastName: z.string().min(1, errors.lastNameRequired),
+    email: z.string().email(errors.emailInvalid),
+    phone: z.string().optional(),
+    referralCode: z.string().optional(),
+    isHotelGuest: z.boolean(),
+    cloudbedsRef: z.string().optional(),
+  });
+
+type PersonalData = z.infer<ReturnType<typeof personalSchema>>;
 
 type PackType = 'dropin' | 'pack5' | 'pack10' | 'pack20';
 
-const PAYMENT_METHODS: { id: PaymentMethod; name: string; hint: string; Icon: typeof CreditCard }[] = [
-  { id: 'card',  name: 'Card',  hint: 'Pay securely online now', Icon: CreditCard },
-  { id: 'venmo', name: 'Venmo', hint: 'Send payment via Venmo',  Icon: Smartphone },
-  { id: 'cash',  name: 'Cash',  hint: 'Pay in person at the studio', Icon: Banknote },
+// Name and hint of each come from the catalogue (booking.step4.methods).
+const PAYMENT_METHODS: { id: PaymentMethod; Icon: typeof CreditCard }[] = [
+  { id: 'card',  Icon: CreditCard },
+  { id: 'venmo', Icon: Smartphone },
+  { id: 'cash',  Icon: Banknote },
 ];
 
-const PACKS: { id: PackType; name: string; classes: number; price: number; saving?: string }[] = [
-  { id: 'dropin', name: 'Drop-in',    classes: 1,  price: 20 },
-  { id: 'pack5',  name: 'Pack of 5',  classes: 5,  price: 75,  saving: 'Save $25' },
-  { id: 'pack10', name: 'Pack of 10', classes: 10, price: 130, saving: 'Save $70' },
-  { id: 'pack20', name: 'Pack of 20', classes: 20, price: 240, saving: 'Save $160' },
+// Names come from the catalogue (booking.step4.packs); the saving is the
+// figure alone, phrased there too.
+const PACKS: { id: PackType; classes: number; price: number; saving?: number }[] = [
+  { id: 'dropin', classes: 1,  price: 20 },
+  { id: 'pack5',  classes: 5,  price: 75,  saving: 25 },
+  { id: 'pack10', classes: 10, price: 130, saving: 70 },
+  { id: 'pack20', classes: 20, price: 240, saving: 160 },
 ];
 
 type BookingError = 'no_spots' | 'too_late' | 'generic' | null;
@@ -95,6 +107,8 @@ async function validateReferralCodeFromDB(
   code: string,
   subtotal: number,
   classPrice: number,
+  // How a pack code introduces itself in the applied-code box, in the reader's language.
+  packLabels: { name: string; applied: string },
 ): Promise<{ valid: boolean; code?: ReferralCode; error?: string }> {
   try {
     const res = await fetch('/api/referral-codes/validate', {
@@ -111,8 +125,8 @@ async function validateReferralCodeFromDB(
       const packCode: ReferralCode = {
         id: code,
         code: code.toUpperCase(),
-        partnerName: 'Class pack',
-        description: data.description ?? 'Class pack applied',
+        partnerName: packLabels.name,
+        description: data.description ?? packLabels.applied,
         benefitType: 'fixed',
         discountFixed: classPrice,
         isActive: true,
@@ -158,22 +172,22 @@ function computeDiscount(code: ReferralCode, subtotal: number, upsells: Upsell[]
   return 0;
 }
 
-// ─── Step headings ────────────────────────────────────────────────────────────
-const STEP_HEADINGS: Record<number, string> = {
-  1: 'Your class',
-  2: 'Enhance your practice',
-  3: 'Your details',
-  4: 'Payment',
-};
+// ─── Step headings — booking.steps.step1..4 in the catalogue ──────────────────
+const STEP_KEYS = { 1: 'step1', 2: 'step2', 3: 'step3', 4: 'step4' } as const;
 
-// ─── Category derivation (mirrors /yoga's CATEGORY_STYLES; kept local for now) ─
-function getCategoryLabel(name: string): string {
-  if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement', 'Vinyasa Flow', 'Vinyasa Krama', 'Detox Yoga'].includes(name)) return 'Vinyasa';
-  if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga', 'Deep Stretch & Breath'].includes(name)) return 'Yin & Restorative';
-  if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'Hatha';
-  if (['Ashtanga Primary'].includes(name)) return 'Ashtanga';
-  if (['Pranayama & Meditación', 'Meditation', 'Tantra Vinyasa'].includes(name)) return 'Meditation';
-  return 'Yoga';
+// ─── Category derivation (mirrors /yoga's getCategoryKey; kept local for now) ─
+// The names compared here are the ones stored in the database, exactly as
+// written there ('Pranayama & Meditación' included); they are never
+// translated. The category's label comes from the catalogue at render time.
+type CategoryKey = 'vinyasa' | 'yin' | 'hatha' | 'ashtanga' | 'meditation' | 'yoga';
+
+function getCategoryKey(name: string): CategoryKey {
+  if (['Sunrise Vinyasa', 'Power Flow', 'Breath & Movement', 'Vinyasa Flow', 'Vinyasa Krama', 'Detox Yoga'].includes(name)) return 'vinyasa';
+  if (['Yin Yoga', 'Yin & Restore', 'Restorative Yoga', 'Deep Stretch & Breath'].includes(name)) return 'yin';
+  if (['Gentle Flow', 'Hatha Foundations'].includes(name)) return 'hatha';
+  if (['Ashtanga Primary'].includes(name)) return 'ashtanga';
+  if (['Pranayama & Meditación', 'Meditation', 'Tantra Vinyasa'].includes(name)) return 'meditation';
+  return 'yoga';
 }
 
 // ─── Editorial input style (border-bottom only, no bg, no rounded) ───────────
@@ -214,8 +228,11 @@ function mockBookingReference(): string {
 export default function BookingFlow({
   classId, className, instructor, startsAt,
   durationMinutes, capacity, spotsRemaining,
-  priceUsd, location, description, color, upsells,
+  priceUsd, location, description, color, upsells, locale: bookingLocale,
 }: Props) {
+  const t = useTranslations('booking');
+  const tCategories = useTranslations('yoga.categories');
+  const locale = dateFnsLocale(useLocale());
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<Set<string>>(new Set());
@@ -250,7 +267,7 @@ export default function BookingFlow({
   const packDef = PACKS.find((p) => p.id === packType)!;
   const isPack = packType !== 'dropin';
   const basePrice = isPack ? packDef.price : priceUsd;
-  const priceLabel = isPack ? packDef.name : 'Class';
+  const priceLabel = isPack ? t(`step4.packs.${packDef.id}`) : t('summary.classLabel');
   const payDiscount = isPack ? 0 : discountAmount;
   const total = Math.max(0, basePrice + subtotalUpsells - payDiscount);
   const isTotalFree = total === 0;
@@ -259,7 +276,10 @@ export default function BookingFlow({
     const codeStr = form.getValues('referralCode') ?? '';
     if (!codeStr.trim()) return;
     setCodeStatus('loading');
-    const result = await validateReferralCodeFromDB(codeStr, subtotal, priceUsd);
+    const result = await validateReferralCodeFromDB(codeStr, subtotal, priceUsd, {
+      name: t('step3.packCodeName'),
+      applied: t('step3.packCodeApplied'),
+    });
     if (result.valid && result.code) {
       setAppliedCode(result.code);
       setCodeStatus('success');
@@ -272,16 +292,17 @@ export default function BookingFlow({
   }
 
   function codeErrorMsg(key: string): string {
-    const msgs: Record<string, string> = {
-      invalid:       'Code not found.',
-      not_found:     'Code not found.',
-      inactive:      'This code is not active.',
-      expired:       'This code has expired.',
-      not_started:   'This code is not valid yet.',
-      limit_reached: 'This code has reached its usage limit.',
-      min_purchase:  'Minimum purchase amount not reached.',
-    };
-    return msgs[key] ?? 'Invalid code.';
+    const keys = {
+      invalid: 'invalid',
+      not_found: 'invalid',
+      inactive: 'inactive',
+      expired: 'expired',
+      not_started: 'notStarted',
+      limit_reached: 'limitReached',
+      min_purchase: 'minPurchase',
+    } as const;
+    const known = (Object.keys(keys) as (keyof typeof keys)[]).find((k) => k === key);
+    return t(`step3.codeErrors.${known ? keys[known] : 'generic'}`);
   }
 
   function toggleUpsell(id: string) {
@@ -293,8 +314,18 @@ export default function BookingFlow({
     });
   }
 
+  const schema = useMemo(
+    () =>
+      personalSchema({
+        firstNameRequired: t('step3.errors.firstNameRequired'),
+        lastNameRequired: t('step3.errors.lastNameRequired'),
+        emailInvalid: t('step3.errors.emailInvalid'),
+      }),
+    [t],
+  );
+
   const form = useForm<PersonalData>({
-    resolver: zodResolver(personalSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       firstName: '', lastName: '', email: '',
       phone: '', referralCode: '',
@@ -356,6 +387,7 @@ export default function BookingFlow({
         },
         packType,
         paymentMethod,
+        locale: bookingLocale,
       });
 
       if (!res.ok) {
@@ -394,8 +426,8 @@ export default function BookingFlow({
     downloadICS({
       uid: bookingRef,
       title: className,
-      description: `Yoga class with ${instructor} at House of Shakti. Ref: ${bookingRef}`,
-      location: `${location}, House of Shakti, Costa Rica`,
+      description: t('confirmation.icsDescription', { instructor, ref: bookingRef }),
+      location: t('confirmation.icsLocation', { location }),
       startsAt: classDate,
       durationMinutes,
       organizerName: 'House of Shakti',
@@ -403,9 +435,9 @@ export default function BookingFlow({
   }
 
   function bookingErrorMsg(): string {
-    if (bookingError === 'no_spots') return 'Sorry, this class is now fully booked.';
-    if (bookingError === 'too_late') return 'Bookings close 1 hour before class.';
-    return 'Something went wrong. Please try again.';
+    if (bookingError === 'no_spots') return t('step4.errors.noSpots');
+    if (bookingError === 'too_late') return t('step4.errors.tooLate');
+    return t('step4.errors.generic');
   }
 
   // ── Step transitions (direction-aware) ─────────────────────────────────────
@@ -507,10 +539,10 @@ export default function BookingFlow({
                   transition={{ duration: 0.4, ease: 'easeOut' }}
                 >
                   <p className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-                    STEP 0{step}
+                    {t('steps.eyebrow', { step: String(step).padStart(2, '0') })}
                   </p>
                   <h1 className="font-display font-light text-ink text-3xl lg:text-4xl leading-tight mt-2">
-                    {STEP_HEADINGS[step]}
+                    {t(`steps.${STEP_KEYS[step as 1 | 2 | 3 | 4]}`)}
                   </h1>
                 </motion.div>
 
@@ -546,10 +578,10 @@ export default function BookingFlow({
                         {/* Eyebrow row: category + duration */}
                         <div className="flex justify-between items-center mt-8">
                           <span className="font-body text-[10px] tracking-[0.3em] uppercase text-burgundy">
-                            {getCategoryLabel(className)}
+                            {tCategories(getCategoryKey(className))}
                           </span>
                           <span className="font-body text-[10px] tracking-[0.3em] uppercase text-ink">
-                            {durationMinutes} minutes
+                            {t('step1.minutes', { count: durationMinutes })}
                           </span>
                         </div>
 
@@ -560,18 +592,18 @@ export default function BookingFlow({
 
                         {/* Description (fallback if empty) */}
                         <p className="font-body text-base text-ink leading-relaxed mt-6">
-                          {description?.trim() || 'A grounded practice paced to the rhythm of the body.'}
+                          {description?.trim() || t('step1.descriptionFallback')}
                         </p>
 
                         {/* Instructor row */}
                         <div className="mt-12 pt-8 border-t border-ink/10 flex items-center gap-4">
                           <div>
                             <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
-                              Instructor
+                              {t('step1.instructor')}
                             </p>
                             <p className="font-body text-sm text-ink mt-1">{instructor}</p>
                             <p className="font-body text-xs text-ink mt-1">
-                              200hr Certified Teacher
+                              {t('step1.certified')}
                             </p>
                           </div>
                         </div>
@@ -579,19 +611,19 @@ export default function BookingFlow({
                         {/* Schedule micro-grid */}
                         <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-6">
                           <ScheduleCell
-                            label="Date"
-                            value={format(classDate, 'EEE d MMM yyyy', { locale: enUS })}
+                            label={t('step1.date')}
+                            value={format(classDate, t('step1.dateFormat'), { locale })}
                           />
                           <ScheduleCell
-                            label="Time"
+                            label={t('step1.time')}
                             value={`${format(classDate, 'HH:mm')} — ${format(new Date(classDate.getTime() + durationMinutes * 60000), 'HH:mm')}`}
                           />
                           <ScheduleCell
-                            label="Availability"
+                            label={t('step1.availability')}
                             value={
                               spotsRemaining === 0
-                                ? 'Fully booked'
-                                : `${spotsRemaining} of ${capacity} spots`
+                                ? t('step1.fullyBooked')
+                                : t('step1.spots', { remaining: spotsRemaining, capacity })
                             }
                           />
                         </div>
@@ -609,7 +641,7 @@ export default function BookingFlow({
                         transition={{ duration: 0.4, ease: 'easeOut' }}
                       >
                         <p className="font-body text-sm text-ink max-w-md">
-                          Optional additions to make your class more complete. Select any you&apos;d like.
+                          {t('step2.intro')}
                         </p>
 
                         {activeUpsells.length > 0 ? (
@@ -635,7 +667,7 @@ export default function BookingFlow({
                                   <div className="flex-1 min-w-0">
                                     {u.priceUsd === 0 && (
                                       <span className="inline-block font-body text-[10px] tracking-[0.2em] uppercase text-burgundy border border-burgundy/30 px-2 py-[2px]">
-                                        Included
+                                        {t('step2.included')}
                                       </span>
                                     )}
                                     <h3 className={`font-display font-light text-ink text-lg lg:text-xl leading-tight ${u.priceUsd === 0 ? 'mt-3' : ''}`}>
@@ -670,7 +702,7 @@ export default function BookingFlow({
                           </div>
                         ) : (
                           <p className="font-body text-sm text-ink italic mt-12">
-                            No add-ons available at this time.
+                            {t('step2.none')}
                           </p>
                         )}
                       </motion.div>
@@ -687,7 +719,7 @@ export default function BookingFlow({
                         transition={{ duration: 0.4, ease: 'easeOut' }}
                       >
                         <p className="font-body text-sm text-ink max-w-md">
-                          We&apos;ll send your booking confirmation here.
+                          {t('step3.intro')}
                         </p>
 
                         <Form {...form}>
@@ -695,15 +727,15 @@ export default function BookingFlow({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
                               <FormField control={form.control} name="firstName" render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">First name</FormLabel>
-                                  <FormControl><Input placeholder="Ana" className={editorialInput} {...field} /></FormControl>
+                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">{t('step3.firstName')}</FormLabel>
+                                  <FormControl><Input placeholder={t('step3.placeholders.firstName')} className={editorialInput} {...field} /></FormControl>
                                   <FormMessage className="text-xs text-burgundy mt-1" />
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name="lastName" render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">Last name</FormLabel>
-                                  <FormControl><Input placeholder="García" className={editorialInput} {...field} /></FormControl>
+                                  <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">{t('step3.lastName')}</FormLabel>
+                                  <FormControl><Input placeholder={t('step3.placeholders.lastName')} className={editorialInput} {...field} /></FormControl>
                                   <FormMessage className="text-xs text-burgundy mt-1" />
                                 </FormItem>
                               )} />
@@ -711,8 +743,8 @@ export default function BookingFlow({
 
                             <FormField control={form.control} name="email" render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">Email</FormLabel>
-                                <FormControl><Input type="email" placeholder="ana@email.com" className={editorialInput} {...field} /></FormControl>
+                                <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">{t('step3.email')}</FormLabel>
+                                <FormControl><Input type="email" placeholder={t('step3.placeholders.email')} className={editorialInput} {...field} /></FormControl>
                                 <FormMessage className="text-xs text-burgundy mt-1" />
                               </FormItem>
                             )} />
@@ -720,9 +752,9 @@ export default function BookingFlow({
                             <FormField control={form.control} name="phone" render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
-                                  Phone <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                  {t('step3.phone')} <span className="font-normal normal-case tracking-normal">{t('step3.optional')}</span>
                                 </FormLabel>
-                                <FormControl><Input placeholder="+1 555-0100" className={editorialInput} {...field} /></FormControl>
+                                <FormControl><Input placeholder={t('step3.placeholders.phone')} className={editorialInput} {...field} /></FormControl>
                                 <FormMessage className="text-xs text-burgundy mt-1" />
                               </FormItem>
                             )} />
@@ -732,12 +764,12 @@ export default function BookingFlow({
                               <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 font-body text-[10px] tracking-[0.25em] uppercase text-ink">
                                   <Tag className="w-3 h-3 text-ink" strokeWidth={1.5} />
-                                  Referral / packs code <span className="font-normal normal-case tracking-normal">(optional)</span>
+                                  {t('step3.code')} <span className="font-normal normal-case tracking-normal">{t('step3.optional')}</span>
                                 </FormLabel>
                                 <div className="flex items-end gap-3">
                                   <FormControl>
                                     <Input
-                                      placeholder="e.g. SURF-CAMP or your pack code"
+                                      placeholder={t('step3.codePlaceholder')}
                                       {...field}
                                       onChange={(e) => {
                                         field.onChange(e);
@@ -755,7 +787,7 @@ export default function BookingFlow({
                                   >
                                     {codeStatus === 'loading'
                                       ? <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={1.5} />
-                                      : 'Apply'}
+                                      : t('step3.apply')}
                                   </button>
                                 </div>
                                 <FormMessage className="text-xs text-burgundy mt-1" />
@@ -766,10 +798,10 @@ export default function BookingFlow({
                                       <p className="font-body text-xs font-medium text-ink">
                                         {appliedCode.partnerName} — {
                                           appliedCode.benefitType === 'percentage'
-                                            ? `${appliedCode.discountPercent}% off`
+                                            ? t('step3.discountPercent', { percent: appliedCode.discountPercent ?? 0 })
                                             : appliedCode.benefitType === 'fixed'
-                                              ? `$${appliedCode.discountFixed} off`
-                                              : 'Free gift included'
+                                              ? t('step3.discountFixed', { amount: appliedCode.discountFixed ?? 0 })
+                                              : t('step3.freeGift')
                                         }
                                       </p>
                                       <p className="font-body text-[11px] text-ink mt-0.5">{appliedCode.description}</p>
@@ -801,9 +833,7 @@ export default function BookingFlow({
                         transition={{ duration: 0.4, ease: 'easeOut' }}
                       >
                         <p className="font-body text-sm text-ink max-w-md">
-                          Pay securely by card now, or settle with Venmo or in cash at the
-                          studio. Choose a single class or save with a pack — a pack also covers
-                          this class and sends you a code for future ones.
+                          {t('step4.intro')}
                         </p>
 
                         {/* Pack type selector — editorial flat cards, no radius */}
@@ -843,16 +873,16 @@ export default function BookingFlow({
                                   </div>
                                   <div>
                                     <p className="font-body text-sm font-medium text-ink">
-                                      {pack.name}
+                                      {t(`step4.packs.${pack.id}`)}
                                     </p>
                                     {pack.saving && (
                                       <p className="font-body text-xs text-burgundy mt-1">
-                                        {pack.saving}
+                                        {t('step4.savings', { amount: pack.saving })}
                                       </p>
                                     )}
                                   </div>
                                 </div>
-                                <span className="font-body text-sm text-ink">${displayPrice} USD</span>
+                                <span className="font-body text-sm text-ink">{t('step4.priceUsd', { amount: displayPrice })}</span>
                               </button>
                             );
                           })}
@@ -861,10 +891,10 @@ export default function BookingFlow({
                         {/* Payment method selector */}
                         <div className="mt-10">
                           <p className="font-body text-[10px] tracking-[0.25em] uppercase text-ink">
-                            Payment method
+                            {t('step4.paymentMethod')}
                           </p>
                           <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {PAYMENT_METHODS.map(({ id, name, hint, Icon }) => {
+                            {PAYMENT_METHODS.map(({ id, Icon }) => {
                               const active = paymentMethod === id;
                               return (
                                 <button
@@ -881,29 +911,27 @@ export default function BookingFlow({
                                   `}
                                 >
                                   <Icon className="w-5 h-5 text-ink" strokeWidth={1.5} />
-                                  <span className="font-body text-sm font-medium text-ink">{name}</span>
-                                  <span className="font-body text-xs text-ink/60 leading-snug">{hint}</span>
+                                  <span className="font-body text-sm font-medium text-ink">{t(`step4.methods.${id}.name`)}</span>
+                                  <span className="font-body text-xs text-ink/60 leading-snug">{t(`step4.methods.${id}.hint`)}</span>
                                 </button>
                               );
                             })}
                           </div>
                           {paymentMethod === 'venmo' && (
                             <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
-                              We&apos;ll show the Venmo details to complete your payment. Your spot
-                              stays pending until we verify it.
+                              {t('step4.venmoNote')}
                             </p>
                           )}
                           {paymentMethod === 'cash' && (
                             <p className="font-body text-xs text-ink/70 mt-4 leading-relaxed">
-                              We&apos;ll hold your spot — just pay in cash at the studio reception
-                              before your class.
+                              {t('step4.cashNote')}
                             </p>
                           )}
                         </div>
 
                         {/* Cancellation note */}
                         <p className="font-body text-xs text-ink mt-6">
-                          ✓ Free cancellation up to 2 hours before class.
+                          {t('step4.cancellation')}
                         </p>
 
                         {/* Error message */}
@@ -924,13 +952,7 @@ export default function BookingFlow({
                   canContinue={canContinue}
                   onBack={handleBack}
                   onContinue={handleContinue}
-                  payLabel={
-                    paymentMethod === 'card'
-                      ? 'Confirm and pay'
-                      : paymentMethod === 'venmo'
-                        ? 'Pay with Venmo'
-                        : 'Reserve'
-                  }
+                  payLabel={t(`step4.pay.${paymentMethod}`)}
                 />
               </div>
             </div>

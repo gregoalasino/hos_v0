@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   step: number; // 1..4
@@ -19,14 +20,15 @@ type Props = {
  * - "Continue" / "Confirm and pay" button on the right
  */
 export function BookingNavigation({
-  step, isLoading, canContinue, onBack, onContinue, payLabel = 'Confirm and pay',
+  step, isLoading, canContinue, onBack, onContinue, payLabel,
 }: Props) {
+  const t = useTranslations('booking');
   const isPay = step === 4;
   const showBack = step > 1;
 
   const continueLabel = isPay
-    ? payLabel
-    : 'Continue';
+    ? payLabel ?? t('step4.pay.card')
+    : t('navigation.continue');
 
   return (
     <div className="mt-16 lg:mt-24 pt-8 border-t border-ink/10 flex justify-between items-center">
@@ -38,7 +40,7 @@ export function BookingNavigation({
             disabled={isLoading}
             className="font-body text-sm text-ink underline underline-offset-4 decoration-[0.5px] hover:opacity-70 transition-opacity duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Back
+            {t('navigation.back')}
           </button>
         )}
       </div>

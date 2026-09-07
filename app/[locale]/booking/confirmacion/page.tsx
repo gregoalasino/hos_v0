@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { localeFromParams, type LocaleParams } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ export default async function ConfirmacionPage({
 }) {
   const locale = await localeFromParams(params);
   setRequestLocale(locale);
+  const t = await getTranslations('booking.done');
 
   return (
     <div className="min-h-screen bg-warm-white flex items-center justify-center px-4">
@@ -20,30 +21,30 @@ export default async function ConfirmacionPage({
         </div>
 
         <h1 className="font-display text-3xl font-light text-dark mb-3">
-          ¡Reserva confirmada!
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mb-8">
-          Tu reserva fue procesada exitosamente. Recibirás un email de confirmación con todos los detalles.
+          {t('body')}
         </p>
 
         <div className="bg-cream rounded-2xl p-6 mb-8">
           <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
-            Nos vemos en el shala
+            {t('seeYou')}
           </p>
           <p className="font-display text-xl text-dark">
-            House of Shakti · Costa Rica
+            {t('brand')}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/" className="flex-1">
             <Button variant="outline" className="w-full h-12">
-              Ir al inicio
+              {t('home')}
             </Button>
           </Link>
           <Link href="/yoga" className="flex-1">
             <Button className="w-full bg-dark hover:bg-burgundy text-cream h-12">
-              Más clases
+              {t('more')}
             </Button>
           </Link>
         </div>

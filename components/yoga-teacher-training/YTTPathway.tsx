@@ -3,8 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { MapPin, Globe } from 'lucide-react';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 
 type Phase = {
   tag: string;
@@ -92,8 +91,7 @@ function PhaseCard({ phase }: { phase: Phase }) {
 }
 
 export function YTTPathway() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

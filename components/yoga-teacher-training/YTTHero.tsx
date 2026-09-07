@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMediaQuery, usePrefersReducedMotion } from '@/hooks/use-media-query';
-import { useLanguage } from '@/contexts/language-context';
-import { YTT_DICTIONARIES } from '@/lib/i18n-ytt';
+import { useMessages } from 'next-intl';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 // Two cuts of the same sunset, framed for their own orientation: 1440×1080 for
@@ -45,8 +44,7 @@ const TEXT_SHADOW =
   '[text-shadow:0_1px_2px_rgba(0,0,0,0.45),0_2px_20px_rgba(0,0,0,0.35)]';
 
 export function YTTHero() {
-  const { lang } = useLanguage();
-  const t = YTT_DICTIONARIES[lang];
+  const t = useMessages().ytt;
   const [videoReady, setVideoReady] = useState(false);
 
   // `null` on the server and on the first client render. Holding the video back

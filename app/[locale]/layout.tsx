@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
-import { setRequestLocale } from 'next-intl/server'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
+import { SHARED_NAMESPACES, pickMessages } from '@/i18n/messages'
 import { Analytics } from '@vercel/analytics/next'
 import { routing, localeFromParams, type LocaleParams } from '@/i18n/routing'
 import { FONT_VARIABLES } from '@/lib/fonts'
@@ -104,6 +105,12 @@ export default async function RootLayout({ children, params }: LocaleParams & { 
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
+  // Only the chrome every page shares goes to the client from here — the
+  // navigation, the footer, the WhatsApp tile. Each page adds its own
+  // namespace through PageMessages, so nobody downloads the whole catalogue.
+  const messages = pickMessages(await getMessages(), SHARED_NAMESPACES)
+  const t = await getTranslations('common.labels')
+
   return (
     <html lang={locale} className={FONT_VARIABLES}>
       <body className="font-body antialiased">
@@ -135,13 +142,12 @@ export default async function RootLayout({ children, params }: LocaleParams & { 
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-dark focus:text-cream focus:font-body focus:text-sm focus:tracking-[0.05em] focus:px-6 focus:py-3"
         >
-          Skip to content
+          {t('skipToContent')}
         </a>
         <SplashScreen />
-        {/* Locale and messages are inherited from i18n/request.ts — nothing to
-            pass. Every `useLanguage()` and `useTranslations()` below reads
-            from this provider. */}
-        <NextIntlClientProvider>
+        {/* The locale is inherited from i18n/request.ts. Every `useLocale()`
+            and `useTranslations()` in the shared chrome reads from here. */}
+        <NextIntlClientProvider messages={messages}>
           {children}
           {/* Floating WhatsApp entry point — every public page; the component
               itself stays out of /login and /booking. */}

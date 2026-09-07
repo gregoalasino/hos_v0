@@ -3,6 +3,7 @@
 import { useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   className: string;
@@ -18,6 +19,7 @@ type Props = {
 export function BookingMobileSummary({
   className, total, isFree, children,
 }: Props) {
+  const t = useTranslations('booking.summary');
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -29,13 +31,11 @@ export function BookingMobileSummary({
         aria-expanded={isExpanded}
       >
         <span className="font-body text-sm text-ink truncate pr-3">
-          {isFree ? 'Free' : `$${total}`} — {className}
+          {isFree ? t('free') : `$${total}`} — {className}
         </span>
         <span className="flex items-center gap-2 flex-shrink-0">
           <span className="font-body text-xs text-ink">
-            {isExpanded
-              ? 'Hide'
-              : 'View details'}
+            {isExpanded ? t('hide') : t('details')}
           </span>
           <motion.span
             animate={{ rotate: isExpanded ? 180 : 0 }}

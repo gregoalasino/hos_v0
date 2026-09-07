@@ -2,8 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import { useLanguage } from '@/contexts/language-context';
-import { SHAKTI_DICTIONARIES } from '@/lib/i18n-shakti';
+import { useMessages } from 'next-intl';
 import { whatsappUrl } from '@/lib/whatsapp';
 
 // ─── Pricing ─────────────────────────────────────────────────────────────────
@@ -26,8 +25,7 @@ const item: Variants = {
 };
 
 export function ShaktiPricing() {
-  const { lang } = useLanguage();
-  const t = SHAKTI_DICTIONARIES[lang];
+  const t = useMessages().shaktiExperience;
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 

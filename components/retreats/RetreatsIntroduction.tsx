@@ -2,8 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-
-const HEADLINE = 'Where Transformation Meets Paradise';
+import { useTranslations } from 'next-intl';
 
 const headlineContainer: Variants = {
   hidden: { opacity: 1 },
@@ -17,8 +16,10 @@ const headlineWord: Variants = {
 export function RetreatsIntroduction() {
   const ref = useRef<HTMLDivElement | null>(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
+  const t = useTranslations('retreats.intro');
 
-  const words = HEADLINE.split(' ');
+  const headline = t('headline');
+  const words = headline.split(' ');
 
   return (
     <section className="bg-warm-white py-20 lg:py-28 overflow-hidden">
@@ -28,7 +29,7 @@ export function RetreatsIntroduction() {
             variants={headlineContainer}
             initial="hidden"
             animate={inView ? 'visible' : 'hidden'}
-            aria-label={HEADLINE}
+            aria-label={headline}
             className="font-display font-light text-ink text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.01em]"
           >
             {words.map((word, i) => (
@@ -52,7 +53,7 @@ export function RetreatsIntroduction() {
             transition={{ duration: 1.2, ease: 'easeOut', delay: 1.4 }}
             className="font-body text-sm tracking-[0.05em] text-ink/70 mt-12 lg:mt-16 max-w-2xl"
           >
-            Signature Retreats / Hosted Retreats / Yoga Training / Experiences
+            {t('tagline')}
           </motion.p>
         </div>
       </div>

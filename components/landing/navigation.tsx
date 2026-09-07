@@ -2,27 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link, getPathname, usePathname } from '@/i18n/navigation';
-import { useLanguage } from '@/contexts/language-context';
-import { tr, type Lang } from '@/lib/i18n';
+import { routing, type AppLocale } from '@/i18n/routing';
 import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
+import { rememberLocale } from '@/lib/locale-cookie';
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 // Single source of truth for the primary nav links. Rendered only inside
 // the drawer (the closed navbar shows just hamburger + logo + lang/CTA,
-// matching the Aman pattern).
-const navItems: { es: string; en: string; href: string }[] = [
-  { es: 'Yoga y Bienestar', en: 'Yoga & Wellbeing', href: '/yoga' },
-  { es: 'Hospedate con Nosotras', en: 'Stay With Us', href: '/stay-with-us' },
-  { es: 'Retiros', en: 'Retreats', href: '/retreats' },
+// matching the Aman pattern). Labels live in the catalogue under nav.items,
+// keyed by `id`.
+const navItems = [
+  { id: 'yoga', href: '/yoga' },
+  { id: 'stay', href: '/stay-with-us' },
+  { id: 'retreats', href: '/retreats' },
   // Anchor into the home page rather than a route of its own — the section
   // lives at <section id="seasonal-experiences"> in seasonal-experiences.tsx.
-  { es: 'Experiencias de Temporada', en: 'Seasonal Experiences', href: '/#seasonal-experiences' },
-  { es: 'Nosotras', en: 'About', href: '/about' },
-  { es: 'Contacto', en: 'Contact', href: '/contact' },
-];
+  { id: 'seasonal', href: '/#seasonal-experiences' },
+  { id: 'about', href: '/about' },
+  { id: 'contact', href: '/contact' },
+] as const;
 
 // ─── Link targets ───────────────────────────────────────────────────────────
 // `Link` (from i18n/navigation) adds `/es` to a Spanish reader's links on its
@@ -144,26 +147,42 @@ function HOSLogo({
 // Each mark is a real link to the same page in the other language — `/yoga`
 // ⇄ `/es/yoga`, `/stay-with-us` ⇄ `/es/stay-with-us` — so a crawler finds the
 // other version from every page and a cmd-click opens it in a new tab. A plain
-// click goes through `setLang`, which keeps the query string as well and
-// leaves the reader where they were on the page. No route map: `getPathname`
-// derives the target from the current path, whatever page this is.
+// click navigates in place: the query string and the hash come along, the
+// reader stays where they were on the page, and the choice is remembered in a
+// NEXT_LOCALE cookie (lib/locale-cookie.ts — client-side only). No route map:
+// `getPathname` derives the target from the current path, whatever page this
+// is.
 function LangToggle() {
-  const { lang, setLang } = useLanguage();
+  const t = useTranslations('nav');
+  const locale = useLocale();
+  // Locale-less, so the same page can be named in the other language.
   const pathname = usePathname();
+  const router = useRouter();
 
-  const option = (code: Lang) => (
+  const switchTo = (next: AppLocale) => {
+    if (next === locale) return;
+    rememberLocale(next);
+    // Next's own router, not next-intl's: the latter would name the English
+    // page `/en/yoga` when switching to it explicitly, and the proxy would
+    // then redirect that to `/yoga` — one hop the reader never needs to make.
+    // `getPathname` already knows that English carries no prefix.
+    const target = getPathname({ href: pathname, locale: next });
+    router.replace(`${target}${window.location.search}${window.location.hash}`, { scroll: false });
+  };
+
+  const option = (code: AppLocale) => (
     <NextLink
       href={getPathname({ href: pathname, locale: code })}
       hrefLang={code}
-      aria-current={lang === code ? 'true' : undefined}
+      aria-current={locale === code ? 'true' : undefined}
       onClick={(e) => {
         // Let the browser handle modified clicks (new tab, etc.) via the href.
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         e.preventDefault();
-        setLang(code);
+        switchTo(code);
       }}
       className={`font-body text-[11px] tracking-[0.18em] uppercase transition-colors duration-300 ${
-        lang === code ? 'text-ink' : 'text-ink/35 hover:text-ink/70'
+        locale === code ? 'text-ink' : 'text-ink/35 hover:text-ink/70'
       }`}
     >
       {code.toUpperCase()}
@@ -173,12 +192,15 @@ function LangToggle() {
   return (
     <div
       role="group"
-      aria-label={tr(lang, 'Cambiar idioma', 'Change language')}
+      aria-label={t('changeLanguage')}
       className="flex items-center gap-2.5"
     >
-      {option('en')}
-      <span aria-hidden className="h-3 w-px bg-ink/25" />
-      {option('es')}
+      {routing.locales.map((code, i) => (
+        <span key={code} className="contents">
+          {i > 0 && <span aria-hidden className="h-3 w-px bg-ink/25" />}
+          {option(code)}
+        </span>
+      ))}
     </div>
   );
 }
@@ -190,7 +212,7 @@ function LangToggle() {
 // for when that script is blocked or still loading, and is what a cmd-click
 // opens in a new tab. Same contract as CheckAvailabilityLink on /stay-with-us.
 function ReserveCta({ className, onNavigate }: { className: string; onNavigate?: () => void }) {
-  const { lang } = useLanguage();
+  const t = useTranslations('nav');
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     onNavigate?.();
@@ -212,7 +234,7 @@ function ReserveCta({ className, onNavigate }: { className: string; onNavigate?:
       onClick={handleClick}
       className={className}
     >
-      {tr(lang, 'Reservar', 'Reserve')}
+      {t('reserve')}
     </a>
   );
 }
@@ -231,7 +253,7 @@ function Drawer({
 }) {
   const isActive = useActiveRoute();
   const pathname = usePathname();
-  const { lang } = useLanguage();
+  const t = useTranslations('nav');
 
   // Anchor links (e.g. "/#seasonal-experiences") need special handling: while
   // the drawer is open the body carries `overflow: hidden`, so the browser's
@@ -326,7 +348,7 @@ function Drawer({
             id="primary-drawer"
             role="dialog"
             aria-modal="true"
-            aria-label={tr(lang, 'Navegación del sitio', 'Site navigation')}
+            aria-label={t('siteNavigation')}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -339,7 +361,7 @@ function Drawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label={tr(lang, 'Cerrar menú', 'Close menu')}
+                  aria-label={t('closeMenu')}
                   className="text-ink hover:opacity-70 transition-opacity duration-300"
                 >
                   <X className="w-[22px] h-[22px]" strokeWidth={1.5} />
@@ -359,7 +381,7 @@ function Drawer({
 
               {/* Nav links */}
               <nav
-                aria-label={tr(lang, 'Secciones del sitio', 'Site sections')}
+                aria-label={t('siteSections')}
                 className="mt-12 space-y-6"
               >
                 {navItems.map((item) => (
@@ -373,7 +395,7 @@ function Drawer({
                         : ''
                     }`}
                   >
-                    {tr(lang, item.es, item.en)}
+                    {t(`items.${item.id}`)}
                   </Link>
                 ))}
               </nav>
@@ -399,7 +421,7 @@ function Drawer({
 
 // ─── Main component ─────────────────────────────────────────────────────────
 export function Navigation() {
-  const { lang } = useLanguage();
+  const t = useTranslations('nav');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { isCompact, isHidden } = useNavbarScrollState();
 
@@ -429,21 +451,21 @@ export function Navigation() {
             document — the drawer's own <nav> only mounts once it is opened.
             Same element box, same classes, nothing moves. */}
         <nav
-          aria-label={tr(lang, 'Navegación principal', 'Main navigation')}
+          aria-label={t('mainNavigation')}
           className="h-full w-full px-4 sm:px-6 lg:px-12 grid grid-cols-3 items-center"
         >
           {/* LEFT — hamburger (+ "Menu" text on desktop) */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label={tr(lang, 'Abrir menú', 'Open menu')}
+            aria-label={t('openMenu')}
             aria-controls="primary-drawer"
             aria-expanded={drawerOpen}
             className="justify-self-start flex items-center gap-4 lg:gap-5 text-ink hover:opacity-70 transition-opacity duration-300"
           >
             <Menu className="w-[22px] h-[22px]" strokeWidth={1.5} />
             <span className="hidden lg:inline font-body text-sm tracking-[0.05em]">
-              {tr(lang, 'Menú', 'Menu')}
+              {t('menu')}
             </span>
           </button>
 
