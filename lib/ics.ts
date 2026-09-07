@@ -37,10 +37,10 @@ export function generateICS(params: ICSParams): string {
     `SUMMARY:${title}`,
     `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
     `LOCATION:${location}`,
-    // Reservations is the mailbox that actually handles bookings; `info@` was
-    // invented and lived on the wrong domain. Still TODO_CONFIRM in business.ts.
+    // The general mailbox is the one that handles bookings; `info@` was
+    // invented and lived on a domain the business does not own.
     organizerName
-      ? `ORGANIZER;CN=${organizerName}:mailto:${BUSINESS.email.reservations}`
+      ? `ORGANIZER;CN=${organizerName}:mailto:${BUSINESS.email.general}`
       : '',
     'STATUS:CONFIRMED',
     'SEQUENCE:0',

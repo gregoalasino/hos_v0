@@ -4,10 +4,12 @@
 //
 // Two rules hold throughout:
 //
-//   1. **Never guess.** A field whose value is a TODO_CONFIRM in business.ts is
-//      omitted from the output entirely. Wrong coordinates or an invented
-//      street send real people to the wrong place; an incomplete schema only
-//      leaves a rich result slightly less rich.
+//   1. **Never guess.** A field the owners have not confirmed is omitted from
+//      the output entirely. Wrong coordinates or an invented street send real
+//      people to the wrong place; an incomplete schema only leaves a rich
+//      result slightly less rich. As of 2026-09-07 everything but `legalName`
+//      is confirmed, so the graph is close to complete — but the guards stay,
+//      because the next fact to arrive will arrive the same way.
 //   2. **Never emit an invalid type.** Where schema.org marks a property as
 //      required — `startDate` on an Event, `address` on a LodgingBusiness —
 //      the builder returns `null` rather than a partial object, and the caller
@@ -23,16 +25,28 @@ export type JsonLd = Record<string, unknown>;
 const BUSINESS_ID = `${BUSINESS.url}/#business`;
 const WEBSITE_ID = `${BUSINESS.url}/#website`;
 
-/** PostalAddress, with only the parts we actually know. */
+/**
+ * PostalAddress.
+ *
+ * No `postalCode`: this address has none, and an empty string reads to a
+ * consumer as "we don't know" rather than "there isn't one".
+ */
 function postalAddress(): JsonLd {
   return {
     '@type': 'PostalAddress',
-    // Street and postal code are TODO_CONFIRM — omitted, not invented.
-    ...(BUSINESS.address.street ? { streetAddress: BUSINESS.address.street } : {}),
+    streetAddress: BUSINESS.address.street,
     addressLocality: BUSINESS.address.locality,
     addressRegion: BUSINESS.address.region,
-    ...(BUSINESS.address.postalCode ? { postalCode: BUSINESS.address.postalCode } : {}),
     addressCountry: BUSINESS.address.country,
+  };
+}
+
+/** GeoCoordinates, shared by the business and by every class's Place. */
+function geoCoordinates(): JsonLd {
+  return {
+    '@type': 'GeoCoordinates',
+    latitude: BUSINESS.geo.latitude,
+    longitude: BUSINESS.geo.longitude,
   };
 }
 
@@ -42,15 +56,7 @@ function placeFor(locationName?: string): JsonLd {
     '@type': 'Place',
     name: locationName?.trim() ? `${BUSINESS.name} — ${locationName}` : BUSINESS.name,
     address: postalAddress(),
-    ...(BUSINESS.geo
-      ? {
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: BUSINESS.geo.latitude,
-            longitude: BUSINESS.geo.longitude,
-          },
-        }
-      : {}),
+    geo: geoCoordinates(),
   };
 }
 
@@ -65,28 +71,31 @@ export function lodgingBusinessSchema(): JsonLd {
     '@type': 'LodgingBusiness',
     '@id': BUSINESS_ID,
     name: BUSINESS.name,
+    alternateName: BUSINESS.alternateName,
     ...(BUSINESS.legalName ? { legalName: BUSINESS.legalName } : {}),
     description: BUSINESS.description,
     url: BUSINESS.url,
     logo: `${BUSINESS.url}/favicon.png`,
     image: `${BUSINESS.url}/og-image.jpg`,
     telephone: BUSINESS.phone,
-    // The three addresses on the contact page are still unconfirmed, so no
-    // `email` here — see BUSINESS.email.confirmed.
-    ...(BUSINESS.email.confirmed ? { email: BUSINESS.email.reservations } : {}),
+    email: BUSINESS.email.general,
     priceRange: BUSINESS.priceRange,
     address: postalAddress(),
-    // Omitted deliberately: no coordinates exist anywhere in the repo, and a
-    // fabricated pin is the single most damaging thing this file could emit.
-    ...(BUSINESS.geo
-      ? {
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: BUSINESS.geo.latitude,
-            longitude: BUSINESS.geo.longitude,
-          },
-        }
-      : {}),
+    geo: geoCoordinates(),
+    // The Google Business profile. `hasMap` is the property schema.org defines
+    // for exactly this; `sameAs` is for identities, and a map pin is not one.
+    hasMap: BUSINESS.googleMapsUrl,
+    // Reception hours. One specification listing every day, rather than seven
+    // near-identical ones — schema.org takes an array for `dayOfWeek` and
+    // consumers read it the same way.
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: BUSINESS.openingHours.days.map(
+        (day) => `https://schema.org/${day}`,
+      ),
+      opens: BUSINESS.openingHours.opens,
+      closes: BUSINESS.openingHours.closes,
+    },
     sameAs: [...BUSINESS.sameAs],
     amenityFeature: BUSINESS.amenities.map((name) => ({
       '@type': 'LocationFeatureSpecification',
@@ -104,7 +113,7 @@ export function webSiteSchema(): JsonLd {
     '@id': WEBSITE_ID,
     url: BUSINESS.url,
     name: BUSINESS.name,
-    alternateName: 'House of Shakti Yoga Sanctuary',
+    alternateName: BUSINESS.alternateName,
     inLanguage: 'en',
     publisher: { '@id': BUSINESS_ID },
   };
@@ -172,14 +181,18 @@ export function yogaClassEventsSchema(classes: YogaClass[]): JsonLd[] {
  * Event for a retreat.
  *
  * Returns `null` unless the retreat carries machine-readable `startDate` /
- * `endDate`. `lib/retreats.ts` currently expresses its dates only as display
- * copy ("July 18 – 24 · 2026"), and parsing that back into a timestamp would
- * be guessing at exactly the field schema.org marks required. Add the two ISO
- * fields to the retreat record and this starts emitting on its own.
+ * `endDate` — display copy like "July 18 – 24 · 2026" is not a timestamp, and
+ * `startDate` is the one field schema.org marks required on an Event. Every
+ * other field is emitted only when the retreat actually has it: the hosts,
+ * the testimonials and the journey video in `lib/retreats.ts` are still
+ * placeholder material and none of them reaches the graph.
  */
 export function retreatEventSchema(retreat: Retreat): JsonLd | null {
   if (!retreat.startDate || !retreat.endDate) return null;
 
+  // The standard rate. The early-bird price expires part-way through the
+  // listing's life, and a single Offer that will stop being true is worse than
+  // one that is always true.
   const price = retreat.pricing?.regular?.amount;
 
   return {
@@ -199,6 +212,16 @@ export function retreatEventSchema(retreat: Retreat): JsonLd | null {
       url: BUSINESS.url,
     },
     ...(retreat.heroImage ? { image: `${BUSINESS.url}${retreat.heroImage}` } : {}),
+    // Whoever actually holds the retreat. Only their name goes in: the
+    // portraits and Instagram handles in `lib/retreats.ts` are still
+    // placeholders, and a schema is not the place to publish a guess.
+    ...(retreat.hosts?.length
+      ? {
+          performer: retreat.hosts
+            .filter((host) => host.name?.trim())
+            .map((host) => ({ '@type': 'Person', name: host.name })),
+        }
+      : {}),
     url: `${BUSINESS.url}/retreats/${retreat.slug}`,
     ...(typeof price === 'number'
       ? {

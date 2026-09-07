@@ -48,11 +48,11 @@ export type Retreat = {
   slug: string;
 
   // Machine-readable dates, for the Event structured data on the detail page.
-  // TODO_CONFIRM: the retreat's dates exist today only as display copy
-  // (`heroEyebrow`, e.g. "July 18 – 24 · 2026"). Parsing that back into a
-  // timestamp would be guessing at the one field schema.org marks required on
-  // an Event, so `lib/schema.ts` emits no Event until these are filled in.
-  // Format: ISO 8601, e.g. '2026-07-18' and '2026-07-24'.
+  // `heroEyebrow` carries the same dates as display copy; these are the ones a
+  // machine reads. Optional because a retreat can be listed before its dates
+  // are fixed — `lib/schema.ts` emits no Event until both are present, since
+  // `startDate` is the one field schema.org marks required.
+  // Format: ISO 8601 date, e.g. '2026-07-18'.
   startDate?: string;
   endDate?: string;
 
@@ -123,6 +123,11 @@ export type Retreat = {
 // swap is a one-line change when assets land.
 const SHAKTI_SADHANA: Retreat = {
   slug: 'shakti-sadhana',
+
+  // Confirmed by the owners on 2026-09-07. Seven days, six nights, which is
+  // what `heroDates` says in words.
+  startDate: '2026-07-18',
+  endDate: '2026-07-24',
 
   // Hero
   heroImage: '/images/yoga/IMG_8420%201.webp', // TODO: retreat-specific cover photo

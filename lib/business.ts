@@ -10,29 +10,22 @@
 // kind of drift expensive: a search engine that reads two different addresses
 // for one business trusts neither.
 //
-// ── On TODO_CONFIRM ──────────────────────────────────────────────────────────
-// Several values below have never been confirmed by the owners — they were
-// placeholders in the components this file replaces, and inventing them would
-// be worse than leaving them out. They are marked `TODO_CONFIRM` and, where a
-// value is missing entirely, typed as `null` so that:
-//
-//   · `lib/schema.ts` omits the corresponding JSON-LD field rather than
-//     emitting a guess, and
-//   · TypeScript forces every consumer to handle the absence.
-//
-// A wrong street address or fabricated coordinates in structured data are far
-// worse than an incomplete schema: they send real people to the wrong place.
+// Every value here was confirmed by the owners on 2026-09-07, with one
+// exception noted below. Nothing in this file is a guess.
 
 import { WHATSAPP_NUMBER, WHATSAPP_URL_PLAIN } from '@/lib/whatsapp';
 
-/** Geographic coordinates, once someone reads them off the actual property. */
+/** Geographic coordinates, as read off the property. */
 export type Geo = { latitude: number; longitude: number };
 
 export const BUSINESS = Object.freeze({
   name: 'House of Shakti',
 
+  /** The full name the Google Business profile is registered under. */
+  alternateName: 'House of Shakti Sanctuary, Retreats & Yoga studio',
+
   // TODO_CONFIRM: the registered legal entity, if it differs from the trading
-  // name. Omitted from JSON-LD while null.
+  // name. The only value still outstanding; omitted from JSON-LD while null.
   legalName: null as string | null,
 
   /** Canonical production origin. No trailing slash, no `www`. */
@@ -42,14 +35,16 @@ export const BUSINESS = Object.freeze({
     'House of Shakti is a yoga sanctuary and boutique retreat house in Santa Teresa, Costa Rica, offering daily yoga classes, retreats, teacher trainings and jungle accommodation five minutes from Playa Hermosa.',
 
   address: Object.freeze({
-    // TODO_CONFIRM: the street address. Santa Teresa addresses are commonly
-    // given as landmarks rather than numbered streets, so this may end up as a
-    // description ("300m north of …") rather than a street name.
-    street: null as string | null,
+    // A Google plus code rather than a street name — Santa Teresa is addressed
+    // by landmark, and this is the precise, resolvable form.
+    street: 'MRCG+34',
+    // The plus code resolves administratively to "Santiago", but nobody
+    // searches for that: the house is known, found and booked as Santa Teresa.
+    // The locality is deliberately the searchable name, not the cadastral one.
     locality: 'Santa Teresa',
     region: 'Puntarenas',
-    // TODO_CONFIRM: postal code.
-    postalCode: null as string | null,
+    // No postal code exists for this address — the field is absent rather than
+    // empty, so nothing downstream has to decide what a blank one means.
     /** ISO 3166-1 alpha-2. */
     country: 'CR',
     countryName: 'Costa Rica',
@@ -65,31 +60,48 @@ export const BUSINESS = Object.freeze({
   whatsappUrl: WHATSAPP_URL_PLAIN,
 
   email: Object.freeze({
-    // TODO_CONFIRM: all three were placeholders awaiting Nancy's word. They are
-    // shown on the contact page today, so they stay — but they are not fed to
-    // JSON-LD until confirmed.
-    reservations: 'hello@houseofshaktiyoga.com',
+    general: 'hello@houseofshaktiyoga.com',
     retreats: 'retreats@houseofshaktiyoga.com',
     press: 'press@houseofshaktiyoga.com',
-    confirmed: false,
   }),
 
   instagram: 'https://www.instagram.com/house.of.shakti/',
   instagramHandle: '@house.of.shakti',
 
-  // TODO_CONFIRM: a Google Maps *place* link. What the site has today is a
-  // search query, which is fine for a human but is not a stable identifier and
-  // must not go into `sameAs`.
-  mapsUrl: 'https://maps.google.com/?q=House+of+Shakti+Santa+Teresa+Costa+Rica',
-  mapsPlaceUrl: null as string | null,
+  /**
+   * The Google Business profile.
+   *
+   * This is a *place* link, not a search query — it resolves to one listing and
+   * only that listing. It belongs in schema.org's `hasMap`, which exists for
+   * exactly this, and not in `sameAs`: `sameAs` is for profiles that represent
+   * the business's own identity elsewhere, and a map pin is a location, not an
+   * identity.
+   */
+  googleMapsUrl:
+    'https://www.google.com/maps/place/House+of+Shakti+Sanctuary,+Retreats+%26+Yoga+studio/@9.6701384,-85.1747111,21z/data=!4m9!3m8!1s0x8f9f6f548041a59b:0x69586416c9cba625',
 
-  // TODO_CONFIRM: no coordinates exist anywhere in the repo. Until someone
-  // reads them off the property, `geo` stays null and is omitted from the
-  // LodgingBusiness schema entirely.
-  geo: null as Geo | null,
+  /** Google's internal place identifier. Kept for the Business Profile API; no schema.org field maps to it. */
+  googleMapsPlaceIdHex: '0x8f9f6f548041a59b:0x69586416c9cba625',
 
-  /** Price band for LodgingBusiness. Derived from the published retreat rates. */
-  priceRange: '$$',
+  geo: Object.freeze({ latitude: 9.6701506, longitude: -85.1746391 }) as Geo,
+
+  /** Price band for LodgingBusiness. */
+  priceRange: '$$$',
+
+  /** Reception hours: every day, 09:00–17:00. */
+  openingHours: Object.freeze({
+    days: Object.freeze([
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ]),
+    opens: '09:00',
+    closes: '17:00',
+  }),
 
   /** What the house actually has. Feeds `amenityFeature`. */
   amenities: Object.freeze([

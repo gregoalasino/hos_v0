@@ -20,14 +20,15 @@ import { BUSINESS } from '@/lib/business';
 // addresses and the Maps link are still marked TODO_CONFIRM there, awaiting
 // Nancy — they render here as they always have, but they are withheld from the
 // structured data until they are confirmed.
-const EMAIL_RESERVATIONS = BUSINESS.email.reservations;
+const EMAIL_RESERVATIONS = BUSINESS.email.general;
 const EMAIL_RETREATS = BUSINESS.email.retreats;
 const EMAIL_PRESS = BUSINESS.email.press;
 
 const PHONE_E164 = BUSINESS.phone;
 const PHONE_DISPLAY = BUSINESS.phoneDisplay;
 const WHATSAPP_URL = BUSINESS.whatsappUrl;
-const MAPS_URL = BUSINESS.mapsUrl;
+// The Google Business profile itself, not a search query.
+const MAPS_URL = BUSINESS.googleMapsUrl;
 
 // TODO: replace with curated pool + jungle vertical composition when available.
 // Placeholder is the most vertical-leaning sanctuary frame not yet used in

@@ -87,16 +87,20 @@ export const metadata: Metadata = {
     ? { verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } }
     : {}),
 
+  // `favicon.svg` used to head this list, but it was not a vector: a 512px
+  // <rect> filled with a pattern pointing at an embedded base64 raster, 88 KB
+  // of PNG wearing an SVG costume, served on every page. The PNG beside it was
+  // 2287×1693 and not square, so every browser and every home screen was
+  // squashing a landscape image into a square slot.
+  //
+  // Both are replaced by square icons cut from the same artwork: the mark's
+  // real bounding box, centred with breathing room. 156 KB became 23 KB.
   icons: {
-    // Modern browsers pick the SVG (scales perfectly at any size).
-    // PNG is the fallback for older browsers and where SVG isn't supported.
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.png', type: 'image/png' },
-    ],
+    icon: [{ url: '/favicon.png', type: 'image/png', sizes: '192x192' }],
     shortcut: '/favicon.png',
-    // Apple touch icon — iOS ignores SVG, so we serve the PNG.
-    apple: '/favicon.png',
+    // iOS composites transparency onto black, so the touch icon carries the
+    // brand cream behind the mark rather than a transparent background.
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
 }
 

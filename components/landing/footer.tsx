@@ -18,10 +18,10 @@ const sitemapLinks: { label: string; href: string }[] = [
 
 // Address, map link and social handle all come from lib/business.ts — the same
 // record the contact page, the calendar invitations and the structured data
-// read. The street address is still a TODO_CONFIRM there; what renders here is
-// exactly what rendered before.
+// read. The map link is the Google Business profile, so this and the contact
+// page can never point at two different pins.
 const addressLines = BUSINESS.addressLines;
-const MAPS_URL = BUSINESS.mapsUrl;
+const MAPS_URL = BUSINESS.googleMapsUrl;
 const INSTAGRAM_URL = BUSINESS.instagram;
 const INSTAGRAM_HANDLE = BUSINESS.instagramHandle;
 
