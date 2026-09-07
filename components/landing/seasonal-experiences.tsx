@@ -2,7 +2,7 @@
 
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from '@/i18n/navigation';
 import { Ornament } from "@/components/shared/ornament";
 import { TrackArrows } from "@/components/shared/TrackArrows";
 import { useCarousel } from "@/hooks/use-carousel";

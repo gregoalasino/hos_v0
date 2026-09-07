@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import type { Retreat } from '@/lib/retreats';
 
 // Section layout mirrors home Seasonal Experiences:

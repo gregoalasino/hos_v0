@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { absoluteUrl } from '@/lib/business';
+import { ACTIVE_LOCALES, localizedPath } from '@/lib/seo';
 
 // ─── robots.txt ──────────────────────────────────────────────────────────────
 // Two audiences, both wanted.
@@ -19,8 +20,10 @@ const PRIVATE_PATHS = [
   '/admin',
   '/instructor',
   '/api',
-  '/booking',
-  '/paquetes/resultado',
+  // Public-site paths exist in every language: `/booking` and `/es/booking`.
+  ...['/booking', '/paquetes/resultado'].flatMap((path) =>
+    ACTIVE_LOCALES.map((locale) => localizedPath(path, locale)),
+  ),
 ];
 
 const ANSWER_ENGINES = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended'];

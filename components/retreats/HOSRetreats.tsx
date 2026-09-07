@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 // ─── Retreats offering ──────────────────────────────────────────────────────
 // Feature blocks in a two-column body — title + description + dark CTA on the

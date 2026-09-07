@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, Variants } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';

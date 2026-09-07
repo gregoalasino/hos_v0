@@ -1,3 +1,11 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+// Wires i18n/request.ts into the build so every server render knows its
+// locale and messages. The path is explicit rather than the plugin's default
+// lookup, so a move of the folder fails loudly instead of silently rendering
+// without messages.
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async redirects() {
@@ -37,4 +45,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withNextIntl(nextConfig)

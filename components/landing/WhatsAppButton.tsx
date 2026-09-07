@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
+import { usePathname } from '@/i18n/navigation';
 import { useLanguage } from '@/contexts/language-context';
 import { tr, type Lang } from '@/lib/i18n';
 import { whatsappUrl } from '@/lib/whatsapp';
@@ -36,7 +36,10 @@ const DWELL_MS = 4800;
 
 // The button is for guests. Inside the admin panel, the instructor portal,
 // the login screen and the booking flow it would be furniture at best and, in
-// a checkout, a distraction floating over the payment form.
+// a checkout, a distraction floating over the payment form. (The admin and
+// the portal have their own document now and never mount this; the prefixes
+// stay so the list still reads as the full rule.) Compared against the
+// locale-less pathname, so `/es/booking/…` is excluded like `/booking/…`.
 const EXCLUDED_PREFIXES = ['/admin', '/instructor', '/login', '/booking'];
 
 // ─── The three doors ─────────────────────────────────────────────────────────

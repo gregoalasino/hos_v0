@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import NextLink from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { Link, getPathname, usePathname } from '@/i18n/navigation';
 import { useLanguage } from '@/contexts/language-context';
 import { tr, type Lang } from '@/lib/i18n';
 import { CLOUDBEDS_PROPERTY_CODE, CLOUDBEDS_URL } from '@/lib/cloudbeds';
@@ -24,8 +24,22 @@ const navItems: { es: string; en: string; href: string }[] = [
   { es: 'Contacto', en: 'Contact', href: '/contact' },
 ];
 
+// ─── Link targets ───────────────────────────────────────────────────────────
+// `Link` (from i18n/navigation) adds `/es` to a Spanish reader's links on its
+// own. An anchor into the home page is the one shape it needs help with: as a
+// string, `/#seasonal-experiences` would be prefixed to `/es/#…`, a trailing
+// slash the router then has to redirect away. Split into pathname and hash it
+// comes out as `/es#seasonal-experiences`, which is what the section is at.
+function toLinkHref(href: string): string | { pathname: string; hash: string } {
+  if (!href.includes('#')) return href;
+  const [path, hash] = href.split('#');
+  return { pathname: path || '/', hash };
+}
+
 // ─── Active-route helper ────────────────────────────────────────────────────
 // startsWith so /retreats/[slug] keeps the "Retreats" link marked active.
+// `usePathname` here is next-intl's: it returns the path without the locale
+// prefix, so `/es/retreats` compares equal to the English href.
 function useActiveRoute() {
   const pathname = usePathname();
   return (href: string): boolean => {
@@ -126,20 +140,34 @@ function HOSLogo({
 // is an outline of itself until approached. Present on every breakpoint: on
 // phones it takes the navbar's right zone, which the layout was already
 // reserving as an empty spacer to keep the logo centred.
+//
+// Each mark is a real link to the same page in the other language — `/yoga`
+// ⇄ `/es/yoga`, `/stay-with-us` ⇄ `/es/stay-with-us` — so a crawler finds the
+// other version from every page and a cmd-click opens it in a new tab. A plain
+// click goes through `setLang`, which keeps the query string as well and
+// leaves the reader where they were on the page. No route map: `getPathname`
+// derives the target from the current path, whatever page this is.
 function LangToggle() {
   const { lang, setLang } = useLanguage();
+  const pathname = usePathname();
 
   const option = (code: Lang) => (
-    <button
-      type="button"
-      onClick={() => setLang(code)}
-      aria-pressed={lang === code}
+    <NextLink
+      href={getPathname({ href: pathname, locale: code })}
+      hrefLang={code}
+      aria-current={lang === code ? 'true' : undefined}
+      onClick={(e) => {
+        // Let the browser handle modified clicks (new tab, etc.) via the href.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        setLang(code);
+      }}
       className={`font-body text-[11px] tracking-[0.18em] uppercase transition-colors duration-300 ${
         lang === code ? 'text-ink' : 'text-ink/35 hover:text-ink/70'
       }`}
     >
       {code.toUpperCase()}
-    </button>
+    </NextLink>
   );
 
   return (
@@ -337,7 +365,7 @@ function Drawer({
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={toLinkHref(item.href)}
                     onClick={(e) => handleNavClick(e, item.href)}
                     className={`block font-display font-light text-ink text-2xl hover:opacity-70 transition-opacity duration-300 ${
                       isActive(item.href)
