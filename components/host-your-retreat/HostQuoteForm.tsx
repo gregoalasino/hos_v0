@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { motion, useInView } from 'framer-motion';
 import {
   Flower2,
   Waves,
@@ -23,18 +23,20 @@ import { whatsappUrl } from '@/lib/whatsapp';
 // The page's ask. A retreat is priced on three things — what it is, when it
 // is, and how many are coming — so those are the three questions, and nothing
 // else: name, email and a message box would only be the WhatsApp conversation
-// written out in advance. The answers compose the opening line of that
-// conversation as they are given, in whichever language the reader is
-// reading, and the button hands it to WhatsApp already written. The
-// composed message is shown underneath, so nobody is sent off the site with
-// a payload they haven't read.
+// written out in advance. Nothing here is typed: every answer is a tap on a
+// chip, so on a phone the whole form is four thumbs' worth of choosing. The
+// answers compose the opening line of that conversation as they are given,
+// in whichever language the reader is reading, and the button hands it to
+// WhatsApp already written. Exact dates and head counts are what the
+// conversation itself is for; a month, a length and a bracket are enough to
+// quote a season and a house.
 //
 // The house's general number, via lib/whatsapp — the same door the floating
 // button's "Host Your Retreat" entry opens.
 
-type Kind = {
+type Option = {
   id: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label: (lang: Lang) => string;
 };
 
@@ -42,7 +44,7 @@ type Kind = {
 // kinds of gathering that actually come to Santa Teresa, so a host finds
 // their own without reaching for "Other". Each carries a thin lucide mark —
 // the same family the rest of the site's controls draw from.
-const KINDS: Kind[] = [
+const KINDS: Option[] = [
   { id: 'yoga', icon: Flower2, label: () => 'Yoga' },
   { id: 'surf-yoga', icon: Waves, label: (l) => tr(l, 'Surf y yoga', 'Surf & yoga') },
   {
@@ -63,82 +65,84 @@ const KINDS: Kind[] = [
   { id: 'other', icon: Ellipsis, label: (l) => tr(l, 'Otro', 'Other') },
 ];
 
+// How long. Brackets rather than a count: a host planning a retreat knows
+// "about a week" long before they know the nights.
+const LENGTHS: Option[] = [
+  { id: '3-4', label: (l) => tr(l, '3–4 noches', '3–4 nights') },
+  { id: '5-6', label: (l) => tr(l, '5–6 noches', '5–6 nights') },
+  { id: '7', label: (l) => tr(l, '7 noches', '7 nights') },
+  { id: '8+', label: (l) => tr(l, '8 noches o más', '8+ nights') },
+];
+
+// How many. The brackets follow the house: Main House sleeps ten, the three
+// dwellings together around fifteen, and beyond twenty is a conversation
+// about the whole property.
+const GROUPS: Option[] = [
+  { id: 'up-to-6', label: (l) => tr(l, 'Hasta 6', 'Up to 6') },
+  { id: '7-10', label: () => '7–10' },
+  { id: '11-14', label: () => '11–14' },
+  { id: '15-20', label: () => '15–20' },
+  { id: '20+', label: (l) => tr(l, 'Más de 20', 'More than 20') },
+];
+
+const FLEXIBLE = 'flexible';
+
 type Answers = {
   kind: string | null;
-  /** Free text, offered when "Other" is chosen. */
-  other: string;
-  from: string;
-  to: string;
-  min: string;
-  max: string;
+  /** A month as YYYY-MM, or FLEXIBLE. */
+  month: string | null;
+  length: string | null;
+  group: string | null;
 };
 
-const EMPTY: Answers = { kind: null, other: '', from: '', to: '', min: '', max: '' };
+const EMPTY: Answers = { kind: null, month: null, length: null, group: null };
 
-// Inputs follow the booking flow's rule — a hairline underneath and nothing
-// else, editorial rather than boxy. Number fields drop the browser's spinner
-// for the same reason.
-const FIELD =
-  'w-full bg-transparent border-0 border-b border-ink/25 px-0 py-3 font-body text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none transition-colors duration-300 [color-scheme:light]';
-const NUMBER = `${FIELD} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`;
 const LABEL = 'block font-body text-[10px] tracking-[0.25em] uppercase text-ink/70';
 
-// A date input hands back YYYY-MM-DD. Read as a local date, never through
-// Date.parse — that treats the string as UTC midnight, which west of
-// Greenwich is the evening before.
-function formatDate(iso: string, lang: Lang): string | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  if (!m) return null;
-  const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat(lang === 'es' ? 'es' : 'en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
+// The next twelve months from today, as YYYY-MM keys. Computed on the client
+// only (see the effect below), so the server and the first client render
+// agree on the markup whatever month or timezone either is in.
+function upcomingMonths(from: Date, count = 12): string[] {
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
 }
 
-function count(value: string): number | null {
-  const n = parseInt(value, 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
+// "March 2027" / "Marzo 2027" — the chip and the message use the same words.
+function monthLabel(key: string, lang: Lang): string {
+  const [y, m] = key.split('-').map(Number);
+  const name = new Intl.DateTimeFormat(lang === 'es' ? 'es' : 'en-US', { month: 'long' }).format(
+    new Date(y, m - 1, 1),
+  );
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)} ${y}`;
 }
 
 function composeMessage(lang: Lang, a: Answers): string {
   const lines: string[] = [];
 
   const kind = KINDS.find((k) => k.id === a.kind);
-  if (kind) {
-    const detail = a.other.trim();
-    const what = kind.id === 'other' && detail ? detail : kind.label(lang);
-    lines.push(tr(lang, `• Retiro: ${what}`, `• Retreat: ${what}`));
-  }
+  if (kind) lines.push(tr(lang, `• Retiro: ${kind.label(lang)}`, `• Retreat: ${kind.label(lang)}`));
 
-  const from = formatDate(a.from, lang);
-  const to = formatDate(a.to, lang);
-  if (from && to) {
-    lines.push(tr(lang, `• Fechas: del ${from} al ${to}`, `• Dates: ${from} – ${to}`));
-  } else if (from) {
-    lines.push(tr(lang, `• Fechas: desde el ${from}`, `• Dates: from ${from}`));
-  } else if (to) {
-    lines.push(tr(lang, `• Fechas: hasta el ${to}`, `• Dates: until ${to}`));
-  }
+  const when: string[] = [];
+  if (a.month === FLEXIBLE) when.push(tr(lang, 'fechas flexibles', 'flexible dates'));
+  else if (a.month) when.push(monthLabel(a.month, lang));
+  const length = LENGTHS.find((l) => l.id === a.length);
+  if (length) when.push(length.label(lang).toLowerCase());
+  if (when.length) lines.push(tr(lang, `• Cuándo: ${when.join(', ')}`, `• When: ${when.join(', ')}`));
 
-  const min = count(a.min);
-  const max = count(a.max);
-  if (min && max) {
-    const lo = Math.min(min, max);
-    const hi = Math.max(min, max);
-    lines.push(
-      lo === hi
-        ? tr(lang, `• Cantidad de personas: ${lo}`, `• Group size: ${lo} people`)
-        : tr(lang, `• Cantidad de personas: entre ${lo} y ${hi}`, `• Group size: ${lo}–${hi} people`),
+  const group = GROUPS.find((g) => g.id === a.group);
+  if (group) {
+    const people = tr(
+      lang,
+      group.id === 'up-to-6' ? 'hasta 6' : group.id === '20+' ? 'más de 20' : group.label(lang),
+      group.id === 'up-to-6'
+        ? 'up to 6 people'
+        : group.id === '20+'
+          ? 'more than 20 people'
+          : `${group.label(lang)} people`,
     );
-  } else if (min) {
-    lines.push(
-      tr(lang, `• Cantidad de personas: alrededor de ${min}`, `• Group size: around ${min} people`),
-    );
-  } else if (max) {
-    lines.push(tr(lang, `• Cantidad de personas: hasta ${max}`, `• Group size: up to ${max} people`));
+    lines.push(tr(lang, `• Cantidad de personas: ${people}`, `• Group size: ${people}`));
   }
 
   const opening = tr(
@@ -159,8 +163,46 @@ function composeMessage(lang: Lang, a: Answers): string {
 // site's eyebrows sit — so the rule is the fieldset's border, and the label
 // interrupts it. The right padding is the breath between the words and where
 // the line resumes.
-function Legend({ children }: { children: React.ReactNode }) {
+function Legend({ children }: { children: ReactNode }) {
   return <legend className={`${LABEL} pr-3`}>{children}</legend>;
+}
+
+// One row of choices, one of which can be down. Square, hairline, and the
+// chosen one inverts to ink — the same states the track arrows and the
+// lightbox thumbnails already use. Tapping the chosen chip lets go of it.
+function Chips({
+  options,
+  value,
+  onChange,
+  lang,
+}: {
+  options: Option[];
+  value: string | null;
+  onChange: (next: string | null) => void;
+  lang: Lang;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2.5">
+      {options.map((option) => {
+        const selected = value === option.id;
+        const Icon = option.icon;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => onChange(selected ? null : option.id)}
+            className={`flex items-center gap-2.5 border px-4 py-2.5 font-body text-[13px] leading-none transition-colors duration-300 ${
+              selected ? 'border-ink bg-ink text-cream' : 'border-ink/25 text-ink hover:border-ink'
+            }`}
+          >
+            {Icon && <Icon className="h-4 w-4 shrink-0" strokeWidth={1.25} aria-hidden />}
+            <span>{option.label(lang)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export function HostQuoteForm() {
@@ -172,20 +214,20 @@ export function HostQuoteForm() {
   const set = <K extends keyof Answers>(key: K, value: Answers[K]) =>
     setAnswers((prev) => ({ ...prev, [key]: value }));
 
-  // The earliest date on offer is today — read after mount, so the server
-  // and the first client render agree on the markup whatever timezone
-  // either is in.
-  const [today, setToday] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-    setToday(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-  }, []);
+  // The months on offer start from today — read after mount, see upcomingMonths.
+  const [months, setMonths] = useState<string[]>([]);
+  useEffect(() => setMonths(upcomingMonths(new Date())), []);
+
+  const monthOptions = useMemo<Option[]>(
+    () => [
+      { id: FLEXIBLE, label: (l) => tr(l, 'Fechas flexibles', 'Flexible dates') },
+      ...months.map((key) => ({ id: key, label: (l: Lang) => monthLabel(key, l) })),
+    ],
+    [months],
+  );
 
   const message = useMemo(() => composeMessage(lang, answers), [lang, answers]);
   const href = whatsappUrl(message);
-
-  const otherChosen = answers.kind === 'other';
 
   return (
     <section id="quote" className="bg-warm-white py-20 lg:py-28 scroll-mt-20 lg:scroll-mt-28">
@@ -209,8 +251,8 @@ export function HostQuoteForm() {
           >
             {tr(
               lang,
-              'El precio depende de las fechas, el tamaño del grupo y los servicios que elijas. Contanos lo esencial y seguimos la conversación por WhatsApp.',
-              "Prices depend on your dates, group size and the services you choose. Share the essentials and we'll continue the conversation on WhatsApp.",
+              'El precio depende de las fechas, el tamaño del grupo y los servicios que elijas. Elegí lo esencial y seguimos la conversación por WhatsApp.',
+              "Prices depend on your dates, group size and the services you choose. Pick the essentials and we'll continue the conversation on WhatsApp.",
             )}
           </motion.p>
 
@@ -234,8 +276,7 @@ export function HostQuoteForm() {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 1.0, ease: 'easeOut', delay: 0.15 }}
           className="lg:col-span-2 mt-12 lg:mt-0"
-          // Enter in a field does what the button does: the form has no
-          // server, only the link.
+          // Enter does what the button does: the form has no server, only the link.
           onSubmit={(e) => {
             e.preventDefault();
             window.open(href, '_blank', 'noopener,noreferrer');
@@ -244,168 +285,75 @@ export function HostQuoteForm() {
           {/* What */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
             <Legend>{tr(lang, '¿Qué tipo de retiro?', 'What kind of retreat?')}</Legend>
-            <div className="flex flex-wrap gap-2.5 mt-5">
-              {KINDS.map((kind) => {
-                const selected = answers.kind === kind.id;
-                const Icon = kind.icon;
-                return (
-                  <button
-                    key={kind.id}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => set('kind', selected ? null : kind.id)}
-                    className={`flex items-center gap-2.5 border px-4 py-2.5 font-body text-[13px] leading-none transition-colors duration-300 ${
-                      selected
-                        ? 'border-ink bg-ink text-cream'
-                        : 'border-ink/25 text-ink hover:border-ink'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" strokeWidth={1.25} aria-hidden />
-                    <span>{kind.label(lang)}</span>
-                  </button>
-                );
-              })}
+            <div className="mt-5">
+              <Chips options={KINDS} value={answers.kind} onChange={(v) => set('kind', v)} lang={lang} />
             </div>
-
-            <AnimatePresence initial={false}>
-              {otherChosen && (
-                <motion.div
-                  key="other"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-6 max-w-md">
-                    <label htmlFor="quote-other" className={LABEL}>
-                      {tr(lang, 'Contanos más', 'Tell us more')}
-                    </label>
-                    <input
-                      id="quote-other"
-                      type="text"
-                      value={answers.other}
-                      onChange={(e) => set('other', e.target.value)}
-                      placeholder={tr(lang, 'Un retiro de…', 'A retreat of…')}
-                      maxLength={80}
-                      className={`${FIELD} mt-1`}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </fieldset>
 
           {/* When */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
-            <Legend>{tr(lang, 'Fechas', 'Dates')}</Legend>
+            <Legend>{tr(lang, '¿Cuándo?', 'When?')}</Legend>
             <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">
               {tr(
                 lang,
-                'Pueden ser aproximadas: el precio varía según la temporada.',
-                'Approximate is fine — prices vary by season.',
+                'Con el mes y la duración alcanza: el precio varía según la temporada.',
+                'A month and a length are enough — prices vary by season.',
               )}
             </p>
-            <div className="grid grid-cols-2 gap-6 md:gap-10 mt-5 max-w-md">
+            <div className="mt-5 space-y-6">
               <div>
-                <label htmlFor="quote-from" className={LABEL}>
-                  {tr(lang, 'Desde', 'From')}
-                </label>
-                <input
-                  id="quote-from"
-                  type="date"
-                  value={answers.from}
-                  min={today}
-                  onChange={(e) => set('from', e.target.value)}
-                  className={`${FIELD} mt-1`}
-                />
+                <p className={LABEL}>{tr(lang, 'Mes', 'Month')}</p>
+                <div className="mt-3">
+                  <Chips
+                    options={monthOptions}
+                    value={answers.month}
+                    onChange={(v) => set('month', v)}
+                    lang={lang}
+                  />
+                </div>
               </div>
               <div>
-                <label htmlFor="quote-to" className={LABEL}>
-                  {tr(lang, 'Hasta', 'To')}
-                </label>
-                <input
-                  id="quote-to"
-                  type="date"
-                  value={answers.to}
-                  min={answers.from || today}
-                  onChange={(e) => set('to', e.target.value)}
-                  className={`${FIELD} mt-1`}
-                />
+                <p className={LABEL}>{tr(lang, 'Duración', 'How long')}</p>
+                <div className="mt-3">
+                  <Chips
+                    options={LENGTHS}
+                    value={answers.length}
+                    onChange={(v) => set('length', v)}
+                    lang={lang}
+                  />
+                </div>
               </div>
             </div>
           </fieldset>
 
           {/* How many */}
           <fieldset className="min-w-0 border-t border-ink/10 pt-8 pb-10">
-            <Legend>{tr(lang, 'Cantidad de personas', 'Group size')}</Legend>
+            <Legend>{tr(lang, '¿Cuántas personas?', 'How many people?')}</Legend>
             <p className="font-body text-xs text-ink/75 leading-[1.7] mt-2">
               {tr(lang, 'Con un estimado alcanza.', 'An estimate is enough.')}
             </p>
-            <div className="grid grid-cols-2 gap-6 md:gap-10 mt-5 max-w-md">
-              <div>
-                <label htmlFor="quote-min" className={LABEL}>
-                  {tr(lang, 'Mínimo', 'Minimum')}
-                </label>
-                <input
-                  id="quote-min"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={99}
-                  value={answers.min}
-                  onChange={(e) => set('min', e.target.value)}
-                  placeholder="8"
-                  className={`${NUMBER} mt-1`}
-                />
-              </div>
-              <div>
-                <label htmlFor="quote-max" className={LABEL}>
-                  {tr(lang, 'Máximo', 'Maximum')}
-                </label>
-                <input
-                  id="quote-max"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={99}
-                  value={answers.max}
-                  onChange={(e) => set('max', e.target.value)}
-                  placeholder="14"
-                  className={`${NUMBER} mt-1`}
-                />
-              </div>
+            <div className="mt-5">
+              <Chips options={GROUPS} value={answers.group} onChange={(v) => set('group', v)} lang={lang} />
             </div>
           </fieldset>
 
           {/* The door */}
-          <div className="border-t border-ink/10 pt-8">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block self-start bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300"
-              >
-                {tr(lang, 'Pedir presupuesto por WhatsApp', 'Request a quote on WhatsApp')}
-              </a>
-              <p className="font-body text-xs text-ink/75 leading-[1.7]">
-                {tr(
-                  lang,
-                  'Abre WhatsApp con tu mensaje ya escrito.',
-                  'Opens WhatsApp with your message already written.',
-                )}
-              </p>
-            </div>
-
-            {/* What will be sent, as it will be sent. Quiet, and read-only:
-                the place to change it is the conversation itself. */}
-            <div className="mt-8 border border-ink/10 px-5 py-4 max-w-xl">
-              <p className={LABEL}>{tr(lang, 'Tu mensaje', 'Your message')}</p>
-              <p className="font-body text-[13px] text-ink/80 leading-[1.7] whitespace-pre-line mt-3">
-                {message}
-              </p>
-            </div>
+          <div className="border-t border-ink/10 pt-8 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block self-start bg-dark text-cream font-body text-sm tracking-[0.05em] px-8 py-3.5 hover:bg-burgundy transition-colors duration-300"
+            >
+              {tr(lang, 'Pedir presupuesto por WhatsApp', 'Request a quote on WhatsApp')}
+            </a>
+            <p className="font-body text-xs text-ink/75 leading-[1.7]">
+              {tr(
+                lang,
+                'Abre WhatsApp con tu mensaje ya escrito.',
+                'Opens WhatsApp with your message already written.',
+              )}
+            </p>
           </div>
         </motion.form>
       </div>
