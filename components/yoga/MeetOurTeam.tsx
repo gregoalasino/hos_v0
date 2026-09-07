@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { motion, Variants, useInView } from 'framer-motion';
 import { Instagram } from 'lucide-react';
-import { Ornament } from '@/components/landing/ornament';
+import { Ornament } from '@/components/shared/ornament';
 
 // ─── Meet our team ───────────────────────────────────────────────────────────
 // The people layer of /yoga. The schedule above answers what is on and when;

@@ -1,4 +1,7 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { buildMetadata } from '@/lib/seo';
+import { RetreatJsonLd } from '@/components/seo/JsonLd';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { getRetreatBySlug, listRetreatSlugs } from '@/lib/retreats';
@@ -20,6 +23,31 @@ export function generateStaticParams() {
   return listRetreatSlugs().map((slug) => ({ slug }));
 }
 
+// Each retreat carries its own title, description and social card. The hero
+// image doubles as the OG image — it is the one photograph chosen to stand for
+// the retreat, so it is also the one a shared link should show.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const retreat = getRetreatBySlug(slug);
+  if (!retreat) return {};
+
+  return buildMetadata({
+    path: `/retreats/${retreat.slug}`,
+    title: `${retreat.heroTitle} — Retreat in Santa Teresa, Costa Rica`,
+    // heroSubhead is one editorial line; the dates and length are the facts a
+    // searcher scans for. Together they stay well inside 160 characters.
+    description: `${retreat.heroSubhead} ${retreat.heroEyebrow} · ${retreat.heroDates} at House of Shakti, Santa Teresa.`,
+    image: {
+      url: retreat.heroImage,
+      alt: `${retreat.heroTitle} at House of Shakti, Santa Teresa, Costa Rica`,
+    },
+  });
+}
+
 export default async function RetreatLandingPage({
   params,
 }: {
@@ -30,7 +58,14 @@ export default async function RetreatLandingPage({
   if (!retreat) notFound();
 
   return (
-    <main className="bg-warm-white overflow-hidden">
+    <main id="main-content" className="bg-warm-white overflow-hidden">
+      <RetreatJsonLd retreat={retreat} />
+      {/* Same reason as /retreats: the hero is video only and the manifesto
+          heading ("Return to what is essential.") never names the retreat.
+          This is the one place the page says, in text, what it is. */}
+      <h1 className="sr-only">
+        {retreat.heroTitle} — Yoga Retreat in {retreat.heroLocation}
+      </h1>
       <Navigation />
       <RetreatHero retreat={retreat} />
       <RetreatManifesto retreat={retreat} />

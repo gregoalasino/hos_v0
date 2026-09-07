@@ -5,6 +5,8 @@ import { LanguageProvider } from '@/contexts/language-context'
 import { SplashScreen } from '@/components/landing/SplashScreen'
 import { WhatsAppButton } from '@/components/landing/WhatsAppButton'
 import { CLOUDBEDS_IMMERSIVE_SRC } from '@/lib/cloudbeds'
+import { BUSINESS } from '@/lib/business'
+import { DEFAULT_OG_IMAGE } from '@/lib/seo'
 import './globals.css'
 import Script from 'next/script';
 
@@ -25,19 +27,80 @@ const chalet = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'House of Shakti | Luxury Wellness Sanctuary',
-  description: 'A serene haven for yoga, boutique accommodation, and transformational retreats. Discover the art of mindful living at House of Shakti.',
-  generator: 'v0.app',
-  icons: {
-    // Modern browsers pick the SVG (scales perfectly at any size).
-    // PNG is the fallback for older browsers and where SVG isn't supported.
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.png', type: 'image/png' },
+  // Every relative URL in metadata — canonicals, Open Graph images — resolves
+  // against this. Without it Next emits relative OG URLs, which most scrapers
+  // simply drop.
+  metadataBase: new URL(BUSINESS.url),
+
+  // `%s` is whatever a page passes as its title; the home page opts out with
+  // `absolute`. Set here so no page has to repeat the brand.
+  title: {
+    template: '%s | House of Shakti',
+    default: 'House of Shakti — Yoga Sanctuary in Santa Teresa, Costa Rica',
+  },
+  description: BUSINESS.description,
+
+  // Defaults for any page that doesn't build its own through lib/seo.ts.
+  openGraph: {
+    type: 'website',
+    siteName: BUSINESS.name,
+    locale: 'en_US',
+    url: BUSINESS.url,
+    title: 'House of Shakti — Yoga Sanctuary in Santa Teresa, Costa Rica',
+    description: BUSINESS.description,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE.url,
+        alt: DEFAULT_OG_IMAGE.alt,
+        width: DEFAULT_OG_IMAGE.width,
+        height: DEFAULT_OG_IMAGE.height,
+      },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'House of Shakti — Yoga Sanctuary in Santa Teresa, Costa Rica',
+    description: BUSINESS.description,
+    images: [DEFAULT_OG_IMAGE.url],
+  },
+
+  // Explicit rather than implied. The `googleBot` block lifts the caps on
+  // snippet length and image preview size, which is what lets a rich result
+  // show a real photograph of the property instead of a thumbnail.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+
+  // Google Search Console's meta-tag verification. Rendered only when the
+  // variable is set, so nothing appears in the markup until the property is
+  // actually being claimed. Next drops the whole `verification` block when
+  // `google` is undefined.
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } }
+    : {}),
+
+  // `favicon.svg` used to head this list, but it was not a vector: a 512px
+  // <rect> filled with a pattern pointing at an embedded base64 raster, 88 KB
+  // of PNG wearing an SVG costume, served on every page. The PNG beside it was
+  // 2287×1693 and not square, so every browser and every home screen was
+  // squashing a landscape image into a square slot.
+  //
+  // Both are replaced by square icons cut from the same artwork: the mark's
+  // real bounding box, centred with breathing room. 156 KB became 23 KB.
+  icons: {
+    icon: [{ url: '/favicon.png', type: 'image/png', sizes: '192x192' }],
     shortcut: '/favicon.png',
-    // Apple touch icon — iOS ignores SVG, so we serve the PNG.
-    apple: '/favicon.png',
+    // iOS composites transparency onto black, so the touch icon carries the
+    // brand cream behind the mark rather than a transparent background.
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
 }
 
@@ -66,6 +129,19 @@ export default function RootLayout({
               "try{var k='hos-splash-seen';if(sessionStorage.getItem(k)!=='1'&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.dataset.splash='play';sessionStorage.setItem(k,'1')}}catch(e){}",
           }}
         />
+        {/* Skip to content — invisible until focused, which for a keyboard
+            user is the first stop on every page. Without it, reaching the
+            article means tabbing past the menu, the logo, the language pair
+            and the booking CTA on every single navigation. `sr-only` plus
+            `focus:not-sr-only` is the standard pair; the styling matches the
+            site's own CTAs so it doesn't look like a browser artefact when it
+            appears. Every page's <main> carries id="main-content". */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-dark focus:text-cream focus:font-body focus:text-sm focus:tracking-[0.05em] focus:px-6 focus:py-3"
+        >
+          Skip to content
+        </a>
         <SplashScreen />
         <LanguageProvider>
           {children}

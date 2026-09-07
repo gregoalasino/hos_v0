@@ -47,6 +47,15 @@ export type RetreatPricing = {
 export type Retreat = {
   slug: string;
 
+  // Machine-readable dates, for the Event structured data on the detail page.
+  // `heroEyebrow` carries the same dates as display copy; these are the ones a
+  // machine reads. Optional because a retreat can be listed before its dates
+  // are fixed — `lib/schema.ts` emits no Event until both are present, since
+  // `startDate` is the one field schema.org marks required.
+  // Format: ISO 8601 date, e.g. '2026-07-18'.
+  startDate?: string;
+  endDate?: string;
+
   // Hero
   // The hero renders as a full-bleed video (same pattern as home/yoga/stay-with-us).
   heroImage: string;           // kept as legacy / fallback poster; not used by hero today
@@ -114,6 +123,11 @@ export type Retreat = {
 // swap is a one-line change when assets land.
 const SHAKTI_SADHANA: Retreat = {
   slug: 'shakti-sadhana',
+
+  // Confirmed by the owners on 2026-09-07. Seven days, six nights, which is
+  // what `heroDates` says in words.
+  startDate: '2026-07-18',
+  endDate: '2026-07-24',
 
   // Hero
   heroImage: '/images/yoga/IMG_8420%201.webp', // TODO: retreat-specific cover photo

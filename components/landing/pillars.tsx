@@ -3,7 +3,7 @@
 import { motion, Variants, useInView } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
-import { Ornament } from "./ornament";
+import { Ornament } from "@/components/shared/ornament";
 
 const pillars = [
   {
@@ -95,6 +95,8 @@ export function Pillars() {
                     alt=""
                     aria-hidden
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
 

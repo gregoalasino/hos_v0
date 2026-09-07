@@ -162,7 +162,7 @@ export default function InstructorModal({
             <Input
               label="Email (optional)"
               type="email"
-              placeholder="nancy@houseofshakti.com"
+              placeholder="nancy@houseofshaktiyoga.com"
               value={draft.email}
               onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
             />

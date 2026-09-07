@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import { Navigation } from '@/components/landing/navigation';
 import { Footer } from '@/components/landing/footer';
 import { QuoteBreak } from '@/components/landing/QuoteBreak';
@@ -9,11 +10,12 @@ import { HostActivities } from '@/components/host-your-retreat/HostActivities';
 import { HostQuoteForm } from '@/components/host-your-retreat/HostQuoteForm';
 import { HostClosing } from '@/components/host-your-retreat/HostClosing';
 
-export const metadata: Metadata = {
-  title: 'Host Your Retreat · House of Shakti',
+export const metadata: Metadata = buildMetadata({
+  path: '/host-your-retreat',
+  title: 'Host Your Retreat',
   description:
-    'Bring your retreat to House of Shakti in Santa Teresa, Costa Rica — private lodging for your group, a yoga shala, on-site rituals and off-site adventures, with a team that coordinates every detail. Request a quote on WhatsApp.',
-};
+    'Host your retreat at House of Shakti, Santa Teresa. Private lodging, a yoga shala and a team that coordinates every detail in Costa Rica.',
+});
 
 // ─── Host your retreat ───────────────────────────────────────────────────────
 // For teachers and hosts bringing a group. Every section is one the site
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
 // quote form, which composes the WhatsApp message as the answers come in.
 export default function HostYourRetreatPage() {
   return (
-    <main className="bg-warm-white overflow-hidden">
+    <main id="main-content" className="bg-warm-white overflow-hidden">
       <Navigation />
       <HostHero />
       <HostIntro />

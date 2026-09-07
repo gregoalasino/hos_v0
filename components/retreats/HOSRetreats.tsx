@@ -107,7 +107,10 @@ function RetreatFeatureCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
           {card.images.map((src) => (
             <div key={src} className="relative aspect-[4/5] overflow-hidden">
-              <img src={src} alt={card.title} className="w-full h-full object-cover" />
+              <img src={src} alt={card.title} className="w-full h-full object-cover"
+  loading="lazy"
+  decoding="async"
+/>
             </div>
           ))}
         </div>

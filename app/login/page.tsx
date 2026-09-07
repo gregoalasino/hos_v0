@@ -67,6 +67,8 @@ export default function AdminLoginPage() {
               src="/favicon.png"
               alt="House of Shakti"
               className="w-8 h-8 object-contain"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <h1 className="font-body text-2xl font-normal text-black">Admin Panel</h1>
@@ -87,7 +89,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@houseofshakti.com"
+                placeholder="admin@houseofshaktiyoga.com"
                 className="h-10 rounded-none bg-white border-ink/20 text-ink placeholder:text-ink/30 focus:border-burgundy focus-visible:ring-0"
               />
             </div>

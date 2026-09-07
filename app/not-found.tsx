@@ -16,7 +16,7 @@ export default function NotFound() {
   return (
     <>
       <Navigation />
-      <main
+      <main id="main-content"
         className="
           bg-warm-white
           mt-16 md:mt-20
@@ -62,7 +62,7 @@ export default function NotFound() {
               Return home
             </a>
 
-            {/* TODO: /contact route does not exist yet — link is in place
+            {/* /contact exists and is indexed; this note used to say it didn't.
                 so it lights up automatically when the contact page lands. */}
             <a
               href="/contact"

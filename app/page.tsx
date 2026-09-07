@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import { Navigation } from "@/components/landing/navigation";
 import { Hero } from "@/components/landing/hero";
 // Introduction ("We are not in the business of more.") removed from home — file preserved
@@ -10,12 +12,24 @@ import { Gallery } from "@/components/landing/gallery";
 // import { Testimonials } from "@/components/landing/testimonials";
 import { HostYourRetreat } from "@/components/landing/HostYourRetreat";
 import { QuoteBreak } from "@/components/landing/QuoteBreak";
-import { Ornament } from "@/components/landing/ornament";
+import { Ornament } from "@/components/shared/ornament";
 import { Footer } from "@/components/landing/footer";
+import { SiteJsonLd } from "@/components/seo/JsonLd";
+
+export const metadata: Metadata = buildMetadata({
+  path: '/',
+  title: 'House of Shakti — Yoga Sanctuary in Santa Teresa, Costa Rica',
+  description:
+    'Yoga classes, retreats and jungle accommodation in Santa Teresa, Costa Rica. A boutique sanctuary five minutes from Playa Hermosa.',
+  absoluteTitle: true,
+});
 
 export default function Home() {
   return (
-    <main className="overflow-hidden">
+    <main id="main-content" className="overflow-hidden">
+      {/* LodgingBusiness + WebSite, rendered once for the whole site. Every
+          other schema references the business by @id rather than repeating it. */}
+      <SiteJsonLd />
       <Navigation />
       <Hero />
       {/* Brand statement + scattered photos, right below the hero video */}

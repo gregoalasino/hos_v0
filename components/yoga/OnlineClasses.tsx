@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Ornament } from '@/components/landing/ornament';
+import { Ornament } from '@/components/shared/ornament';
 import { usePrefersReducedMotion } from '@/hooks/use-media-query';
 import { usePageVisible } from '@/hooks/use-page-visible';
 

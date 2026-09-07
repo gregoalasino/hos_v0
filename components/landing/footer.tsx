@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView, Variants } from 'framer-motion';
 import { Instagram } from 'lucide-react';
+import { BUSINESS } from '@/lib/business';
 
 // ─── Static content ─────────────────────────────────────────────────────────
 const sitemapLinks: { label: string; href: string }[] = [
@@ -15,15 +16,14 @@ const sitemapLinks: { label: string; href: string }[] = [
   { label: 'Contact', href: '/contact' },
 ];
 
-// TODO: confirm full street address with Nancy.
-const addressLines = ['House of Shakti', 'Santa Teresa', 'Puntarenas, Costa Rica'];
-
-// TODO: confirm exact Google Maps link with Nancy.
-const MAPS_URL =
-  'https://maps.google.com/?q=House+of+Shakti+Santa+Teresa+Costa+Rica';
-
-const INSTAGRAM_URL = 'https://www.instagram.com/house.of.shakti/';
-const INSTAGRAM_HANDLE = '@house.of.shakti';
+// Address, map link and social handle all come from lib/business.ts — the same
+// record the contact page, the calendar invitations and the structured data
+// read. The map link is the Google Business profile, so this and the contact
+// page can never point at two different pins.
+const addressLines = BUSINESS.addressLines;
+const MAPS_URL = BUSINESS.googleMapsUrl;
+const INSTAGRAM_URL = BUSINESS.instagram;
+const INSTAGRAM_HANDLE = BUSINESS.instagramHandle;
 
 // ─── Stagger variants for the three right-zone columns ──────────────────────
 const columnsContainer: Variants = {
@@ -70,6 +70,8 @@ export function Footer() {
                 alt="House of Shakti"
                 draggable={false}
                 className="h-12 lg:h-14 w-auto select-none"
+                loading="lazy"
+                decoding="async"
               />
             </Link>
 

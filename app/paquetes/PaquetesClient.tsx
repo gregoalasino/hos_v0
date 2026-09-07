@@ -54,7 +54,7 @@ export default function PaquetesClient({ packs }: { packs: ClassPack[] }) {
   return (
     <>
       <Navigation />
-      <main className="bg-warm-white min-h-screen">
+      <main id="main-content" className="bg-warm-white min-h-screen">
         <section className="w-[90%] md:w-[80%] max-w-5xl mx-auto pt-32 pb-24">
           <h1 className="font-display text-4xl md:text-5xl font-light text-ink leading-tight">
             Class packs

@@ -59,6 +59,8 @@ export function SanctuarySection({
               aria-hidden
               draggable={false}
               className="h-12 lg:h-14 w-auto select-none mb-6 lg:mb-8"
+              loading="lazy"
+              decoding="async"
             />
 
             <h2 className="font-display font-light text-ink text-3xl md:text-4xl leading-[1.15]">

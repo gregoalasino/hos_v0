@@ -78,6 +78,7 @@ export function HostHero() {
                   aria-hidden
                   draggable={false}
                   className="h-[60px] md:h-[72px] w-auto select-none"
+                  decoding="async"
                 />
                 <span className="font-body text-[11px] md:text-xs tracking-[0.26em] uppercase text-cream">
                   Santa Teresa, Costa Rica

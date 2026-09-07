@@ -5,7 +5,7 @@ import { Footer } from '@/components/landing/footer';
 // Minimal editorial 404 for an unknown retreat slug.
 export default function RetreatNotFound() {
   return (
-    <main className="bg-warm-white min-h-screen flex flex-col">
+    <main id="main-content" className="bg-warm-white min-h-screen flex flex-col">
       <Navigation />
 
       <section className="flex-1 flex items-center justify-center px-6 py-32">

@@ -17,7 +17,10 @@ function GalleryItem({ image }: { image: RetreatGalleryImage }) {
       className="mb-6 lg:mb-8 break-inside-avoid"
     >
       <div className={`relative w-full ${image.aspect}`}>
-        <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
+        <img src={image.src} alt={image.alt} className="w-full h-full object-cover"
+  loading="lazy"
+  decoding="async"
+/>
       </div>
     </motion.div>
   );
