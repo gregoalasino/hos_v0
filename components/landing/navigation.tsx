@@ -20,7 +20,7 @@ const navItems: { es: string; en: string; href: string }[] = [
   // Anchor into the home page rather than a route of its own — the section
   // lives at <section id="seasonal-experiences"> in seasonal-experiences.tsx.
   { es: 'Experiencias de Temporada', en: 'Seasonal Experiences', href: '/#seasonal-experiences' },
-  { es: 'Galería', en: 'Gallery', href: '/gallery' },
+  { es: 'Nosotras', en: 'About', href: '/about' },
   { es: 'Contacto', en: 'Contact', href: '/contact' },
 ];
 

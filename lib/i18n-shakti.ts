@@ -131,7 +131,7 @@ const en = {
     includesLabel: 'Includes',
     tiers: [
       {
-        tag: '01 · Full Reset',
+        title: 'Full Reset',
         duration: '7 days · 6 nights',
         price: 'From USD 1,400',
         body: 'A full week to step away from your routine and immerse yourself in the House of Shakti experience. A balanced combination of movement, wellness, nature, nourishing food, and time for yourself. The most complete way to experience Shakti.',
@@ -147,7 +147,7 @@ const en = {
         ],
       },
       {
-        tag: '02 · Refresh',
+        title: 'Refresh',
         duration: '5 days · 4 nights',
         price: 'From USD 950',
         body: 'A few days to reset your rhythm, recharge your energy and enjoy a change of scenery. A balanced experience with movement, relaxation, nourishing mornings, and plenty of space to enjoy yourself. A little time away to feel refreshed.',
@@ -161,7 +161,7 @@ const en = {
         ],
       },
       {
-        tag: '03 · Your Own Way',
+        title: 'Your Own Way',
         duration: 'Custom experience',
         price: 'Make it yours.',
         body: 'Choose how long you stay and which experiences you want to include — from yoga and breathwork to massage, sound healing, sauna & ice bath, or a guided nature experience.',
@@ -177,45 +177,45 @@ const en = {
   },
   day: {
     heading: 'What does your day look like?',
-    eyebrow: 'Every day, at your own pace',
-    blocks: [
-      { time: '8:00 AM', title: 'Breakfast', detail: 'A fresh, nourishing start to the morning.' },
-      { time: '10:00 AM', title: 'Yoga class', detail: 'Move, breathe, and ground your day.' },
+    intro:
+      'A gentle rhythm, every day at your own pace — with our team of facilitators around to guide you throughout your stay.',
+    // The practical part of the day, in one breath: what is arranged, what is
+    // yours, and how to get around.
+    note: 'Massage and nature experiences are arranged with our team around your preferences. Lunch and dinner are yours — a spacious shared kitchen, or the many good places nearby — and to move around freely we recommend renting an ATV or a car.',
+    trackAria: 'The moments of a day at House of Shakti',
+    moments: [
       {
+        slug: 'breakfast',
+        time: '8:00 AM',
+        title: 'Breakfast',
+        detail: 'Start your morning with a fresh, nourishing breakfast.',
+      },
+      {
+        slug: 'yoga',
+        time: '10:00 AM',
+        title: 'Yoga class',
+        detail: 'Move, breathe, and start your day with a grounding practice.',
+      },
+      {
+        slug: 'free-time',
         time: 'Midday',
         title: 'Free time',
         detail: 'Explore, relax, enjoy the beach, or simply take some time for yourself.',
       },
       {
+        slug: 'breathwork',
         time: '5:00 PM',
         title: 'Breathwork',
-        detail: 'A guided practice to unwind into the evening — offered once during your stay.',
+        detail:
+          'A guided breathing practice to unwind into the evening — offered once during your stay.',
       },
       {
+        slug: 'sauna',
         time: '6:30 PM',
         title: 'Sauna & ice bath',
-        detail: 'Hot and cold, to refresh your body and senses.',
-      },
-      {
-        time: 'On request',
-        title: 'Massage & nature experiences',
-        detail: 'Scheduled around your preferences, arranged with our team during your stay.',
-      },
-      {
-        time: 'Midday & evening',
-        title: 'Lunch & dinner',
-        detail:
-          'A spacious shared kitchen to cook your own, and plenty of good places nearby if you’d rather eat out.',
-      },
-      {
-        time: 'Getting around',
-        title: 'Rent an ATV or a car',
-        detail: 'For the freedom to explore the area at your own pace.',
+        detail: 'A restorative hot-and-cold experience to refresh your body and senses.',
       },
     ],
-    footnote:
-      'Our team of facilitators is with you throughout your stay, while the experience stays independent — you choose what to join and how to spend your time.',
-    trackAria: 'Moments of a day at House of Shakti',
   },
   sanctuary: {
     heading: 'House of Shakti Yoga Sanctuary',
@@ -400,7 +400,7 @@ const es: ShaktiDictionary = {
     includesLabel: 'Incluye',
     tiers: [
       {
-        tag: '01 · Full Reset',
+        title: 'Full Reset',
         duration: '7 días · 6 noches',
         price: 'Desde USD 1.400',
         body: 'Una semana completa para salir de la rutina y sumergirte en la experiencia House of Shakti. Una combinación equilibrada de movimiento, bienestar, naturaleza, comida nutritiva y tiempo para ti. La forma más completa de vivir Shakti.',
@@ -416,7 +416,7 @@ const es: ShaktiDictionary = {
         ],
       },
       {
-        tag: '02 · Refresh',
+        title: 'Refresh',
         duration: '5 días · 4 noches',
         price: 'Desde USD 950',
         body: 'Unos días para reiniciar tu ritmo, recargar energía y disfrutar de un cambio de aire. Una experiencia equilibrada con movimiento, relajación, mañanas nutritivas y mucho espacio para disfrutar. Un pequeño paréntesis para volver con la energía renovada.',
@@ -430,7 +430,7 @@ const es: ShaktiDictionary = {
         ],
       },
       {
-        tag: '03 · Your Own Way',
+        title: 'Your Own Way',
         duration: 'Experiencia a medida',
         price: 'Hazla tuya.',
         body: 'Elige cuánto tiempo te quedas y qué experiencias quieres incluir: desde yoga y breathwork hasta masajes, sanación con sonido, sauna y baño de hielo o una experiencia guiada en la naturaleza.',
@@ -446,46 +446,43 @@ const es: ShaktiDictionary = {
   },
   day: {
     heading: '¿Cómo es un día aquí?',
-    eyebrow: 'Cada día, a tu ritmo',
-    blocks: [
-      { time: '8:00 AM', title: 'Desayuno', detail: 'Un comienzo fresco y nutritivo para la mañana.' },
-      { time: '10:00 AM', title: 'Clase de yoga', detail: 'Moverte, respirar y aterrizar el día.' },
+    intro:
+      'Un ritmo suave, cada día a tu propio paso, con nuestro equipo de facilitadores cerca para acompañarte durante toda la estadía.',
+    note: 'Los masajes y las experiencias en la naturaleza se organizan con nuestro equipo según tus preferencias. El almuerzo y la cena son tuyos: una amplia cocina compartida, o los muchos buenos lugares que hay cerca. Para moverte con libertad, te recomendamos alquilar un cuatriciclo o un auto.',
+    trackAria: 'Los momentos de un día en House of Shakti',
+    moments: [
       {
+        slug: 'breakfast',
+        time: '8:00 AM',
+        title: 'Desayuno',
+        detail: 'Empieza la mañana con un desayuno fresco y nutritivo.',
+      },
+      {
+        slug: 'yoga',
+        time: '10:00 AM',
+        title: 'Clase de yoga',
+        detail: 'Moverte, respirar y empezar el día con una práctica que aterriza.',
+      },
+      {
+        slug: 'free-time',
         time: 'Mediodía',
         title: 'Tiempo libre',
         detail: 'Explora, descansa, disfruta de la playa o simplemente tómate un tiempo para ti.',
       },
       {
+        slug: 'breathwork',
         time: '5:00 PM',
         title: 'Breathwork',
         detail:
-          'Una práctica guiada para soltar y entrar en la noche; se ofrece una vez durante tu estadía.',
+          'Una práctica de respiración guiada para soltar y entrar en la noche; se ofrece una vez durante tu estadía.',
       },
       {
+        slug: 'sauna',
         time: '6:30 PM',
         title: 'Sauna y baño de hielo',
-        detail: 'Calor y frío para refrescar el cuerpo y los sentidos.',
-      },
-      {
-        time: 'A pedido',
-        title: 'Masajes y experiencias en la naturaleza',
-        detail: 'Se programan según tus preferencias, junto con nuestro equipo, durante tu estadía.',
-      },
-      {
-        time: 'Mediodía y noche',
-        title: 'Almuerzo y cena',
-        detail:
-          'Una amplia cocina compartida para preparar tus comidas, y muchos lugares cerca si prefieres salir a comer.',
-      },
-      {
-        time: 'Para moverte',
-        title: 'Alquila un cuatriciclo o un auto',
-        detail: 'Para explorar la zona con libertad y a tu propio ritmo.',
+        detail: 'Una experiencia restauradora de calor y frío para refrescar el cuerpo y los sentidos.',
       },
     ],
-    footnote:
-      'Nuestro equipo de facilitadores te acompaña durante toda la estadía, mientras la experiencia sigue siendo independiente: tú eliges en qué participar y cómo usar tu tiempo.',
-    trackAria: 'Momentos de un día en House of Shakti',
   },
   sanctuary: {
     heading: 'House of Shakti Yoga Sanctuary',
