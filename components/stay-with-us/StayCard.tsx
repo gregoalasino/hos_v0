@@ -12,8 +12,8 @@ import type { StayData } from '@/lib/stays';
 // carry well. From lg up: an editorial row — the photograph on one side, the
 // dwelling's story beside it, sides alternating down the page. Each dwelling
 // gets its own moment at full attention instead of competing in a grid, and
-// the copy fills the air that a lone tall photograph used to leave dead. The
-// numeral is the thread that ties the rows into one sequence.
+// the copy fills the air that a lone tall photograph used to leave dead.
+// `index` only decides which side the photograph takes.
 export function StayCard({
   stay,
   index,
@@ -51,14 +51,7 @@ export function StayCard({
           index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : 'lg:col-start-7 xl:col-start-6'
         }`}
       >
-        <p
-          aria-hidden
-          className="hidden lg:block font-body text-[11px] tracking-[0.3em] text-ink/70"
-        >
-          {String(index + 1).padStart(2, '0')}
-        </p>
-
-        <Title className="font-display font-light text-ink text-lg lg:text-3xl leading-snug mt-5 lg:mt-4">
+        <Title className="font-display font-light text-ink text-lg lg:text-3xl leading-snug mt-5 lg:mt-0">
           {stay.title}
         </Title>
         <p className="font-body text-xs text-ink mt-2 lg:mt-3">{stay.meta}</p>

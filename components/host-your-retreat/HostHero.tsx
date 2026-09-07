@@ -62,19 +62,22 @@ export function HostHero() {
 
           <div className="absolute inset-0 flex items-end">
             <div className={`w-[85%] md:w-[88%] mx-auto pb-12 md:pb-16 lg:pb-20 ${TEXT_SHADOW}`}>
-              {/* Eyebrow — where, with the country drawn small beside it. */}
+              {/* Eyebrow — where, with the country drawn beside it. The map is
+                  the one mark on the page that is not type, and it is sized to
+                  read as a drawing rather than as an icon: three times the
+                  eyebrow's cap height, the words centred against it. */}
               <motion.p
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.0, ease: 'easeOut', delay: 0.05 }}
-                className="flex items-center gap-3 md:gap-3.5 mb-6 md:mb-7"
+                className="flex items-center gap-4 md:gap-5 mb-6 md:mb-7"
               >
                 <img
                   src={MAP}
                   alt=""
                   aria-hidden
                   draggable={false}
-                  className="h-5 md:h-6 w-auto select-none"
+                  className="h-[60px] md:h-[72px] w-auto select-none"
                 />
                 <span className="font-body text-[11px] md:text-xs tracking-[0.26em] uppercase text-cream">
                   Santa Teresa, Costa Rica
