@@ -74,6 +74,18 @@ export async function updateTemplate(id: string, data: TemplateUpdate) {
   const supabase = await createServiceClient();
   const { error } = await supabase.from('class_templates').update(data).eq('id', id);
   if (error) throw new Error(error.message);
+
+  // Propagate an image change to this template's upcoming (not-yet-past)
+  // sessions so the new picture shows on the booking page right away — not only
+  // on sessions materialized in the future.
+  if ('image_url' in data) {
+    await supabase
+      .from('classes')
+      .update({ image_url: data.image_url ?? null })
+      .eq('template_id', id)
+      .gte('starts_at', new Date().toISOString());
+  }
+
   revalidatePath('/admin/clases');
   revalidatePath('/admin/calendario');
 }
@@ -203,6 +215,7 @@ export async function createClassInstance(payload: ClassInstancePayload) {
     spots_remaining: payload.capacity,
     price_dropin_usd: payload.price_dropin_usd,
     location: payload.location,
+    image_url: payload.image_url,
     is_active: payload.is_active,
     template_id: null,
   });
@@ -239,6 +252,7 @@ export async function updateClassInstance(id: string, payload: ClassInstancePayl
       spots_remaining: spotsRemaining,
       price_dropin_usd: payload.price_dropin_usd,
       location: payload.location,
+      image_url: payload.image_url,
       is_active: payload.is_active,
     })
     .eq('id', id);

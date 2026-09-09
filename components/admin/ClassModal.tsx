@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import { Toggle } from './Toggle';
 import { Field } from './Field';
 import { NativeSelect } from './NativeSelect';
 import { Button } from './Button';
+import { ImageUpload } from './ImageUpload';
 
 // Day-of-week options (0=Sun … 6=Sat, matching class_templates.day_of_week).
 export const DAY_OPTIONS = [
@@ -50,6 +51,7 @@ export type TemplatePayload = {
   capacity: number;
   price_dropin_usd: number;
   location: string;
+  image_url: string | null;
   is_active: boolean;
 };
 
@@ -99,8 +101,12 @@ export default function ClassModal({
 
   const isActive = watch('isActive');
 
+  // Image URL is managed outside RHF (uploaded via the ImageUpload widget).
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    setImageUrl(template?.image_url ?? null);
     if (template) {
       reset({
         name: template.name,
@@ -136,6 +142,7 @@ export default function ClassModal({
       capacity: values.capacity,
       price_dropin_usd: values.priceUsd,
       location: values.location,
+      image_url: imageUrl,
       is_active: values.isActive,
     });
   }
@@ -181,6 +188,8 @@ export default function ClassModal({
           error={errors.description?.message}
           {...register('description')}
         />
+
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
         <div className="grid grid-cols-2 gap-6">
           <NativeSelect

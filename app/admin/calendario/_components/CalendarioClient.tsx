@@ -255,6 +255,7 @@ export default function CalendarioClient({
       capacity: selectedClass.capacity,
       priceUsd: selectedClass.priceUsd,
       location: selectedClass.location,
+      imageUrl: selectedClass.imageUrl,
       isActive: selectedClass.isActive,
     });
     setDrawerOpen(false);

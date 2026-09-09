@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { Toggle } from './Toggle';
 import { Field } from './Field';
 import { NativeSelect } from './NativeSelect';
 import { Button } from './Button';
+import { ImageUpload } from './ImageUpload';
 import type { ClassInstancePayload } from '@/types';
 
 // The subset of a serialized class the modal needs to prefill an edit.
@@ -23,6 +24,7 @@ export type EditableInstance = {
   capacity: number;
   priceUsd: number;
   location: string;
+  imageUrl?: string | null;
   isActive: boolean;
 };
 
@@ -105,8 +107,12 @@ export default function CalendarClassModal({
 
   const isActive = watch('isActive');
 
+  // Image URL is managed outside RHF (uploaded via the ImageUpload widget).
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    setImageUrl(isEditing ? instance?.imageUrl ?? null : null);
     if (isEditing && instance) {
       reset({
         name: instance.name,
@@ -141,6 +147,7 @@ export default function CalendarClassModal({
       capacity: values.capacity,
       price_dropin_usd: values.priceUsd,
       location: values.location,
+      image_url: imageUrl,
       is_active: values.isActive,
     });
   }
@@ -186,6 +193,8 @@ export default function CalendarClassModal({
           error={errors.description?.message}
           {...register('description')}
         />
+
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
         <div className="grid grid-cols-2 gap-6">
           <NativeSelect

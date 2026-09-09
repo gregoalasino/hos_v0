@@ -13,6 +13,7 @@ export type YogaClass = {
   location: string;
   isActive: boolean;
   color?: string;
+  imageUrl?: string | null;
 };
 
 export type RecurringSlot = {
@@ -89,6 +90,7 @@ export type ClassTemplate = {
   price_dropin_usd: number;
   location: string;
   color: string | null;
+  image_url: string | null;
   is_active: boolean;
   created_at: string;
   // Present when the row is fetched with the instructors join.
@@ -114,6 +116,7 @@ export type ClassInstancePayload = {
   capacity: number;
   price_dropin_usd: number;
   location: string;
+  image_url: string | null;
   is_active: boolean;
 };
 
@@ -162,6 +165,7 @@ export type DbClass = {
   price_dropin_usd: number;
   location: string;
   color: string | null;
+  image_url: string | null;
   is_active: boolean;
   created_at: string;
   instructors: { id: string; name: string } | null;
@@ -184,5 +188,6 @@ export function dbClassToYogaClass(row: DbClass): YogaClass {
     location: row.location,
     isActive: row.is_active,
     color: row.color ?? undefined,
+    imageUrl: row.image_url ?? null,
   };
 }

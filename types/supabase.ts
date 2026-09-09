@@ -50,6 +50,7 @@ export interface Database {
           price_dropin_usd: number;
           location: string;
           color: string | null;
+          image_url: string | null;
           is_active: boolean;
           created_at: string;
         };
@@ -66,6 +67,7 @@ export interface Database {
           price_dropin_usd?: number;
           location?: string;
           color?: string | null;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
@@ -82,6 +84,7 @@ export interface Database {
           price_dropin_usd?: number;
           location?: string;
           color?: string | null;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
@@ -102,6 +105,7 @@ export interface Database {
           price_dropin_usd: number;
           location: string;
           color: string | null;
+          image_url: string | null;
           is_active: boolean;
           created_at: string;
         };
@@ -119,6 +123,7 @@ export interface Database {
           price_dropin_usd?: number;
           location?: string;
           color?: string | null;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
@@ -136,6 +141,7 @@ export interface Database {
           price_dropin_usd?: number;
           location?: string;
           color?: string | null;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
