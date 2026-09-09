@@ -28,6 +28,100 @@ export async function confirmBooking(id: string) {
   revalidatePath('/admin/calendario');
 }
 
+// Admin manually registers a walk-in participant on a class from the calendar
+// drawer — for students who show up in person and never booked through the web.
+// Mirrors the public drop-in booking shape (same personal fields) but skips the
+// upsell/pack flow: it's a quick express add. Reserves `persons` spots atomically
+// and rolls them back if anything fails.
+export type AdminBookingInput = {
+  classId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  persons: number;
+  upsellIds?: string[];
+  paymentMethod: 'card' | 'cash' | 'venmo';
+  /** true → booking is created already paid (confirmed); false → pending. */
+  markPaid: boolean;
+  isHotelGuest?: boolean;
+  cloudbedsRef?: string;
+};
+
+export async function createAdminBooking(
+  input: AdminBookingInput,
+): Promise<{ ok: true; bookingReference: string } | { ok: false; error: string }> {
+  const supabase = await createServiceClient();
+
+  const persons = Math.max(1, Math.floor(input.persons || 1));
+  const upsellIds = input.upsellIds ?? [];
+
+  // ── Validate class ──────────────────────────────────────────────────────────
+  const { data: clase, error: classError } = await supabase
+    .from('classes')
+    .select('id, price_dropin_usd, is_active')
+    .eq('id', input.classId)
+    .single();
+  if (classError || !clase || !clase.is_active) return { ok: false, error: 'class_not_found' };
+
+  // ── Upsells total (priced server-side; never trust a client amount) ─────────
+  let upsellsTotal = 0;
+  if (upsellIds.length > 0) {
+    const { data: rows } = await supabase
+      .from('upsells')
+      .select('price_usd')
+      .in('id', upsellIds);
+    upsellsTotal = (rows ?? []).reduce((acc, u) => acc + Number(u.price_usd), 0);
+  }
+
+  // ── Reserve N spots atomically, rolling back on partial failure ─────────────
+  let reserved = 0;
+  for (let i = 0; i < persons; i++) {
+    const { data } = await supabase.rpc('decrement_spots', { p_class_id: input.classId });
+    if (!(data as { success: boolean } | null)?.success) break;
+    reserved++;
+  }
+  if (reserved < persons) {
+    for (let i = 0; i < reserved; i++) {
+      await supabase.rpc('increment_spots', { p_class_id: input.classId });
+    }
+    return { ok: false, error: 'no_spots_available' };
+  }
+
+  const { data: refData } = await supabase.rpc('generate_booking_reference');
+  const bookingReference = (refData as string | null) ?? `HOS-${Date.now()}-XXXX`;
+
+  const total = Number(clase.price_dropin_usd) * persons + upsellsTotal;
+
+  const { error: insertError } = await supabase.from('bookings').insert({
+    class_id: input.classId,
+    first_name: input.firstName,
+    last_name: input.lastName,
+    email: input.email,
+    phone: input.phone?.trim() ? input.phone.trim() : null,
+    persons,
+    upsell_ids: upsellIds,
+    payment_status: input.markPaid ? 'confirmed' : 'pending',
+    payment_method: input.paymentMethod,
+    pack_type: 'dropin',
+    booking_reference: bookingReference,
+    is_hotel_guest: input.isHotelGuest ?? false,
+    cloudbeds_ref: input.cloudbedsRef?.trim() ? input.cloudbedsRef.trim() : null,
+    total_usd: total,
+  });
+
+  if (insertError) {
+    for (let i = 0; i < reserved; i++) {
+      await supabase.rpc('increment_spots', { p_class_id: input.classId });
+    }
+    return { ok: false, error: 'database_error' };
+  }
+
+  revalidatePath('/admin/reservas');
+  revalidatePath('/admin/calendario');
+  return { ok: true, bookingReference };
+}
+
 export async function markNoShow(id: string) {
   const supabase = await createServiceClient();
   const { error } = await supabase

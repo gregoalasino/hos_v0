@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -18,6 +18,8 @@ import {
   DollarSign,
   Users as UsersIcon,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type { Booking } from '@/types';
 import { PageHeader } from '@/components/admin/PageHeader';
@@ -62,6 +64,10 @@ function paymentBadge(status: Booking['paymentStatus']): {
   }
 }
 
+// How many bookings show per page. Keeps the list scannable instead of an
+// endless scroll; pending ones are highlighted so they don't get lost.
+const PAGE_SIZE = 6;
+
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
   { value: 'paid', label: 'Paid' },
@@ -92,6 +98,9 @@ export default function ReservasClient({
   const [classFilter, setClassFilter] = useState('all');
   const [fromDate, setFromDate] = useState(''); // YYYY-MM-DD, filters on booking date
   const [toDate, setToDate] = useState('');
+
+  // Pagination — 6 per page.
+  const [page, setPage] = useState(1);
 
   // Drawer + delete
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -133,6 +142,19 @@ export default function ReservasClient({
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [initialBookings, search, statusFilter, classFilter, fromDate, toDate]);
+
+  // Reset to the first page whenever the result set changes (filters/search).
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, classFilter, fromDate, toDate]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // Guard against a stale page index (e.g. after a booking is cancelled).
+  const safePage = Math.min(page, pageCount);
+  const paginated = useMemo(
+    () => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filtered, safePage],
+  );
 
   const filtersActive =
     search !== '' ||
@@ -282,13 +304,22 @@ export default function ReservasClient({
               }
             />
           ) : (
-            <BookingsTable
-              bookings={filtered}
-              classMap={classMap}
-              upsellMap={upsellMap}
-              onView={openDetail}
-              onCancel={(b) => setCancelTarget(b)}
-            />
+            <>
+              <BookingsTable
+                bookings={paginated}
+                classMap={classMap}
+                upsellMap={upsellMap}
+                onView={openDetail}
+                onCancel={(b) => setCancelTarget(b)}
+              />
+              <Pagination
+                page={safePage}
+                pageCount={pageCount}
+                total={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
+            </>
           )}
         </>
       )}
@@ -396,15 +427,27 @@ function BookingsTable({
                 ? clase.priceUsd * b.persons + upsells.reduce((s, u) => s + u.priceUsd, 0)
                 : 0;
               const badge = paymentBadge(b.paymentStatus);
+              // Pending bookings are the ones surfaced in the sidebar badge —
+              // give them a distinct tone (amber accent + tint) so the admin can
+              // spot what still needs action at a glance.
+              const isPending = b.paymentStatus === 'pending';
 
               return (
                 <tr
                   key={b.id}
                   onClick={() => onView(b)}
-                  className="border-b border-ink/[0.08] last:border-0 hover:bg-neutral-50 transition-colors duration-200 cursor-pointer"
+                  className={`border-b border-ink/[0.08] last:border-0 transition-colors duration-200 cursor-pointer ${
+                    isPending
+                      ? 'bg-amber-50/70 hover:bg-amber-100/70 border-l-2 border-l-amber-500'
+                      : 'hover:bg-neutral-50'
+                  }`}
                 >
                   <td className="px-4 py-4">
-                    <span className="font-mono text-xs text-ink/70 bg-neutral-50 px-2 py-0.5">
+                    <span
+                      className={`font-mono text-xs px-2 py-0.5 ${
+                        isPending ? 'text-amber-900 bg-amber-100/60' : 'text-ink/70 bg-neutral-50'
+                      }`}
+                    >
                       {b.bookingReference}
                     </span>
                   </td>
@@ -468,6 +511,91 @@ function BookingsTable({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Pagination
+// ═══════════════════════════════════════════════════════════════════════════
+function Pagination({
+  page,
+  pageCount,
+  total,
+  pageSize,
+  onPageChange,
+}: {
+  page: number;
+  pageCount: number;
+  total: number;
+  pageSize: number;
+  onPageChange: (p: number) => void;
+}) {
+  if (pageCount <= 1) return null;
+
+  const first = (page - 1) * pageSize + 1;
+  const last = Math.min(page * pageSize, total);
+
+  // Compact numbered pages with a leading/trailing ellipsis when there are many.
+  const pages: (number | 'gap')[] = [];
+  for (let i = 1; i <= pageCount; i++) {
+    if (i === 1 || i === pageCount || (i >= page - 1 && i <= page + 1)) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== 'gap') {
+      pages.push('gap');
+    }
+  }
+
+  return (
+    <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <p className="font-body text-xs text-ink/50">
+        Showing <span className="text-ink/70">{first}–{last}</span> of{' '}
+        <span className="text-ink/70">{total}</span>
+      </p>
+      <nav className="flex items-center gap-1" aria-label="Pagination">
+        <button
+          type="button"
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+          aria-label="Previous page"
+          className="p-2 text-ink hover:bg-neutral-100 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft width={16} height={16} strokeWidth={1.5} />
+        </button>
+        {pages.map((p, i) =>
+          p === 'gap' ? (
+            <span
+              key={`gap-${i}`}
+              className="px-2 font-body text-sm text-ink/30 select-none"
+            >
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPageChange(p)}
+              aria-current={p === page ? 'page' : undefined}
+              className={`min-w-[32px] h-8 px-2 font-body text-sm transition-colors duration-200 cursor-pointer ${
+                p === page
+                  ? 'bg-burgundy text-cream'
+                  : 'text-ink hover:bg-neutral-100'
+              }`}
+            >
+              {p}
+            </button>
+          ),
+        )}
+        <button
+          type="button"
+          onClick={() => onPageChange(page + 1)}
+          disabled={page === pageCount}
+          aria-label="Next page"
+          className="p-2 text-ink hover:bg-neutral-100 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronRight width={16} height={16} strokeWidth={1.5} />
+        </button>
+      </nav>
     </div>
   );
 }

@@ -18,6 +18,7 @@ import {
   Pencil,
   Trash2,
   CalendarX,
+  UserPlus,
 } from 'lucide-react';
 import type { YogaClass, Booking, ClassInstancePayload } from '@/types';
 import {
@@ -25,6 +26,7 @@ import {
   createClassInstance,
   updateClassInstance,
 } from '@/app/actions/classes';
+import { createAdminBooking } from '@/app/actions/bookings';
 import { Button } from '@/components/admin/Button';
 import { Badge } from '@/components/admin/Badge';
 import { EmptyState } from '@/components/admin/EmptyState';
@@ -32,6 +34,10 @@ import { DeleteConfirmation } from '@/components/admin/DeleteConfirmation';
 import CalendarClassModal, {
   type EditableInstance,
 } from '@/components/admin/CalendarClassModal';
+import AddParticipantModal, {
+  type AddParticipantValues,
+  type UpsellOption,
+} from '@/components/admin/AddParticipantModal';
 
 // ─── Category palette — mirrors /app/yoga/YogaPageClient.tsx exactly so the
 // admin calendar reads the same color language students see on the public site.
@@ -125,10 +131,12 @@ export default function CalendarioClient({
   initialClasses,
   initialBookings,
   instructors,
+  upsells,
 }: {
   initialClasses: SerializedClass[];
   initialBookings: SerializedBooking[];
   instructors: { id: string; name: string }[];
+  upsells: UpsellOption[];
 }) {
   const router = useRouter();
   const [weekOffset, setWeekOffset] = useState(0);
@@ -143,6 +151,11 @@ export default function CalendarioClient({
   const [editInstance, setEditInstance] = useState<EditableInstance | undefined>();
   const [createPrefill, setCreatePrefill] = useState<{ date: string; time: string } | undefined>();
   const [isSaving, setIsSaving] = useState(false);
+
+  // Add-participant modal (manual walk-in registration from the drawer).
+  const [addOpen, setAddOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   // Mobile: which day index (0–6) is currently visible. Defaults to today if
   // today is within the displayed week, otherwise 0 (Monday).
@@ -246,6 +259,50 @@ export default function CalendarioClient({
     });
     setDrawerOpen(false);
     setModalOpen(true);
+  }
+
+  // ── Add participant ──────────────────────────────────────────────────────
+  function openAddParticipant() {
+    setAddError(null);
+    setAddOpen(true);
+  }
+
+  async function handleAddParticipant(values: AddParticipantValues) {
+    if (!selectedClass) return;
+    setIsAdding(true);
+    setAddError(null);
+    try {
+      const res = await createAdminBooking({
+        classId: selectedClass.id,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone,
+        persons: values.persons,
+        upsellIds: values.upsellIds,
+        paymentMethod: values.paymentMethod,
+        markPaid: values.markPaid,
+        isHotelGuest: values.isHotelGuest,
+        cloudbedsRef: values.cloudbedsRef,
+      });
+      if (!res.ok) {
+        setAddError(
+          res.error === 'no_spots_available'
+            ? 'Not enough spots left for this class.'
+            : res.error === 'class_not_found'
+            ? 'This class is no longer available.'
+            : 'Could not add the participant. Please try again.',
+        );
+        return;
+      }
+      setAddOpen(false);
+      // Close the drawer so the refreshed occupancy/bookings reload cleanly.
+      setDrawerOpen(false);
+      setSelectedClass(null);
+      router.refresh();
+    } finally {
+      setIsAdding(false);
+    }
   }
 
   async function handleSaveClass(payload: ClassInstancePayload) {
@@ -398,6 +455,7 @@ export default function CalendarioClient({
                 onClose={() => setDrawerOpen(false)}
                 onEdit={openEditFromDrawer}
                 onDelete={() => setDeleteOpen(true)}
+                onAddParticipant={openAddParticipant}
               />
             </motion.aside>
           </>
@@ -426,6 +484,24 @@ export default function CalendarioClient({
         prefill={createPrefill}
         loading={isSaving}
       />
+
+      {/* ─── Add participant modal ──────────────────────────────────────── */}
+      {selectedClass && (
+        <AddParticipantModal
+          open={addOpen}
+          onOpenChange={(o) => {
+            setAddOpen(o);
+            if (!o) setAddError(null);
+          }}
+          onSubmit={handleAddParticipant}
+          className={selectedClass.name}
+          spotsRemaining={selectedClass.spotsRemaining}
+          priceUsd={selectedClass.priceUsd}
+          upsells={upsells}
+          loading={isAdding}
+          error={addError}
+        />
+      )}
     </div>
   );
 }
@@ -702,6 +778,7 @@ function DrawerContent({
   onClose,
   onEdit,
   onDelete,
+  onAddParticipant,
 }: {
   clase: SerializedClass;
   bookings: SerializedBooking[];
@@ -710,6 +787,7 @@ function DrawerContent({
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onAddParticipant: () => void;
 }) {
   const cat = categoryFor(clase.name);
   const remaining = clase.spotsRemaining;
@@ -823,9 +901,25 @@ function DrawerContent({
 
         {/* Bookings */}
         <div className="mt-10">
-          <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
-            Bookings ({bookings.length})
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-body text-[10px] tracking-[0.2em] uppercase text-ink/50">
+              Bookings ({bookings.length})
+            </p>
+            <button
+              type="button"
+              onClick={onAddParticipant}
+              disabled={remaining === 0}
+              className="inline-flex items-center gap-1.5 font-body text-xs text-burgundy hover:opacity-70 transition-opacity duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <UserPlus width={14} height={14} strokeWidth={1.5} />
+              <span>Add participant</span>
+            </button>
+          </div>
+          {remaining === 0 && (
+            <p className="font-body text-[11px] text-ink/40 mt-1">
+              Class is full — free a spot to add a walk-in.
+            </p>
+          )}
           {bookings.length === 0 ? (
             <p className="font-body text-sm text-ink/40 italic py-8 text-center">
               No bookings yet
