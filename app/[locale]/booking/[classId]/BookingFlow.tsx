@@ -61,6 +61,7 @@ type Props = {
   location: string;
   description: string;
   color?: string;
+  imageUrl?: string;
   upsells: Upsell[];
   /** The language the flow renders in — sent with the checkout so the receipt comes back in it. */
   locale: AppLocale;
@@ -228,7 +229,7 @@ function mockBookingReference(): string {
 export default function BookingFlow({
   classId, className, instructor, startsAt,
   durationMinutes, capacity, spotsRemaining,
-  priceUsd, location, description, color, upsells, locale: bookingLocale,
+  priceUsd, location, description, color, imageUrl, upsells, locale: bookingLocale,
 }: Props) {
   const t = useTranslations('booking');
   const tCategories = useTranslations('yoga.categories');
@@ -470,7 +471,8 @@ export default function BookingFlow({
   );
 
   const isConfirmation = step === 5;
-  const classImage = getClassPhoto(className);
+  // A custom image uploaded by the admin overrides the name-based default photo.
+  const classImage = imageUrl || getClassPhoto(className);
 
   // Props bundle for BookingSummary (used in two places: desktop sidebar + mobile drawer).
   // The class image is intentionally NOT included — it lives only in Step 1's main content.

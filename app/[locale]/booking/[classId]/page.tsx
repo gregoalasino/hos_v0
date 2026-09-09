@@ -35,6 +35,7 @@ export default async function BookingPage({
       location={clase.location}
       description={clase.description ?? ''}
       color={clase.color ?? undefined}
+      imageUrl={clase.image_url ?? undefined}
       upsells={upsells}
       locale={locale}
     />
